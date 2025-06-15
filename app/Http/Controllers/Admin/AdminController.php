@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\CategoryRequest;
+use App\Models\Coupon;
 use App\Models\Faq;
 use App\Models\Slider;
 use App\Models\Subcategory;
@@ -15,6 +16,7 @@ use App\Models\Product;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use App\Models\AboutSection;
 
@@ -580,5 +582,83 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Slider status updated.');
     }
+
+
+    /**
+     * Kupon listesini gösterir
+     */
+    public function index()
+    {
+        $products = Product::all();
+        $coupons = Coupon::with('products')->get();
+        return view('admin.coupons.index', compact('coupons', 'products'));
+    }
+
+    public function create()
+    {
+        $products = Product::all();
+        return view('admin.coupons.create', compact('products'));
+    }
+
+    public function store(Request $r)
+    {
+        $data = $r->validate([
+            'code' => 'required|string|unique:coupons,code',
+            'type' => 'required|in:fixed,percent,free_shipping',
+            'value' => 'nullable|numeric',
+            'min_order_amount' => 'nullable|numeric',
+            'usage_limit' => 'nullable|integer',
+            'once_per_user' => 'boolean',
+            'starts_at' => 'nullable|date',
+            'expires_at' => 'nullable|date',
+            'active' => 'boolean',
+            'product_ids' => 'array'
+        ]);
+        $data['seller_id'] = null; // süper admin
+        $coupon = Coupon::create($data);
+        if (!empty($data['product_ids'])) {
+            $coupon->products()->sync($data['product_ids']);
+        }
+        return redirect()->route('admin.coupons.index')->with('success', 'Coupon created');
+    }
+
+    public function edit(Coupon $coupon)
+    {
+        $products = Product::all();
+        return view('admin.coupons.edit', compact('coupon', 'products'));
+    }
+
+    public function couponupdate(Request $r, Coupon $coupon)
+    {
+        $data = $r->validate([
+            'code' => "required|string|unique:coupons,code,{$coupon->id}",
+            'type' => 'required|in:fixed,percent,free_shipping',
+            'value' => 'nullable|numeric',
+            'min_order_amount' => 'nullable|numeric',
+            'usage_limit' => 'nullable|integer',
+            'once_per_user' => 'boolean',
+            'starts_at' => 'nullable|date',
+            'expires_at' => 'nullable|date',
+            'active' => 'boolean',
+            'product_ids' => 'array'
+        ]);
+        $coupon->update($data);
+        $coupon->products()->sync($data['product_ids'] ?? []);
+        return redirect()->route('admin.coupons.index')->with('success', 'Coupon updated');
+    }
+
+    public function destroy(Coupon $coupon)
+    {
+        $coupon->delete();
+        return back()->with('success', 'Deleted');
+    }
+
+    public function toggle(Coupon $coupon)
+    {
+        $coupon->active = !$coupon->active;
+        $coupon->save();
+        return back()->with('success', 'Status toggled');
+    }
+
 
 }

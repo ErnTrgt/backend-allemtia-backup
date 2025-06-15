@@ -49,6 +49,12 @@
                     <span class="mtext">Slider</span>
                 </a>
             </li>
+             <li>
+                <a href="{{ url('/admin/coupons') }}" class="dropdown-toggle no-arrow">
+                    <span class="micon bi bi-house"></span>
+                    <span class="mtext">Coupon</span>
+                </a>
+            </li>
             <li class="dropdown">
                 <a href="javascript:;" class="dropdown-toggle">
                     <span class="micon bi bi-gear"></span>
@@ -58,6 +64,7 @@
                     <li><a href="{{ url('/admin/profile') }}">Profile</a></li>
                     <li><a href="#">Account</a></li>
                 </ul>
+                
             </li>
         </ul>
     </div>

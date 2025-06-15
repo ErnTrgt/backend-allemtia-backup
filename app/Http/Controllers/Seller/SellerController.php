@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\CategoryRequest;
+use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\ProductImage;
@@ -246,5 +247,94 @@ class SellerController extends Controller
         return redirect()->route('seller.subcategory-requests')->with('success', 'Subcategory request submitted successfully!');
     }
 
+
+    //coupon 
+
+    /**
+     * Satıcının kendi kuponlarını listeler.
+     */
+    public function index()
+    {
+        $products = Product::all();
+
+        $sellerId = Auth::id();
+        $coupons = Coupon::where('seller_id', $sellerId)->with('products')->get();
+        return view('seller.coupons.index', compact('coupons', 'products'));
+    }
+    public function create()
+    {
+        $products = Product::where('user_id', Auth::id())->get();
+        return view('seller.coupons.create', compact('products'));
+    }
+    public function store(Request $r)
+    {
+        $data = $r->validate([
+            'code' => 'required|string|unique:coupons,code',
+            'type' => 'required|in:fixed,percent,free_shipping',
+            'value' => 'nullable|numeric',
+            'min_order_amount' => 'nullable|numeric',
+            'usage_limit' => 'nullable|integer',
+            'expires_at' => 'nullable|date',
+            'active' => 'required|boolean',
+            'product_ids' => 'nullable|array',
+            'product_ids.*' => 'exists:products,id',
+        ]);
+        $data['seller_id'] = Auth::id();
+        $coupon = Coupon::create([
+            'code' => $data['code'],
+            'type' => $data['type'],
+            'value' => $data['value'] ?? 0,
+            'min_order_amount' => $data['min_order_amount'],
+            'usage_limit' => $data['usage_limit'],
+            'expires_at' => $data['expires_at'],
+            'active' => $data['active'],
+            'seller_id' => auth()->id(),
+        ]);
+
+        // 3) Eğer ürün ilişkisi varsa pivot tablosuna eşle
+        if (!empty($data['product_ids'])) {
+            $coupon->products()->sync($data['product_ids']);
+        }
+        //$coupon->products()->sync($data['product_ids'] ?? []);
+        return redirect()->route('seller.coupons.index')->with('success', 'Coupon created');
+    }
+    public function edit(Coupon $coupon)
+    {
+        // $this->authorize('update',$coupon); // politikalarla kontrol edebilirsiniz
+        $products = Product::where('user_id', Auth::id())->get();
+        return view('seller.coupons.edit', compact('coupon', 'products'));
+    }
+    public function couponupdate(Request $r, Coupon $coupon)
+    {
+        // $this->authorize('update',$coupon);
+        $data = $r->validate([
+            'code' => "required|string|unique:coupons,code,{$coupon->id}",
+            'type' => 'required|in:fixed,percent,free_shipping',
+            'value' => 'nullable|numeric',
+            'min_order_amount' => 'nullable|numeric',
+            'usage_limit' => 'nullable|integer',
+            'once_per_user' => 'boolean',
+            'starts_at' => 'nullable|date',
+            'expires_at' => 'nullable|date',
+            'active' => 'boolean',
+            'product_ids' => 'array'
+        ]);
+        $coupon->update($data);
+        $coupon->products()->sync($data['product_ids'] ?? []);
+        return back()->with('success', 'Updated');
+    }
+    public function destroy(Coupon $coupon)
+    {
+        // $this->authorize('delete',$coupon);
+        $coupon->delete();
+        return back()->with('success', 'Deleted');
+    }
+    public function toggle(Coupon $coupon)
+    {
+        // $this->authorize('update',$coupon);
+        $coupon->active = !$coupon->active;
+        $coupon->save();
+        return back()->with('success', 'Toggled');
+    }
 
 }

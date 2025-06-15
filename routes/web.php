@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\api\home\SellerCouponController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\SellerAuthController;
 // use App\Http\Controllers\AuthController;
@@ -90,6 +91,16 @@ Route::middleware(['auth:admin'])->group(function () {
     // Admin profile
     Route::get('/admin/profile', [AdminController::class, 'showProfile'])->name('admin.profile');
     Route::post('/admin/profile/update', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
+
+    // Coupon Yönetim Sayfası
+    Route::get('/admin/coupons', [AdminController::class, 'index'])->name('admin.coupons.index');
+    Route::get('/admin/coupons/create', [AdminController::class, 'create'])->name('admin.coupons.create');
+    Route::post('/admin/coupons', [AdminController::class, 'store'])->name('admin.coupons.store');
+    Route::get('/admin/coupons/{coupon}/edit', [AdminController::class, 'edit'])->name('admin.coupons.edit');
+    Route::put('/admin/coupons/{coupon}', [AdminController::class, 'couponupdate'])->name('admin.coupons.update');
+    Route::delete('/admin/coupons/{coupon}', [AdminController::class, 'destroy'])->name('admin.coupons.destroy');
+    Route::put('/admin/coupons/{coupon}/toggle', [AdminController::class, 'toggle'])
+        ->name('admin.coupons.toggle');
 });
 
 // ===========================
@@ -118,6 +129,20 @@ Route::middleware(['auth:seller'])->group(function () {
     // Subcategory Requests
     Route::get('/seller/subcategory-requests', [SellerController::class, 'subcategoryRequests'])->name('seller.subcategory.requests');
     Route::post('/seller/subcategory-requests', [SellerController::class, 'storeSubcategoryRequest'])->name('seller.storeSubcategoryRequest');
+
+
+
+    // Kupon CRUD
+    // Coupon Yönetim Sayfası
+    Route::get('/seller/coupons', [SellerController::class, 'index'])->name('seller.coupons.index');
+    Route::get('/seller/coupons/create', [SellerController::class, 'create'])->name('seller.coupons.create');
+    Route::post('/seller/coupons', [SellerController::class, 'store'])->name('seller.coupons.store');
+    Route::get('/seller/coupons/{coupon}/edit', [SellerController::class, 'edit'])->name('seller.coupons.edit');
+    Route::put('/seller/coupons/{coupon}', [SellerController::class, 'couponupdate'])->name('seller.coupons.update');
+    Route::delete('/seller/coupons/{coupon}', [SellerController::class, 'destroy'])->name('seller.coupons.destroy');
+    Route::put('/seller/coupons/{coupon}/toggle', [SellerController::class, 'toggle'])
+        ->name('seller.coupons.toggle');
+
 });
 
 // ===========================

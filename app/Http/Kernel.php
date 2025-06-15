@@ -18,7 +18,11 @@ class Kernel extends HttpKernel
         // 'auth.admin' => \App\Http\Middleware\RedirectIfNotAuthenticated::class,
         // 'auth.seller' => \App\Http\Middleware\RedirectIfNotAuthenticated::class,
         'auth' => \App\Http\Middleware\CustomAuthenticate::class,
-
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        'api' => [
+            \Fruitcake\Cors\HandleCors::class,
+            // ...
+        ],
     ];
 
 }

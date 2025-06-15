@@ -25,7 +25,12 @@
                     <span class="mtext">Orders</span>
                 </a>
             </li>
-
+ <li class="{{ request()->routeIs('seller.coupons.*') ? 'active' : '' }}">
+                <a href="{{ route('seller.coupons.index') }}" class="dropdown-toggle no-arrow">
+                    <span class="micon bi bi-cart"></span>
+                    <span class="mtext">coupons</span>
+                </a>
+            </li>
             <!-- Account Settings -->
             <li class="dropdown">
                 <a href="javascript:;" class="dropdown-toggle">
