@@ -27,7 +27,7 @@ class AuthController extends Controller
             'email' => $v['email'],
             'phone' => $v['phone'],
             'password' => Hash::make($v['password']),
-            'role' => 'buyer',      // ◄◄  kritik
+            'role' => 'buyer',
             'status' => 'approved',
         ]);
 
@@ -35,12 +35,12 @@ class AuthController extends Controller
     }
 
     /** 2) BUYER LOGIN */
-    // GİRİŞ
     public function login(Request $r)
     {
         $v = Validator::make($r->all(), [
             'email' => 'required|email',
             'password' => 'required',
+            'remember_me' => 'boolean' // Remember me ekledik
         ]);
 
         if ($v->fails()) {
@@ -66,27 +66,37 @@ class AuthController extends Controller
             ], 403);
         }
 
+        // Eski token'ları sil
+        $u->tokens()->delete();
+
+        // Token süresini belirle
+        $rememberMe = $r->boolean('remember_me', false);
+        $expiresAt = $rememberMe ? now()->addDays(30) : now()->addDay();
+
         // Sanctum token oluştur
-        $token = $u->createToken('api')->plainTextToken;
+        $token = $u->createToken('auth-token', ['*'], $expiresAt)->plainTextToken;
 
         /* ---------- http-only cookie ---------- */
+        $cookieMinutes = $rememberMe ? 60 * 24 * 30 : 60 * 24; // 30 gün veya 1 gün
+
         $cookie = cookie(
-            'auth_token',          // ad
-            $token,                // değer
-            60 * 24,               // dakika (1 gün)
-            '/',                   // yol
-            null,                  // domain (varsayılan)
-            true,                  // secure  (https’de true olmalı)
-            true,                  // httpOnly
-            false,                 // raw
-            'Strict'               // SameSite
+            'auth_token',
+            $token,
+            $cookieMinutes,
+            '/',
+            null,
+            true,  // secure (https'de true olmalı)
+            true,  // httpOnly
+            false, // raw
+            'Lax'  // SameSite (Lax daha uyumlu)
         );
 
-        // Kullanıcı verisini döndür, token yok!
         return response()->json([
             'success' => true,
             'token' => $token,
-            'user' => $u  // {id,fname,lname,role...}
+            'user' => $u,
+            'expires_at' => $expiresAt->toISOString(),
+            'remember_me' => $rememberMe
         ])->withCookie($cookie);
     }
 
@@ -94,6 +104,16 @@ class AuthController extends Controller
     public function logout(Request $r)
     {
         $r->user()->currentAccessToken()->delete();
-        return response()->json(['success' => true]);
+
+        // Cookie'yi temizle
+        $cookie = cookie()->forget('auth_token');
+
+        return response()->json(['success' => true])->withCookie($cookie);
+    }
+
+    /** 4) GET USER */
+    public function user(Request $r)
+    {
+        return response()->json($r->user());
     }
 }

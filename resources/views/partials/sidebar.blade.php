@@ -31,6 +31,12 @@
                     <span class="mtext">Stores</span>
                 </a>
             </li>
+             <li>
+                <a href="{{ url('/admin/orders') }}" class="dropdown-toggle no-arrow">
+                    <span class="micon bi bi-house"></span>
+                    <span class="mtext">Orders</span>
+                </a>
+            </li>
             <li>
                 <a href="{{ url('/admin/about') }}" class="dropdown-toggle no-arrow">
                     <span class="micon bi bi-house"></span>

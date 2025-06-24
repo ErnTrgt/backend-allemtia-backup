@@ -49,7 +49,10 @@ return [
             'provider' => 'users',
         ],
     ],
-
+    'api' => [
+        'driver' => 'sanctum',  // Bu satır önemli
+        'provider' => 'users',
+    ],
     /*
     |--------------------------------------------------------------------------
     | User Providers

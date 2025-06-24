@@ -74,15 +74,59 @@ class AdminController extends Controller
 
         return view('admin.users', compact('users', 'role'));
     }
-    public function orderList()
+    // AdminController.php - orders metodu güncellenmiş hali
+    public function orderList(Request $request)
     {
-        // Örnek: Sipariş modelini kullanarak tüm siparişleri çekin
-        $orders = Order::latest()->get(); // Eğer Order modeliniz yoksa oluşturun
+        // POST request ve action update_status ise
+        if ($request->isMethod('post') && $request->input('action') === 'update_status') {
+            try {
+                $request->validate([
+                    'order_id' => 'required|exists:orders,id',
+                    'status' => 'required|in:pending,waiting_payment,paid,processing,shipped,delivered,cancelled',
+                    'tracking_number' => 'nullable|string|max:255',
+                    'status_note' => 'nullable|string|max:500',
+                    'cancel_reason' => 'nullable|string|max:500'
+                ]);
+
+                $order = Order::findOrFail($request->order_id);
+
+                $updateData = [
+                    'status' => $request->status,
+                    'tracking_number' => $request->tracking_number,
+                    'status_note' => $request->status_note
+                ];
+
+                // Eğer status cancelled ise
+                if ($request->status === 'cancelled') {
+                    $updateData['cancellation_reason'] = $request->cancel_reason;
+                    $updateData['cancelled_at'] = now();
+                }
+
+                $order->update($updateData);
+
+                return redirect()->back()->with('success', 'Order status updated successfully!');
+
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Error updating order: ' . $e->getMessage());
+            }
+        }
+
+        // Normal orders listesi
+        $orders = Order::latest()->get();
+
         return view('admin.orders', compact('orders'));
     }
+    // AdminController.php - showOrder metodu
     public function showOrder($id)
     {
-        $order = Order::findOrFail($id); // Eğer Order modeliniz yoksa oluşturun
+        $order = Order::with([
+            'items.product.images',
+            'items.product.user'
+        ])->findOrFail($id);
+
+        // Debug için
+        // \Log::info('Order items:', $order->items->toArray());
+
         return view('admin.order-details', compact('order'));
     }
     //tüm ürünleri listeleme
@@ -166,6 +210,8 @@ class AdminController extends Controller
         return redirect()->route('admin.products')->with('success', 'Product updated successfully with images.');
     }
 
+
+    // Profile işlemleri
     public function showProfile()
     {
         $admin = auth()->user(); // Giriş yapmış admin bilgilerini al
@@ -292,6 +338,8 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users')->with('success', 'User updated successfully!');
     }
+    // User sayfası
+
 
     public function categoryRequests()
     {
@@ -473,7 +521,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.about.index')->with('success', 'Section status updated.');
     }
-
+    /* ABOUT KISMI */
 
     //FAQ
     public function faqList()
@@ -519,8 +567,10 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'FAQ status updated.');
     }
+    //FAQ
 
-    //Slider
+
+    //  SLIDER
     public function sliderList()
     {
         $sliders = Slider::all();
@@ -582,10 +632,10 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Slider status updated.');
     }
-
+    //  SLIDER
 
     /**
-     * Kupon listesini gösterir
+     * KUPON
      */
     public function index()
     {
@@ -659,6 +709,95 @@ class AdminController extends Controller
         $coupon->save();
         return back()->with('success', 'Status toggled');
     }
+    /**
+     * KUPON
+     */
 
+
+    //ORDER UPDATe
+
+    // App\Http\Controllers\Admin\AdminController.php
+
+    // App\Http\Controllers\Admin\AdminController.php
+
+    public function updateOrderStatus(Request $request)
+    {
+        try {
+            \Log::info('Update order status request:', $request->all()); // Debug için
+
+            $request->validate([
+                'order_id' => 'required|exists:orders,id',
+                'status' => 'required|in:pending,waiting_payment,paid,processing,shipped,delivered,cancelled',
+                'tracking_number' => 'nullable|string|max:255',
+                'status_note' => 'nullable|string|max:500',
+                'cancel_reason' => 'nullable|string|max:500'
+            ]);
+
+            $order = Order::findOrFail($request->order_id);
+
+            $updateData = [
+                'status' => $request->status,
+                'tracking_number' => $request->tracking_number,
+                'status_note' => $request->status_note
+            ];
+
+            // Eğer status cancelled ise cancel reason'ı da ekle
+            if ($request->status === 'cancelled') {
+                $updateData['cancellation_reason'] = $request->cancel_reason;
+                $updateData['cancelled_at'] = now();
+            }
+
+            $order->update($updateData);
+
+            \Log::info('Order updated successfully:', ['order_id' => $order->id, 'new_status' => $order->status]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order status updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating order status:', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating order status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    //Order İptal Etme
+    // App\Http\Controllers\Admin\AdminController.php
+
+    // AdminController.php içine ekleyin
+
+    // AdminController.php
+    // AdminController.php
+    public function deleteOrder($id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+
+            if ($order->status === 'processing' || $order->status === 'shipped') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Active orders cannot be deleted'
+                ], 400);
+            }
+
+            $order->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
 }

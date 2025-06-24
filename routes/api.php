@@ -5,6 +5,7 @@ use App\Http\Controllers\api\home\CartController;
 use App\Http\Controllers\api\home\BuyerController;
 use App\Http\Controllers\api\home\CategoryController;
 use App\Http\Controllers\Api\home\FaqController;
+use App\Http\Controllers\api\home\OrderController;
 use App\Http\Controllers\api\home\ProductController;
 use App\Http\Controllers\api\home\SellerCouponController;
 use App\Http\Controllers\Api\home\SliderController;
@@ -65,6 +66,15 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         Route::post('coupons/{coupon}/toggle-active', [SellerCouponController::class, 'toggleActive'])
             ->name('seller.coupons.toggleActive');
     });
+
+    //order
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/user', [AuthController::class, 'user']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/orders', [OrderController::class, 'store']);
+        Route::get('/user/orders', [OrderController::class, 'userOrders']);
+    });
+
 
 });
 

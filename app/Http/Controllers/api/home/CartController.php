@@ -217,6 +217,29 @@ class CartController extends Controller
 
         // *** ÖNEMLI: used_count'u burada artırma, sipariş tamamlandığında artır ***
 
+        // Her ürün için indirim hesapla
+        $productDiscounts = [];
+        $totalDiscountCheck = 0;
+
+        foreach ($applicableProducts as $product) {
+            $productTotal = $product['total'];
+            $productDiscountRatio = $productTotal / $baseForDiscount;
+            $productDiscount = $discount * $productDiscountRatio;
+
+            $productDiscounts[] = [
+                'product_id' => $product['product_id'],
+                'original_price' => $product['price'],
+                'quantity' => $product['quantity'],
+                'original_total' => $productTotal,
+                'discount_amount' => round($productDiscount, 2),
+                'discounted_price' => round($product['price'] - ($productDiscount / $product['quantity']), 2),
+                'discounted_total' => round($productTotal - $productDiscount, 2),
+                'discount_percentage' => $coupon->type === 'percent' ? $coupon->value : round(($productDiscount / $product['quantity'] / $product['price']) * 100, 1)
+            ];
+
+            $totalDiscountCheck += $productDiscount;
+        }
+
         return response()->json([
             'success' => true,
             'coupon' => [
@@ -225,14 +248,146 @@ class CartController extends Controller
                 'type' => $coupon->type,
                 'value' => $coupon->value,
                 'seller_id' => $coupon->seller_id,
+                'description' => $this->getCouponDescription($coupon),
             ],
             'discount' => round($discount, 2),
             'newTotal' => round($newTotal, 2),
             'subtotal' => round($subtotal, 2),
             'baseForDiscount' => round($baseForDiscount, 2),
             'applicableProducts' => $applicableProducts,
+            'productDiscounts' => $productDiscounts,
+            'discountSummary' => [
+                'total_items_count' => count($applicableProducts),
+                'total_discount' => round($discount, 2),
+                'average_discount_percentage' => $coupon->type === 'percent' ? $coupon->value : round(($discount / $baseForDiscount) * 100, 1)
+            ],
             'message' => 'Kupon başarıyla uygulandı.',
         ]);
+    }
+
+    private function getCouponDescription($coupon)
+    {
+        switch ($coupon->type) {
+            case 'percent':
+                return "%{$coupon->value} indirim";
+            case 'fixed':
+                return "₺{$coupon->value} indirim";
+            case 'free_shipping':
+                return "Ücretsiz kargo";
+            default:
+                return "İndirim";
+        }
+    }
+
+    // Sepet verilerini kupon bilgisi ile birleştir
+    public function getCartWithCouponInfo(Request $request)
+    {
+        $data = $request->validate([
+            'cart_items' => 'required|array',
+            'cart_items.*.product_id' => 'required|integer',
+            'cart_items.*.quantity' => 'required|integer|min:1',
+            'cart_items.*.price' => 'required|numeric|min:0',
+        ]);
+
+        $cartItems = $data['cart_items'];
+        $userId = Auth::id();
+        $sessionId = $request->session()->getId();
+        $ipAddress = $request->ip();
+        $userKey = $userId ? "user_$userId" : "session_{$sessionId}_ip_{$ipAddress}";
+
+        // Aktif kupon kontrolü
+        $activeCoupon = null;
+        $productDiscounts = [];
+
+        // Cache'den aktif kupon ara
+        $allCoupons = Coupon::where('active', true)->get();
+        foreach ($allCoupons as $coupon) {
+            $appliedCacheKey = "coupon_applied_{$coupon->id}_{$userKey}";
+            if (Cache::has($appliedCacheKey)) {
+                $activeCoupon = $coupon;
+                break;
+            }
+        }
+
+        // Ürünleri zenginleştir
+        $enrichedCartItems = [];
+        foreach ($cartItems as $item) {
+            $productId = $item['product_id'];
+            $isDiscounted = false;
+            $discountInfo = null;
+
+            // Bu ürün indirimli mi kontrol et
+            if ($activeCoupon) {
+                $appliedCacheKey = "coupon_applied_{$activeCoupon->id}_{$userKey}";
+                $appliedData = Cache::get($appliedCacheKey);
+
+                // Sepet hash'ini kontrol et
+                $currentCartHash = md5(json_encode($cartItems));
+                if ($appliedData && $appliedData['cart_hash'] === $currentCartHash) {
+                    // Bu ürün indirimli ürünler arasında mı?
+                    // Kupon mantığını tekrar çalıştır (basitleştirilmiş)
+                    $isProductApplicable = $this->isProductApplicableForCoupon($activeCoupon, $productId);
+
+                    if ($isProductApplicable) {
+                        $isDiscounted = true;
+                        $discountInfo = [
+                            'coupon_code' => $activeCoupon->code,
+                            'discount_type' => $activeCoupon->type,
+                            'discount_value' => $activeCoupon->value,
+                        ];
+                    }
+                }
+            }
+
+            $enrichedCartItems[] = [
+                'product_id' => $productId,
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'total' => $item['price'] * $item['quantity'],
+                'is_discounted' => $isDiscounted,
+                'discount_info' => $discountInfo
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'cart_items' => $enrichedCartItems,
+            'active_coupon' => $activeCoupon ? [
+                'code' => $activeCoupon->code,
+                'type' => $activeCoupon->type,
+                'value' => $activeCoupon->value,
+                'description' => $this->getCouponDescription($activeCoupon)
+            ] : null
+        ]);
+    }
+
+    private function isProductApplicableForCoupon($coupon, $productId)
+    {
+        if ($coupon->seller_id) {
+            // Satıcı kuponu
+            $pivotProductIds = $coupon->products()->pluck('products.id')->toArray();
+
+            if (empty($pivotProductIds)) {
+                // Seller'ın tüm ürünleri
+                return Product::where('user_id', $coupon->seller_id)
+                    ->where('id', $productId)
+                    ->exists();
+            } else {
+                // Belirli ürünler
+                return in_array($productId, $pivotProductIds);
+            }
+        } else {
+            // Admin kuponu
+            $pivotProductIds = $coupon->products()->pluck('products.id')->toArray();
+
+            if (empty($pivotProductIds)) {
+                // Tüm ürünler
+                return true;
+            } else {
+                // Belirli ürünler
+                return in_array($productId, $pivotProductIds);
+            }
+        }
     }
 
     private function calculateDiscount($coupon, $baseAmount)

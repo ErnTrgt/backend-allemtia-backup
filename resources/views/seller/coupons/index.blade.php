@@ -1,5 +1,5 @@
 {{-- resources/views/seller/coupons/index.blade.php --}}
-@extends('layouts.layout') {{-- veya seller panelinizin layout’u, örn. layouts.sellerLayout --}}
+@extends('seller.layout') {{-- veya seller panelinizin layout’u, örn. layouts.sellerLayout --}}
 
 @section('title', 'Seller Coupon Management')
 

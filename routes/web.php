@@ -42,13 +42,20 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
 
-    Route::get('/admin/orders', [AdminController::class, 'orderList'])->name('admin.orders');
+    //order management
+    Route::match(['GET', 'POST'], '/admin/orders', [AdminController::class, 'orderList'])->name('admin.orders');
     Route::get('/admin/orders/{id}', [AdminController::class, 'showOrder'])->name('admin.orders.show');
     Route::get('/admin/products', [AdminController::class, 'productList'])->name('admin.products');
     Route::get('/admin/product/{id}', [AdminController::class, 'details'])->name('admin.product.details');
     Route::put('/admin/product/{id}', [AdminController::class, 'update'])->name('admin.product.update');
     Route::put('/admin/product/{id}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.product.toggleStatus');
     Route::delete('/admin/product/{id}', [AdminController::class, 'delete'])->name('admin.product.delete');
+    Route::put('/orders/{order}/cancel', [AdminController::class, 'cancelOrder'])->name('admin.orders.cancel');
+    Route::get('/orders/{order}/invoice', [AdminController::class, 'invoice'])->name('admin.orders.invoice');
+    Route::delete('/orders/{order}', [AdminController::class, 'destroy'])->name('admin.orders.delete');
+    Route::put('/orders/{order}/status', [AdminController::class, 'updateStatus'])->name('admin.orders.updateStatus');
+    Route::put('/admin/orders/update', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.update');
+
 
     Route::get('/admin/seller/{id}/products', [AdminController::class, 'sellerProducts'])->name('admin.seller.products');
     Route::post('/admin/users/approve/{id}', [AdminController::class, 'approveUser'])->name('admin.users.approve');
@@ -151,5 +158,3 @@ Route::middleware(['auth:seller'])->group(function () {
 Route::get('/', function () {
     return view('welcome');
 });
-
-

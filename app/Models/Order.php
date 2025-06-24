@@ -11,9 +11,22 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'product_id',
-        'quantity',
-        'total_price',
+        'order_number',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'shipping_address',
+        'total',
+        'status',
+        'payment_method',
+        'payment_reference',
+        'selected_bank',
+        'notes'
+    ];
+
+    protected $casts = [
+        'shipping_address' => 'array',
+        'total' => 'decimal:2'
     ];
 
     // İlişkiler
@@ -25,5 +38,9 @@ class Order extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }
