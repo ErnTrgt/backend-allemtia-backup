@@ -3,6 +3,11 @@
 @section('title', 'Order Details')
 
 @section('content')
+    <!-- Base URL'i sabit olarak tanımla -->
+    @php
+        $baseUrl = rtrim(url('/'), '/');
+    @endphp
+    
     <div class="pd-ltr-20 xs-pd-20-10">
         <div class="min-height-200px">
             <!-- Page Header -->
@@ -202,14 +207,14 @@
                                     <td>
                                         <div class="product-info">
                                             @if($item->product && $item->product->images->isNotEmpty())
-                                                @if($item->product && $item->product->images->isNotEmpty())
-    @php
-        $imagePath = $item->product->images->first()->image_path;
-        echo "Image Path: " . $imagePath . "<br>";
-        echo "URL: " . url('storage/' . $imagePath) . "<br>";
-        echo "Asset: " . asset('storage/' . $imagePath) . "<br>";
-    @endphp
-@endif
+                                                @php
+                                                    $imagePath = $item->product->images->first()->image_path;
+                                                    // Absolute URL oluştur
+                                                    $imageUrl = $baseUrl . '/storage/' . $imagePath;
+                                                @endphp
+                                                <img src="{{ $imageUrl }}" 
+                                                     alt="Product Image" class="product-thumb mr-3"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                                 <div class="product-thumb-placeholder mr-3" style="display: none;">
                                                     <i class="dw dw-image"></i>
                                                 </div>
@@ -407,7 +412,7 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            border: 2px solid #fff;
+            border: 2px solid #ffffff;
             box-shadow: 0 0 0 2px #e9ecef;
         }
         
