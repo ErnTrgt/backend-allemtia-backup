@@ -42,6 +42,10 @@ class AdminController extends Controller
         $adminCount = User::where('role', 'admin')->count();
         $sellerCount = User::where('role', 'seller')->count();
         $buyerCount = User::where('role', 'buyer')->count();
+
+        // Store sayısı - eğer Store modeli yoksa seller sayısını kullan
+        $totalStores = Store::count() ?: $sellerCount;
+
         // Görünüme değişkeni aktar
         return view('admin.dashboard', compact(
             'userCount',
@@ -57,12 +61,8 @@ class AdminController extends Controller
             'totalCategories',
             'totalSubcategories',
             'categoriesWithSubcategories',
+            'totalStores'
         ));
-
-        $totalUsers = User::count();
-        $totalStores = Store::count();
-        $totalOrders = Order::count();
-        return view('admin.dashboard', compact('totalUsers', 'totalStores', 'totalOrders'));
     }
 
     public function userList(Request $request)
@@ -71,9 +71,9 @@ class AdminController extends Controller
         $role = $request->input('role'); // ?role=seller gibi bir parametre alır
         $users = $role ? User::where('role', $role)->get() : User::all();
 
-
         return view('admin.users', compact('users', 'role'));
     }
+
     // AdminController.php - orders metodu güncellenmiş hali
     public function orderList(Request $request)
     {
@@ -116,6 +116,7 @@ class AdminController extends Controller
 
         return view('admin.orders', compact('orders'));
     }
+
     // AdminController.php - showOrder metodu
     public function showOrder($id)
     {
@@ -129,6 +130,7 @@ class AdminController extends Controller
 
         return view('admin.order-details', compact('order'));
     }
+
     //tüm ürünleri listeleme
     public function productList(Request $request)
     {
@@ -148,7 +150,6 @@ class AdminController extends Controller
     //Belirli bir satıcının ürünlerini listeleme
     public function sellerProducts($id)
     {
-
         $seller = User::with('products')->where('id', $id)->whereHas('roles', function ($query) {
             $query->where('name', 'seller');
         })->firstOrFail();
@@ -163,18 +164,225 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User approved successfully.');
     }
 
+    // GÜNCELLENMIŞ STORE LIST METODU
     public function storeList()
     {
-        $stores = Store::with('user')->get();
-        return view('admin.stores', compact('stores'));
+        // Eğer ayrı bir stores tablosu varsa
+        if (\Schema::hasTable('stores')) {
+            $stores = Store::with('user')->get();
+
+            // Eğer stores boşsa, seller'ları store olarak göster
+            if ($stores->isEmpty()) {
+                $stores = User::where('role', 'seller')
+                    ->with(['products', 'products.images'])
+                    ->withCount('products')
+                    ->get();
+
+                return view('admin.stores', [
+                    'stores' => $stores,
+                    'usingSellers' => true
+                ]);
+            }
+
+            return view('admin.stores', compact('stores'));
+        }
+        // Stores tablosu yoksa direkt seller'ları kullan
+        else {
+            $stores = User::where('role', 'seller')
+                ->with(['products', 'products.images'])
+                ->withCount('products')
+                ->withCount([
+                    'orders as total_sales' => function ($query) {
+                        $query->where('status', 'delivered');
+                    }
+                ])
+                ->withSum([
+                    'orders as total_revenue' => function ($query) {
+                        $query->where('status', 'delivered');
+                    }
+                ], 'total_amount')
+                ->get();
+
+            return view('admin.stores', [
+                'stores' => $stores,
+                'usingSellers' => true
+            ]);
+        }
+    }
+
+    // Mağaza detayları görüntüleme
+    public function showStore($id)
+    {
+        // Store modeli varsa
+        if (\Schema::hasTable('stores')) {
+            $store = Store::with(['user', 'products', 'products.images'])->findOrFail($id);
+        } else {
+            // Yoksa seller olarak bul
+            $store = User::where('role', 'seller')
+                ->with(['products', 'products.images'])
+                ->withCount('products')
+                ->withCount([
+                    'orders as total_orders' => function ($query) {
+                        $query->whereHas('items.product', function ($q) {
+                            $q->where('user_id', $this->id);
+                        });
+                    }
+                ])
+                ->findOrFail($id);
+        }
+
+        // Mağaza istatistikleri
+        $stats = [
+            'total_products' => $store->products_count ?? $store->products->count(),
+            'active_products' => $store->products->where('status', 1)->count(),
+            'total_orders' => Order::whereHas('items.product', function ($query) use ($store) {
+                $query->where('user_id', $store->id);
+            })->count(),
+            'pending_orders' => Order::whereHas('items.product', function ($query) use ($store) {
+                $query->where('user_id', $store->id);
+            })->where('status', 'pending')->count(),
+            'total_revenue' => Order::whereHas('items.product', function ($query) use ($store) {
+                $query->where('user_id', $store->id);
+            })->where('status', 'delivered')->sum('total_amount'),
+            'this_month_revenue' => Order::whereHas('items.product', function ($query) use ($store) {
+                $query->where('user_id', $store->id);
+            })->where('status', 'delivered')
+                ->whereMonth('created_at', now()->month)
+                ->sum('total_amount')
+        ];
+
+        // Son siparişler
+        $recentOrders = Order::whereHas('items.product', function ($query) use ($store) {
+            $query->where('user_id', $store->id);
+        })->latest()->take(10)->get();
+
+        return view('admin.store-details', compact('store', 'stats', 'recentOrders'));
+    }
+
+    // Mağaza durumunu değiştir
+    public function toggleStoreStatus($id)
+    {
+        if (\Schema::hasTable('stores')) {
+            $store = Store::findOrFail($id);
+            $store->is_active = !$store->is_active;
+            $store->save();
+
+            // Store'un user'ını da güncelle
+            if ($store->user) {
+                $store->user->status = $store->is_active ? 'approved' : 'rejected';
+                $store->user->save();
+            }
+        } else {
+            $user = User::where('role', 'seller')->findOrFail($id);
+            $user->status = $user->status === 'approved' ? 'rejected' : 'approved';
+            $user->save();
+
+            // Mağaza kapatıldıysa ürünleri de pasif yap
+            if ($user->status === 'rejected') {
+                Product::where('user_id', $user->id)->update(['status' => 0]);
+            }
+        }
+
+        return redirect()->route('admin.stores')->with('success', 'Store status updated successfully.');
+    }
+
+    // Mağaza bilgilerini güncelle
+    public function updateStore(Request $request, $id)
+    {
+        $request->validate([
+            'store_name' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        if (\Schema::hasTable('stores')) {
+            $store = Store::findOrFail($id);
+            $store->update($request->only(['store_name', 'description', 'commission_rate']));
+
+            if ($store->user) {
+                $store->user->status = $request->status;
+                $store->user->save();
+            }
+        } else {
+            $user = User::where('role', 'seller')->findOrFail($id);
+            $user->status = $request->status;
+
+            // Eğer user'da store bilgileri tutuluyorsa
+            if ($request->filled('store_name')) {
+                $user->store_name = $request->store_name;
+            }
+            if ($request->filled('description')) {
+                $user->store_description = $request->description;
+            }
+            if ($request->filled('commission_rate')) {
+                $user->commission_rate = $request->commission_rate;
+            }
+
+            $user->save();
+        }
+
+        return redirect()->route('admin.stores')->with('success', 'Store updated successfully.');
+    }
+
+    // Mağaza sil
+    public function deleteStore($id)
+    {
+        if (\Schema::hasTable('stores')) {
+            $store = Store::findOrFail($id);
+
+            // Store'a ait ürünleri sil veya başka bir işlem yap
+            Product::where('user_id', $store->user_id)->delete();
+
+            $store->delete();
+        } else {
+            $user = User::where('role', 'seller')->findOrFail($id);
+
+            // Kullanıcıya ait ürünleri sil
+            Product::where('user_id', $user->id)->delete();
+
+            // Kullanıcıyı sil
+            $user->delete();
+        }
+
+        return redirect()->route('admin.stores')->with('success', 'Store deleted successfully.');
     }
 
     public function reports()
     {
-        $orders = Order::with('user', 'product')->get();
-        $totalRevenue = $orders->sum('total_price');
-        return view('admin.reports', compact('orders', 'totalRevenue'));
+        $orders = Order::with('user', 'items.product')->get();
+        $totalRevenue = $orders->where('status', 'delivered')->sum('total_amount');
+
+        // Aylık gelir
+        $monthlyRevenue = Order::where('status', 'delivered')
+            ->whereMonth('created_at', now()->month)
+            ->sum('total_amount');
+
+        // En çok satan ürünler
+        $topProducts = Product::withCount([
+            'orderItems as sold_count' => function ($query) {
+                $query->whereHas('order', function ($q) {
+                    $q->where('status', 'delivered');
+                });
+            }
+        ])->orderBy('sold_count', 'desc')->take(10)->get();
+
+        // En çok satan mağazalar
+        $topStores = User::where('role', 'seller')
+            ->withSum([
+                'products.orderItems as revenue' => function ($query) {
+                    $query->whereHas('order', function ($q) {
+                        $q->where('status', 'delivered');
+                    });
+                }
+            ], 'total_price')
+            ->orderBy('revenue', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('admin.reports', compact('orders', 'totalRevenue', 'monthlyRevenue', 'topProducts', 'topStores'));
     }
+
     public function details($id)
     {
         $product = Product::with(['images', 'user'])->findOrFail($id);
@@ -210,7 +418,6 @@ class AdminController extends Controller
         return redirect()->route('admin.products')->with('success', 'Product updated successfully with images.');
     }
 
-
     // Profile işlemleri
     public function showProfile()
     {
@@ -235,6 +442,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully!');
     }
+
     public function toggleStatus($id)
     {
         $product = Product::findOrFail($id);
@@ -249,6 +457,7 @@ class AdminController extends Controller
         $product->delete();
         return redirect()->route('admin.products')->with('success', 'Product deleted successfully.');
     }
+
     public function resetPassword(Request $request, $id)
     {
         $request->validate([
@@ -262,9 +471,7 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'Password updated successfully!');
     }
 
-
     // User sayfası için aşagısı
-
     public function changeUserStatus($id, $status)
     {
         $validStatuses = ['pending', 'approved', 'rejected'];
@@ -288,6 +495,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users')->with('success', 'User deleted successfully.');
     }
+
     public function storeUser(Request $request)
     {
         $request->validate([
@@ -303,17 +511,17 @@ class AdminController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'phone' => $request->phone,
+            'role' => $request->role,
             'status' => 'pending',
         ]);
+
         // Role ekle
         $role = Role::where('name', $request->role)->first();
         if ($role) {
             $user->assignRole($role);
         }
 
-
         return redirect()->route('admin.users')->with('success', 'User added successfully.');
-
     }
 
     public function updateUser(Request $request, $id)
@@ -340,7 +548,6 @@ class AdminController extends Controller
     }
     // User sayfası
 
-
     public function categoryRequests()
     {
         $requests = CategoryRequest::with('seller')->get();
@@ -360,6 +567,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.category.requests')->with('success', 'Category request updated successfully.');
     }
+
     public function subcategoryRequests()
     {
         $subcategoryRequests = SubcategoryRequest::with('seller', 'category')->get();
@@ -378,6 +586,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.subcategory-requests')->with('success', 'Subcategory request updated successfully!');
     }
+
     public function categories()
     {
         $categories = Category::with('subcategories')->get();
@@ -409,6 +618,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.categories')->with('success', 'Subcategory added successfully!');
     }
+
     public function updateCategory(Request $request, $id)
     {
         $category = Category::findOrFail($id);
@@ -430,7 +640,6 @@ class AdminController extends Controller
         return redirect()->route('admin.categories')->with('success', 'Category and subcategories updated successfully!');
     }
 
-
     public function deleteCategory($id)
     {
         $category = Category::findOrFail($id);
@@ -451,6 +660,7 @@ class AdminController extends Controller
         $section = AboutSection::findOrFail($id);
         return view('admin.about.edit', compact('section'));
     }
+
     public function updateAboutSection(Request $request, $id)
     {
         $section = AboutSection::findOrFail($id);
@@ -472,6 +682,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.about.index')->with('success', 'Section updated successfully!');
     }
+
     public function deleteAboutSection($id)
     {
         $section = AboutSection::findOrFail($id);
@@ -508,11 +719,11 @@ class AdminController extends Controller
             }
         }
 
-
         $about->save(); // KAYIT BURADA
 
         return redirect()->route('admin.about.index')->with('success', 'New section added successfully!');
     }
+
     public function toggleAboutStatus($id)
     {
         $section = AboutSection::findOrFail($id);
@@ -529,6 +740,7 @@ class AdminController extends Controller
         $faqs = Faq::all();
         return view('admin.faq.index', compact('faqs'));
     }
+
     public function storeFaq(Request $request)
     {
         $request->validate([
@@ -554,11 +766,13 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'FAQ updated successfully.');
     }
+
     public function deleteFaq($id)
     {
         Faq::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'FAQ deleted successfully.');
     }
+
     public function toggleFaqStatus($id)
     {
         $faq = Faq::findOrFail($id);
@@ -568,7 +782,6 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'FAQ status updated.');
     }
     //FAQ
-
 
     //  SLIDER
     public function sliderList()
@@ -595,6 +808,7 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Slider added successfully.');
     }
+
     public function updateSlider(Request $request, $id)
     {
         $slider = Slider::findOrFail($id);
@@ -612,6 +826,7 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Slider updated.');
     }
+
     public function deleteSlider($id)
     {
         $slider = Slider::findOrFail($id);
@@ -624,6 +839,7 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Slider deleted.');
     }
+
     public function toggleSliderStatus($id)
     {
         $slider = Slider::findOrFail($id);
@@ -713,13 +929,7 @@ class AdminController extends Controller
      * KUPON
      */
 
-
     //ORDER UPDATe
-
-    // App\Http\Controllers\Admin\AdminController.php
-
-    // App\Http\Controllers\Admin\AdminController.php
-
     public function updateOrderStatus(Request $request)
     {
         try {
@@ -767,12 +977,6 @@ class AdminController extends Controller
     }
 
     //Order İptal Etme
-    // App\Http\Controllers\Admin\AdminController.php
-
-    // AdminController.php içine ekleyin
-
-    // AdminController.php
-    // AdminController.php
     public function deleteOrder($id)
     {
         try {

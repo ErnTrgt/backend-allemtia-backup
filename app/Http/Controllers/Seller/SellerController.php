@@ -57,12 +57,81 @@ class SellerController extends Controller
         return view('seller.products', compact('products', 'categories'));
     }
 
-    public function orders()
+    // public function orders()
+    // {
+    //     // Satıcıya ait siparişler
+    //     $orders = Order::where('id', auth()->id())->get(); // seller_id yerine id
+    //     return view('seller.orders', compact('orders'));
+    // }
+
+
+
+    // SellerController.php
+    public function orders(Request $request)
     {
-        // Satıcıya ait siparişler
-        $orders = Order::where('id', auth()->id())->get(); // seller_id yerine id
+        $sellerId = auth()->id();
+
+        // Satıcının ürünlerinin bulunduğu siparişleri getir
+        $query = Order::with(['items.product.images', 'items.product.user'])
+            ->whereHas('items.product', function ($q) use ($sellerId) {
+                $q->where('user_id', $sellerId);
+            });
+
+        // Status filtreleme
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->latest()->get();
+
         return view('seller.orders', compact('orders'));
     }
+
+    // Yeni metod - Status güncelleme (sadece seller'ların yapabileceği işlemler)
+    public function updateOrderStatus(Request $request, $orderId)
+    {
+        try {
+            $order = Order::findOrFail($orderId);
+
+            // Bu siparişte satıcının ürünü var mı kontrol et
+            $hasSellerProduct = $order->items()
+                ->whereHas('product', function ($q) {
+                    $q->where('user_id', auth()->id());
+                })->exists();
+
+            if (!$hasSellerProduct) {
+                return redirect()->back()->with('error', 'Bu siparişte ürününüz bulunmuyor.');
+            }
+
+            $request->validate([
+                'status' => 'required|in:processing,shipped,delivered',
+                'seller_note' => 'nullable|string|max:500'
+            ]);
+
+            // Sadece ileri yönde güncelleme yapabilir
+            $allowedTransitions = [
+                'paid' => ['processing'],
+                'processing' => ['shipped'],
+                'shipped' => ['delivered']
+            ];
+
+            if (!in_array($request->status, $allowedTransitions[$order->status] ?? [])) {
+                return redirect()->back()->with('error', 'Geçersiz durum geçişi.');
+            }
+
+            $order->update([
+                'status' => $request->status,
+                'seller_note' => $request->seller_note
+            ]);
+
+            return redirect()->back()->with('success', 'Sipariş durumu başarıyla güncellendi.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Hata: ' . $e->getMessage());
+        }
+    }
+
+
 
     public function profile()
     {

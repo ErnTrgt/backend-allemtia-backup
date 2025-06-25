@@ -99,6 +99,15 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/profile', [AdminController::class, 'showProfile'])->name('admin.profile');
     Route::post('/admin/profile/update', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
 
+
+    // Store Management Routes
+    Route::get('/stores', [AdminController::class, 'storeList'])->name('admin.stores');
+    Route::get('/store/{id}', [AdminController::class, 'showStore'])->name('admin.store.show');
+    Route::post('/store/{id}/toggle', [AdminController::class, 'toggleStoreStatus'])->name('admin.store.toggle');
+    Route::put('/store/{id}', [AdminController::class, 'updateStore'])->name('admin.store.update');
+    Route::delete('/store/{id}', [AdminController::class, 'deleteStore'])->name('admin.store.delete');
+
+
     // Coupon Yönetim Sayfası
     Route::get('/admin/coupons', [AdminController::class, 'index'])->name('admin.coupons.index');
     Route::get('/admin/coupons/create', [AdminController::class, 'create'])->name('admin.coupons.create');
@@ -137,7 +146,8 @@ Route::middleware(['auth:seller'])->group(function () {
     Route::get('/seller/subcategory-requests', [SellerController::class, 'subcategoryRequests'])->name('seller.subcategory.requests');
     Route::post('/seller/subcategory-requests', [SellerController::class, 'storeSubcategoryRequest'])->name('seller.storeSubcategoryRequest');
 
-
+    // routes/web.php - Seller routes kısmına
+    Route::put('/seller/orders/{order}/status', [SellerController::class, 'updateOrderStatus'])->name('seller.orders.updateStatus');
 
     // Kupon CRUD
     // Coupon Yönetim Sayfası
