@@ -17,7 +17,7 @@ class VendorController extends Controller
                     'vendorId' => $vendor->id,
                     'vendor' => $vendor->name,
                     'email' => $vendor->email,
-                    'vendorImg' => $vendor->profile_photo ?? 'default.jpg',
+                    'vendorImg' => $vendor->avatar ?? 'default.jpg',
                     'vendorBanner' => $vendor->banner_image ?? 'default-banner.jpg',
                     'verified' => $vendor->approved == 1,
                     'averageRating' => $vendor->rating ?? 4.2,

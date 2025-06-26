@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Validator;
+use Log;
+use Storage;
 class SellerController extends Controller
 {
     public function dashboard()
@@ -168,8 +170,49 @@ class SellerController extends Controller
 
         return back()->with('success', 'Profile updated successfully.');
     }
+    public function uploadAvatar(Request $request)
+    {
+        try {
+            Log::info('Avatar upload request received', ['files' => $request->allFiles()]);
 
+            $request->validate([
+                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
 
+            $user = auth()->user();
+
+            // Eski avatarı sil
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Yeni avatarı yükle
+            if ($request->hasFile('avatar')) {
+                $file = $request->file('avatar');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('avatars', $filename, 'public');
+
+                $user->avatar = $path;
+                $user->save();
+
+                Log::info('Avatar uploaded successfully', ['path' => $path]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile photo updated successfully',
+                'avatar_url' => asset('storage/' . $user->avatar)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Avatar upload error', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading avatar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     public function changePassword()
     {
         return view('seller.change-password');

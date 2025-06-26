@@ -26,49 +26,76 @@
                 <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 mb-30">
                     <div class="pd-20 card-box height-100-p">
                         <div class="profile-photo">
-                            <a href="modal" data-toggle="modal" data-target="#modal" class="edit-avatar">
+                            <a href="javascript:;" data-toggle="modal" data-target="#avatarModal" class="edit-avatar">
                                 <i class="fa fa-pencil"></i>
                             </a>
-                            <img src="/admin/vendors/images/photo1.jpg" alt="" class="avatar-photo" />
-                            <div class="modal fade" id="modal" tabindex="-1" role="dialog"
+                            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('admin/vendors/images/photo1.jpg') }}" 
+                                 alt="Profile Photo" 
+                                 class="avatar-photo"
+                                 id="currentAvatar" />
+                            
+                            <!-- Avatar Upload Modal -->
+                            <div class="modal fade" id="avatarModal" tabindex="-1" role="dialog"
                                 aria-labelledby="modalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered" role="document">
                                     <div class="modal-content">
-                                        <div class="modal-body pd-5">
-                                            <div class="img-container">
-                                                <img id="image" src="vendors/images/photo2.jpg" alt="Picture" />
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Update Profile Photo</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="text-center mb-3">
+                                                <img id="avatarPreview" 
+                                                     src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('admin/vendors/images/photo1.jpg') }}" 
+                                                     alt="Preview" 
+                                                     style="max-width: 200px; max-height: 200px; border-radius: 50%;" />
                                             </div>
+                                            <form id="avatarUploadForm" enctype="multipart/form-data">
+                                                @csrf
+                                                <div class="custom-file">
+                                                    <input type="file" 
+                                                           class="custom-file-input" 
+                                                           id="avatarInput" 
+                                                           name="avatar" 
+                                                           accept="image/*" 
+                                                           required>
+                                                    <label class="custom-file-label" for="avatarInput">Choose file</label>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Allowed formats: JPG, JPEG, PNG, GIF. Max size: 2MB</small>
+                                                </div>
+                                            </form>
                                         </div>
                                         <div class="modal-footer">
-                                            <input type="submit" value="Update" class="btn btn-primary" />
-                                            <button type="button" class="btn btn-default"
-                                                data-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" onclick="uploadAvatar()">Upload Photo</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <h5 class="text-center h5 mb-0">{{ auth()->user()->name }}</h5>
-                        <p class="text-center text-muted font-14">Lorem ipsum dolor sit amet</p>
+                        <p class="text-center text-muted font-14">
+                            {{ auth()->user()->store_name ?? 'Seller Account' }}
+                        </p>
                         <div class="profile-info">
                             <h5 class="mb-20 h5 text-blue">Contact Information</h5>
                             <ul>
                                 <li><span>Email Address:</span> {{ auth()->user()->email }}</li>
-                                <li><span>Phone Number:</span> {{ auth()->user()->phone }}</li>
-                                <li><span>Country:</span> {{ auth()->user()->country }}</li>
-
+                                <li><span>Phone Number:</span> {{ auth()->user()->phone ?? 'Not provided' }}</li>
+                                <li><span>Country:</span> {{ auth()->user()->country ?? 'Not provided' }}</li>
                                 <li>
                                     <span>Şehir:</span>
-                                    {{ auth()->user()->state }}
+                                    {{ auth()->user()->state ?? 'Not provided' }}
                                 </li>
                                 <li>
                                     <span>Address:</span>
-                                    {{ auth()->user()->address }}
+                                    {{ auth()->user()->address ?? 'Not provided' }}
                                 </li>
                             </ul>
                         </div>
-
-
                     </div>
                 </div>
                 <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 mb-30">
@@ -130,7 +157,7 @@
                                                         <h5>Open Tasks (4 Left)</h5>
                                                     </div>
                                                     <div class="col-md-4 col-sm-12 text-right">
-                                                        <a href="task-add" data-toggle="modal" data-target="#task-add"
+                                                        <a href="javascript:;" data-toggle="modal" data-target="#task-add"
                                                             class="bg-light-blue btn text-blue weight-500"><i
                                                                 class="ion-plus-round"></i> Add</a>
                                                     </div>
@@ -355,64 +382,6 @@
                                                                                 </div>
                                                                             </form>
                                                                         </li>
-                                                                        <li>
-                                                                            <a href="javascript:;" class="remove-task"
-                                                                                data-toggle="tooltip"
-                                                                                data-placement="bottom" title=""
-                                                                                data-original-title="Remove Task"><i
-                                                                                    class="ion-minus-circled"></i></a>
-                                                                            <form>
-                                                                                <div class="form-group row">
-                                                                                    <label class="col-md-4">Task
-                                                                                        Type</label>
-                                                                                    <div class="col-md-8">
-                                                                                        <input type="text"
-                                                                                            class="form-control" />
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="form-group row">
-                                                                                    <label class="col-md-4">Task
-                                                                                        Message</label>
-                                                                                    <div class="col-md-8">
-                                                                                        <textarea class="form-control"></textarea>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="form-group row">
-                                                                                    <label class="col-md-4">Assigned
-                                                                                        to</label>
-                                                                                    <div class="col-md-8">
-                                                                                        <select
-                                                                                            class="selectpicker form-control"
-                                                                                            data-style="btn-outline-primary"
-                                                                                            title="Not Chosen"
-                                                                                            multiple=""
-                                                                                            data-selected-text-format="count"
-                                                                                            data-count-selected-text="{0} people selected">
-                                                                                            <option>Ferdinand M.</option>
-                                                                                            <option>Don H. Rabon</option>
-                                                                                            <option>Ann P. Harris</option>
-                                                                                            <option>
-                                                                                                Katie D. Verdin
-                                                                                            </option>
-                                                                                            <option>
-                                                                                                Christopher S. Fulghum
-                                                                                            </option>
-                                                                                            <option>
-                                                                                                Matthew C. Porter
-                                                                                            </option>
-                                                                                        </select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="form-group row mb-0">
-                                                                                    <label class="col-md-4">Due
-                                                                                        Date</label>
-                                                                                    <div class="col-md-8">
-                                                                                        <input type="text"
-                                                                                            class="form-control date-picker" />
-                                                                                    </div>
-                                                                                </div>
-                                                                            </form>
-                                                                        </li>
                                                                     </ul>
                                                                 </div>
                                                                 <div class="add-more-task">
@@ -510,39 +479,142 @@
     </div>
 @endsection
 
-
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    window.addEventListener("DOMContentLoaded", function() {
-        var image = document.getElementById("image");
-        var cropBoxData;
-        var canvasData;
-        var cropper;
-
-        $("#modal")
-            .on("shown.bs.modal", function() {
-                cropper = new Cropper(image, {
-                    autoCropArea: 0.5,
-                    dragMode: "move",
-                    aspectRatio: 3 / 3,
-                    restore: false,
-                    guides: false,
-                    center: false,
-                    highlight: false,
-                    cropBoxMovable: false,
-                    cropBoxResizable: false,
-                    toggleDragModeOnDblclick: false,
-                    ready: function() {
-                        cropper.setCropBoxData(cropBoxData).setCanvasData(canvasData);
-                    },
+// Avatar upload function
+function uploadAvatar() {
+    console.log('Upload function called');
+    
+    const fileInput = document.getElementById('avatarInput');
+    if (!fileInput.files.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No file selected',
+            text: 'Please select an image file'
+        });
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    
+    // Check file size
+    if (file.size > 2 * 1024 * 1024) {
+        Swal.fire({
+            icon: 'error',
+            title: 'File too large',
+            text: 'Please select an image smaller than 2MB'
+        });
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('_token', '{{ csrf_token() }}');
+    
+    // Disable button and show loading
+    const uploadBtn = document.querySelector('.modal-footer .btn-primary');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm mr-2"></span>Uploading...';
+    
+    // jQuery AJAX
+    $.ajax({
+        url: '{{ route("seller.avatar.upload") }}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            console.log('Success:', response);
+            
+            if (response.success) {
+                // Update current avatar
+                document.getElementById('currentAvatar').src = response.avatar_url;
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: response.message || 'Profile photo updated successfully',
+                    timer: 2000,
+                    showConfirmButton: false
                 });
-            })
-            .on("hidden.bs.modal", function() {
-                cropBoxData = cropper.getCropBoxData();
-                canvasData = cropper.getCanvasData();
-                cropper.destroy();
+                
+                // Close modal
+                $('#avatarModal').modal('hide');
+                
+                // Reset form
+                document.getElementById('avatarUploadForm').reset();
+                document.querySelector('.custom-file-label').textContent = 'Choose file';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: response.message || 'Upload failed'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', xhr.responseText);
+            
+            let errorMessage = 'An error occurred';
+            
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.message) {
+                    errorMessage = response.message;
+                } else if (response.errors) {
+                    errorMessage = Object.values(response.errors).flat().join(', ');
+                }
+            } catch (e) {
+                errorMessage = 'Server error: ' + error;
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Upload Failed!',
+                text: errorMessage
             });
+        },
+        complete: function() {
+            // Re-enable button
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = 'Upload Photo';
+        }
     });
+}
+
+// Document ready
+$(document).ready(function() {
+    console.log('jQuery loaded');
+    
+    // File input change event
+    $('#avatarInput').on('change', function(e) {
+        console.log('File selected');
+        const file = e.target.files[0];
+        if (file) {
+            // Update file label
+            $(this).next('.custom-file-label').html(file.name);
+            
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#avatarPreview').attr('src', e.target.result);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Reset preview when modal is closed
+    $('#avatarModal').on('hidden.bs.modal', function() {
+        $('#avatarUploadForm')[0].reset();
+        $('.custom-file-label').html('Choose file');
+        $('#avatarPreview').attr('src', $('#currentAvatar').attr('src'));
+    });
+});
 </script>
+@endpush
+
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NXZMQSS" height="0" width="0"
         style="display: none; visibility: hidden"></iframe></noscript>

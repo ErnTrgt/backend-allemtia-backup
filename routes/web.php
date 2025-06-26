@@ -137,6 +137,7 @@ Route::middleware(['auth:seller'])->group(function () {
     Route::post('/seller/profile/update', [SellerController::class, 'updateProfile'])->name('seller.profile.update');
     Route::get('/seller/password-change', [SellerController::class, 'changePassword'])->name('seller.password.change');
     Route::post('/seller/password-update', [SellerController::class, 'updatePassword'])->name('seller.password.update');
+    Route::post('/seller/upload-avatar', [SellerController::class, 'uploadAvatar'])->name('seller.avatar.upload');
 
     // Category Requests
     Route::get('/seller/category-requests', [SellerController::class, 'categoryRequests'])->name('seller.category.requests');
