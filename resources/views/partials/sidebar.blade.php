@@ -44,6 +44,12 @@
                         <span class="mtext">Abouts</span>
                     </a>
                 </li>
+                  <li class="{{ Request::is('admin/blogs*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/blogs') }}" class="dropdown-toggle no-arrow">
+                        <span class="micon bi bi-info-circle"></span>
+                        <span class="mtext">Blog</span>
+                    </a>
+                </li>
                 <li class="{{ Request::is('admin/faqs*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/faqs') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-question-circle"></span>

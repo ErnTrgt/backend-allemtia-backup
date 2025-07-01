@@ -42,6 +42,15 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
 
+    // Blog yönetimi - name() kullanmadan
+    Route::get('/admin/blogs', [AdminController::class, 'blogindex'])->name('admin.blogs.index');
+    Route::get('/admin/blogs/create', [AdminController::class, 'blogcreate'])->name('admin.blogs.create');
+    Route::post('/admin/blogs', [AdminController::class, 'blogstore'])->name('admin.blogs.store');
+    Route::get('/admin/blogs/{blog}/edit', [AdminController::class, 'blogedit'])->name('admin.blogs.edit');
+    Route::put('/admin/blogs/{blog}', [AdminController::class, 'blogupdate'])->name('admin.blogs.update');
+    Route::delete('/admin/blogs/{blog}', [AdminController::class, 'blogdestroy'])->name('admin.blogs.destroy');
+    Route::post('/admin/blogs/change-status', [AdminController::class, 'changeStatus'])->name('admin.blogs.change-status');
+
     //order management
     Route::match(['GET', 'POST'], '/admin/orders', [AdminController::class, 'orderList'])->name('admin.orders');
     Route::get('/admin/orders/{id}', [AdminController::class, 'showOrder'])->name('admin.orders.show');

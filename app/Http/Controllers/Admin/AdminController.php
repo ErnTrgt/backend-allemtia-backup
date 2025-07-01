@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Blog;
 use App\Models\Category;
 use App\Models\CategoryRequest;
 use App\Models\Coupon;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use App\Models\AboutSection;
+use Storage;
 
 class AdminController extends Controller
 {
@@ -1003,5 +1005,160 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Blog listesi
+     */
+    public function blogindex()
+    {
+        if (request()->ajax()) {
+            $blogs = Blog::latest();
+
+            return DataTables::of($blogs)
+                ->addIndexColumn()
+                ->addColumn('image', function ($blog) {
+                    if ($blog->blog_img) {
+                        $url = asset('storage/' . $blog->blog_img);
+                        return '<img src="' . $url . '" width="80" height="60" style="object-fit: cover;">';
+                    }
+                    return '<span class="text-muted">No image</span>';
+                })
+                ->addColumn('status', function ($blog) {
+                    $checked = $blog->status ? 'checked' : '';
+                    return '<div class="form-check form-switch">
+                        <input class="form-check-input change-status" type="checkbox" 
+                            data-id="' . $blog->id . '" ' . $checked . '>
+                    </div>';
+                })
+                ->addColumn('action', function ($blog) {
+                    return '
+                        <div class="btn-group" role="group">
+                            <a href="' . route('admin.blogs.edit', $blog->id) . '" 
+                                class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger delete-blog" 
+                                data-id="' . $blog->id . '">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    ';
+                })
+                ->editColumn('date', function ($blog) {
+                    return $blog->date->format('d.m.Y');
+                })
+                ->rawColumns(['image', 'status', 'action'])
+                ->make(true);
+        }
+
+        return view('admin.blogs.index');
+    }
+
+    /**
+     * Yeni blog formu
+     */
+    public function blogcreate()
+    {
+        return view('admin.blogs.create');
+    }
+
+    /**
+     * Yeni blog kaydet
+     */
+    public function blogstore(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'content' => 'required|string',
+            'author' => 'required|string|max:255',
+            'date' => 'required|date',
+            'blog_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+        ]);
+
+        $data = $request->all();
+
+        // Görsel yükleme
+        if ($request->hasFile('blog_img')) {
+            $imagePath = $request->file('blog_img')->store('blogs', 'public');
+            $data['blog_img'] = $imagePath;
+        }
+
+        Blog::create($data);
+
+        return redirect()->route('admin.blogs.index')
+            ->with('success', 'Blog başarıyla eklendi.');
+    }
+
+    /**
+     * Blog düzenleme formu
+     */
+    public function blogedit(Blog $blog)
+    {
+        return view('admin.blogs.edit', compact('blog'));
+    }
+
+    /**
+     * Blog güncelle
+     */
+    public function blogupdate(Request $request, Blog $blog)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'content' => 'required|string',
+            'author' => 'required|string|max:255',
+            'date' => 'required|date',
+            'blog_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+        ]);
+
+        $data = $request->all();
+
+        // Görsel yükleme
+        if ($request->hasFile('blog_img')) {
+            // Eski görseli sil
+            if ($blog->blog_img) {
+                Storage::disk('public')->delete($blog->blog_img);
+            }
+
+            $imagePath = $request->file('blog_img')->store('blogs', 'public');
+            $data['blog_img'] = $imagePath;
+        }
+
+        $blog->update($data);
+
+        return redirect()->route('admin.blogs.index')
+            ->with('success', 'Blog başarıyla güncellendi.');
+    }
+
+    /**
+     * Blog sil
+     */
+    public function blogdestroy(Blog $blog)
+    {
+        // Görseli sil
+        if ($blog->blog_img) {
+            Storage::disk('public')->delete($blog->blog_img);
+        }
+
+        $blog->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Blog durumunu değiştir
+     */
+    public function changeStatus(Request $request)
+    {
+        $blog = Blog::find($request->id);
+        $blog->status = $request->status;
+        $blog->save();
+
+        return response()->json(['success' => true]);
+    }
+
+
+
 
 }

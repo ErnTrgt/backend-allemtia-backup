@@ -24,7 +24,9 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
     Route::get('/faqs', [FaqController::class, 'index']);
     Route::get('/sliders', [SliderController::class, 'index']);
 
-    Route::get('blogs', [BlogController::class, 'index'])->name('blogs'); // Bloglar için endpoint
+    Route::get('blogs', [BlogController::class, 'index']);
+    Route::get('blogs/{id}', [BlogController::class, 'show']);
+
     Route::get('categories', [CategoryController::class, 'index'])->name('categories');
 
     Route::post('/register-vendor', [VendorRegisterController::class, 'store']);
