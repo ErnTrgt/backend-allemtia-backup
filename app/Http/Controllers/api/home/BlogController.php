@@ -35,12 +35,32 @@ class BlogController extends Controller
     /**
      * Tek blog detayı (API)
      */
-    public function show($id)
+
+    public function showBlog($id)
     {
-        $blog = Blog::where('status', true)->findOrFail($id);
+        $blog = Blog::where('status', 1)->find($id);
+
+        if (!$blog) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Blog bulunamadı'
+            ], 404);
+        }
 
         return response()->json([
-            'data' => $blog->toApiArray()
+            'success' => true,
+            'data' => [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'content' => $blog->content,
+                'blog_img' => $blog->blog_img,
+                'date' => $blog->date->format('d.m.Y'),
+                'author' => $blog->author,
+                'description' => $blog->description,
+                'tags' => $blog->tags
+            ]
         ]);
     }
+
+
 }

@@ -25,7 +25,7 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
     Route::get('/sliders', [SliderController::class, 'index']);
 
     Route::get('blogs', [BlogController::class, 'index']);
-    Route::get('blogs/{id}', [BlogController::class, 'show']);
+    Route::get('blogs/{id}', [BlogController::class, 'showBlog']);
 
     Route::get('categories', [CategoryController::class, 'index'])->name('categories');
 

@@ -1151,11 +1151,20 @@ class AdminController extends Controller
      */
     public function changeStatus(Request $request)
     {
-        $blog = Blog::find($request->id);
-        $blog->status = $request->status;
-        $blog->save();
+        try {
+            $blog = Blog::find($request->id);
+            if ($blog) {
+                $blog->status = $request->status;
+                $blog->save();
 
-        return response()->json(['success' => true]);
+                return redirect()->back()->with('success', 'Blog durumu başarıyla güncellendi.');
+            }
+
+            return redirect()->back()->with('error', 'Blog bulunamadı.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'İşlem sırasında bir hata oluştu.');
+        }
     }
 
 
