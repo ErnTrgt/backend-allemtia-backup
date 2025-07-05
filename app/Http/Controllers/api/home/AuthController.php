@@ -97,7 +97,9 @@ class AuthController extends Controller
             'user' => $u,
             'expires_at' => $expiresAt->toISOString(),
             'remember_me' => $rememberMe
-        ])->withCookie($cookie);
+        ])->withCookie(
+                $cookie
+            )->cookie('authToken', $token, 60 * 24, null, null, true, true);
     }
 
     /** 3) LOGOUT */

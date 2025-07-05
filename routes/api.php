@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\home\BlogController;
 use App\Http\Controllers\api\home\AboutController;
 use App\Http\Controllers\api\home\AuthController;
+use App\Http\Controllers\api\home\GoogleAuthController;
 
 Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
     Route::get('products', [ProductController::class, 'index'])->name('products');
@@ -40,6 +41,11 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+        // Google OAuth rotaları
+        Route::get('/google', [GoogleAuthController::class, 'redirectToGoogle']);
+        Route::get('/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+
     });
 
 

@@ -32,7 +32,8 @@ class User extends Authenticatable
         'country',
         'state',
         'postal_code',
-
+        'google_id',
+        'avatar',
     ];
 
     /**
