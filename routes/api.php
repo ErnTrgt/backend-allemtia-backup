@@ -16,6 +16,9 @@ use App\Http\Controllers\api\home\BlogController;
 use App\Http\Controllers\api\home\AboutController;
 use App\Http\Controllers\api\home\AuthController;
 use App\Http\Controllers\api\home\GoogleAuthController;
+use App\Http\Controllers\api\home\UserCartController;
+use App\Http\Controllers\api\home\UserWishlistController;
+use App\Http\Controllers\api\home\UserCompareController;
 
 Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
     Route::get('products', [ProductController::class, 'index'])->name('products');
@@ -45,7 +48,6 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         // Google OAuth rotaları
         Route::get('/google', [GoogleAuthController::class, 'redirectToGoogle']);
         Route::get('/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
-
     });
 
 
@@ -54,6 +56,36 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         Route::put('/buyer/profile', [BuyerController::class, 'update']);
         Route::put('/buyer/password', [BuyerController::class, 'changePassword']);
 
+        // Sepet rotaları
+        Route::prefix('user/cart')->group(function () {
+            Route::get('/', [UserCartController::class, 'index']);
+            Route::post('/', [UserCartController::class, 'store']);
+            Route::put('/{id}', [UserCartController::class, 'update']);
+            Route::delete('/{id}', [UserCartController::class, 'destroy']);
+            Route::delete('/', [UserCartController::class, 'clear']);
+            Route::get('/count', [UserCartController::class, 'count']);
+            Route::post('/bulk', [UserCartController::class, 'bulkUpdate']);
+        });
+
+        // Favoriler rotaları
+        Route::prefix('user/wishlist')->group(function () {
+            Route::get('/', [UserWishlistController::class, 'index']);
+            Route::post('/', [UserWishlistController::class, 'store']);
+            Route::delete('/{id}', [UserWishlistController::class, 'destroy']);
+            Route::delete('/', [UserWishlistController::class, 'clear']);
+            Route::get('/count', [UserWishlistController::class, 'count']);
+            Route::post('/bulk', [UserWishlistController::class, 'bulkUpdate']);
+        });
+
+        // Karşılaştırma rotaları
+        Route::prefix('user/compare')->group(function () {
+            Route::get('/', [UserCompareController::class, 'index']);
+            Route::post('/', [UserCompareController::class, 'store']);
+            Route::delete('/{id}', [UserCompareController::class, 'destroy']);
+            Route::delete('/', [UserCompareController::class, 'clear']);
+            Route::get('/count', [UserCompareController::class, 'count']);
+            Route::post('/bulk', [UserCompareController::class, 'bulkUpdate']);
+        });
     });
 
 
@@ -61,14 +93,14 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
 
 
 
-    // “/api/admin/coupons” altında super-admin CRUD
+    // "/api/admin/coupons" altında super-admin CRUD
     Route::middleware(['auth:sanctum', 'can:viewAny,App\Models\Coupon'])->prefix('admin')->group(function () {
         Route::apiResource('coupons', AdminCouponController::class);
         Route::post('coupons/{coupon}/toggle-active', [AdminCouponController::class, 'toggleActive'])
             ->name('coupons.toggleActive');
     });
 
-    // “/api/seller/coupons” altında saatıcının kendi kuponları
+    // "/api/seller/coupons" altında saatıcının kendi kuponları
     Route::middleware(['auth:sanctum', 'can:viewAny,App\Models\Coupon'])->prefix('seller')->group(function () {
         Route::apiResource('coupons', SellerCouponController::class);
         Route::post('coupons/{coupon}/toggle-active', [SellerCouponController::class, 'toggleActive'])
