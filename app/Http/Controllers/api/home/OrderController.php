@@ -53,10 +53,18 @@ class OrderController extends Controller
 
             Log::info('Final User ID:', ['user_id' => $userId]);
 
+            // Order numarası için kontrol ekle
+            // Eğer EFT ödemesi ve referans kodu varsa onu kullan, yoksa standart ORD-timestamp kullan
+            $orderNumber = 'ORD-' . time();
+            if ($validated['payment_method'] === 'eft' && !empty($validated['payment_reference'])) {
+                $orderNumber = $validated['payment_reference'];
+                Log::info('Using payment reference as order number:', ['reference' => $orderNumber]);
+            }
+
             // Order oluştur
             $order = Order::create([
                 'user_id' => $userId,
-                'order_number' => 'ORD-' . time(),
+                'order_number' => $orderNumber,
                 'customer_name' => $validated['customer_name'],
                 'customer_email' => $validated['customer_email'],
                 'customer_phone' => $validated['customer_phone'],
