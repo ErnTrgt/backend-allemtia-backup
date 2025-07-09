@@ -54,6 +54,7 @@ Route::middleware(['auth:admin'])->group(function () {
     //order management
     Route::match(['GET', 'POST'], '/admin/orders', [AdminController::class, 'orderList'])->name('admin.orders');
     Route::get('/admin/orders/{id}', [AdminController::class, 'showOrder'])->name('admin.orders.show');
+    Route::post('/admin/orders/{order}/items/{item}/cancel', [AdminController::class, 'cancelOrderItem'])->name('admin.orders.cancel_item');
     Route::get('/admin/products', [AdminController::class, 'productList'])->name('admin.products');
     Route::get('/admin/product/{id}', [AdminController::class, 'details'])->name('admin.product.details');
     Route::put('/admin/product/{id}', [AdminController::class, 'update'])->name('admin.product.update');
@@ -158,6 +159,7 @@ Route::middleware(['auth:seller'])->group(function () {
 
     // routes/web.php - Seller routes kısmına
     Route::put('/seller/orders/{order}/status', [SellerController::class, 'updateOrderStatus'])->name('seller.orders.updateStatus');
+    Route::post('/seller/orders/{order}/cancel-item/{item}', [SellerController::class, 'cancelOrderItem'])->name('seller.orders.cancel_item');
 
     // Kupon CRUD
     // Coupon Yönetim Sayfası

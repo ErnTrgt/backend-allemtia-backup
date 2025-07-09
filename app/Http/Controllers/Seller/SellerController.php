@@ -449,4 +449,75 @@ class SellerController extends Controller
         return back()->with('success', 'Toggled');
     }
 
+    /**
+     * Satıcının kendi ürününü iptal etmesi için metod
+     */
+    public function cancelOrderItem(Request $request, $orderId, $itemId)
+    {
+        try {
+            $request->validate([
+                'cancel_reason' => 'required|string|max:500',
+                'return_to_stock' => 'nullable|boolean'
+            ]);
+
+            $order = Order::findOrFail($orderId);
+            $orderItem = $order->items()->findOrFail($itemId);
+
+            // Bu ürün satıcıya ait mi kontrol et
+            if ($orderItem->product && $orderItem->product->user_id !== auth()->id()) {
+                return redirect()->back()->with('error', 'Bu ürün size ait değil.');
+            }
+
+            // Ürün zaten iptal edilmiş mi kontrol et
+            if ($orderItem->is_cancelled) {
+                return redirect()->back()->with('error', 'Bu ürün zaten iptal edilmiş.');
+            }
+
+            // Sipariş iptale uygun mu kontrol et
+            if (in_array($order->status, ['delivered', 'cancelled'])) {
+                return redirect()->back()->with('error', 'Bu sipariş durumunda ürün iptali yapılamaz.');
+            }
+
+            // Ürünü iptal et
+            $orderItem->update([
+                'is_cancelled' => true,
+                'cancel_reason' => $request->cancel_reason,
+                'cancelled_at' => now()
+            ]);
+
+            // Stok iade işlemi
+            if ($request->has('return_to_stock') && $request->return_to_stock) {
+                if ($orderItem->product) {
+                    $orderItem->product->increment('stock', $orderItem->quantity);
+                }
+            }
+
+            // Siparişin tüm ürünleri iptal edilmiş mi kontrol et
+            $allItemsCancelled = $order->items()->where('is_cancelled', false)->count() === 0;
+
+            // Tüm ürünler iptal edilmişse, siparişi tamamen iptal et
+            if ($allItemsCancelled) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'cancellation_reason' => 'Tüm ürünler satıcılar tarafından iptal edildi',
+                    'cancelled_at' => now()
+                ]);
+            }
+            // Kısmi iptal
+            else {
+                $order->update([
+                    'is_partially_cancelled' => true
+                ]);
+            }
+
+            // Toplam tutarı güncelle
+            $totals = $order->updateTotalAmount();
+            \Log::info('Seller: Order totals after cancellation', $totals);
+
+            return redirect()->back()->with('success', 'Ürün başarıyla iptal edildi.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ürün iptal edilirken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
 }

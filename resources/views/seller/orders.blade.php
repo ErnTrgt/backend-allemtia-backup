@@ -347,6 +347,7 @@
                                                     <th>Price</th>
                                                     <th>Qty</th>
                                                     <th>Total</th>
+                                                    <th>Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -371,6 +372,64 @@
                                                     <td>₺{{ number_format($item->price, 2) }}</td>
                                                     <td><span class="quantity-badge">{{ $item->quantity }}</span></td>
                                                     <td><strong>₺{{ number_format($item->subtotal, 2) }}</strong></td>
+                                                    <td>
+                                                        @if($item->is_cancelled)
+                                                            <span class="badge badge-danger">İptal Edildi</span>
+                                                            <br>
+                                                            <small>{{ $item->cancelled_at ? \Carbon\Carbon::parse($item->cancelled_at)->format('d.m.Y H:i') : 'N/A' }}</small>
+                                                        @else
+                                                            <span class="badge badge-success">Aktif</span>
+                                                            @if(!in_array($order->status, ['delivered', 'cancelled']))
+                                                            <div class="mt-2">
+                                                                <button 
+                                                                    class="btn btn-sm btn-outline-danger" 
+                                                                    data-toggle="modal" 
+                                                                    data-target="#cancelItemModal{{ $item->id }}">
+                                                                    <i class="dw dw-cancel"></i> İptal Et
+                                                                </button>
+                                                            </div>
+                                                            
+                                                            <!-- Item Cancel Modal -->
+                                                            <div class="modal fade" id="cancelItemModal{{ $item->id }}" tabindex="-1" role="dialog" aria-labelledby="cancelItemModalLabel{{ $item->id }}" aria-hidden="true">
+                                                                <div class="modal-dialog modal-dialog-centered">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title" id="cancelItemModalLabel{{ $item->id }}">Ürün İptal Onayı</h5>
+                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <form action="{{ route('seller.orders.cancel_item', ['order' => $order->id, 'item' => $item->id]) }}" method="POST">
+                                                                            @csrf
+                                                                            <div class="modal-body">
+                                                                                <p class="mb-3 text-danger">Bu ürünü iptal etmek istediğinize emin misiniz?</p>
+                                                                                <div class="item-info mb-3">
+                                                                                    <p><strong>Ürün:</strong> {{ $item->product_name }}</p>
+                                                                                    <p><strong>Fiyat:</strong> ₺{{ number_format($item->price, 2) }}</p>
+                                                                                    <p><strong>Miktar:</strong> {{ $item->quantity }}</p>
+                                                                                    <p><strong>Toplam:</strong> ₺{{ number_format($item->subtotal, 2) }}</p>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label for="cancelReason{{ $item->id }}">İptal Nedeni</label>
+                                                                                    <textarea name="cancel_reason" id="cancelReason{{ $item->id }}" class="form-control" rows="3" required placeholder="İptal nedenini belirtin..."></textarea>
+                                                                                </div>
+                                                                                <div class="form-check">
+                                                                                    <input type="checkbox" class="form-check-input" id="returnStockCheck{{ $item->id }}" name="return_to_stock" value="1" checked>
+                                                                                    <label class="form-check-label" for="returnStockCheck{{ $item->id }}">Stoka geri ekle</label>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
+                                                                                <button type="submit" class="btn btn-danger">Ürünü İptal Et</button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Item Cancel Modal -->
+                                                            @endif
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                                 @endforeach
                                             </tbody>
@@ -379,6 +438,21 @@
                                                     <td colspan="4" class="text-right"><strong>My Total Earnings:</strong></td>
                                                     <td><strong class="text-success h6">₺{{ number_format($sellerTotal, 2) }}</strong></td>
                                                 </tr>
+                                                @php
+                                                    $cancelledItems = $sellerItems->where('is_cancelled', true);
+                                                    $cancelledTotal = $cancelledItems->sum('subtotal');
+                                                @endphp
+                                                
+                                                @if($cancelledItems->count() > 0)
+                                                <tr>
+                                                    <td colspan="4" class="text-right text-danger"><strong>İptal Edilen Ürünler:</strong></td>
+                                                    <td><strong class="text-danger">-₺{{ number_format($cancelledTotal, 2) }}</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4" class="text-right text-success"><strong>Güncel Kazanç:</strong></td>
+                                                    <td><strong class="text-success h6">₺{{ number_format($sellerTotal - $cancelledTotal, 2) }}</strong></td>
+                                                </tr>
+                                                @endif
                                             </tfoot>
                                         </table>
                                     </div>

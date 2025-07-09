@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\home;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -77,8 +78,20 @@ class OrderController extends Controller
                 'notes' => $validated['notes'] ?? null
             ]);
 
-            // Order items oluştur
+            // Order items oluştur ve stok kontrolü
             foreach ($validated['items'] as $item) {
+                // Ürün stok kontrolü
+                $product = Product::find($item['product_id']);
+
+                if (!$product) {
+                    throw new \Exception("Ürün bulunamadı: " . $item['product_name']);
+                }
+
+                if ($product->stock < $item['quantity']) {
+                    throw new \Exception("Stok yetersiz: " . $item['product_name'] . " (Mevcut: " . $product->stock . ", İstenen: " . $item['quantity'] . ")");
+                }
+
+                // OrderItem oluştur
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
@@ -88,6 +101,10 @@ class OrderController extends Controller
                     'size' => $item['size'] ?? null,
                     'subtotal' => $item['price'] * $item['quantity']
                 ]);
+
+                // Stok güncelle
+                $product->stock -= $item['quantity'];
+                $product->save();
             }
 
             DB::commit();
@@ -110,7 +127,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Sipariş oluşturulurken bir hata oluştu',
+                'message' => 'Sipariş oluşturulurken bir hata oluştu: ' . $e->getMessage(),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -118,12 +135,19 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
+        // Sipariş sahibi veya admin kontrolü
+        if (Auth::id() !== $order->user_id && Auth::user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bu siparişi görüntüleme yetkiniz yok'
+            ], 403);
+        }
+
         return response()->json([
             'success' => true,
             'order' => $order->load('items')
         ]);
     }
-    // app/Http/Controllers/api/home/OrderController.php
 
     public function userOrders(Request $request)
     {
@@ -170,5 +194,114 @@ class OrderController extends Controller
         }
     }
 
+    // Sipariş içindeki tek bir ürün için iptal
+    public function cancelOrderItem(Request $request, Order $order, $itemId)
+    {
+        try {
+            // Debug için log ekle
+            \Log::info('Cancel Order Item Request', [
+                'order_id' => $order->id,
+                'item_id' => $itemId,
+                'user_id' => Auth::id(),
+                'request_data' => $request->all()
+            ]);
 
+            // Sipariş sahibi kontrolü
+            if (Auth::id() !== $order->user_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bu siparişi iptal etme yetkiniz yok'
+                ], 403);
+            }
+
+            // Sipariş durumu kontrolü
+            if (in_array($order->status, ['delivered', 'cancelled'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bu siparişteki ürünler artık iptal edilemez. Siparişiniz teslim edilmiş veya tamamen iptal edilmiş durumda.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Ürünü bul
+            $item = OrderItem::where('order_id', $order->id)
+                ->where('id', $itemId)
+                ->first();
+
+            if (!$item) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Belirtilen ürün bu siparişte bulunamadı'
+                ], 404);
+            }
+
+            if ($item->is_cancelled) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bu ürün zaten iptal edilmiş'
+                ], 400);
+            }
+
+            // İptal nedeni
+            $reason = $request->input('cancel_reason') ?: $request->input('reason');
+            if (!$reason) {
+                $reason = "Müşteri tarafından iptal edildi";
+            }
+
+            // Ürün iptal et
+            $result = $order->cancelItem($itemId, $reason);
+
+            if (!$result) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ürün iptal edilemedi'
+                ], 400);
+            }
+
+            // Tüm ürünler iptal edilmiş mi kontrol et
+            $allCancelled = $order->items()->where('is_cancelled', false)->count() === 0;
+
+            if ($allCancelled) {
+                $order->status = 'cancelled';
+                $order->cancellation_reason = 'Tüm ürünler iptal edildi';
+                $order->cancelled_at = now();
+                $order->is_partially_cancelled = false; // Tamamen iptal edildiği için kısmi iptal bayrağını kaldır
+            } else {
+                // Status'u değiştirmeden sadece flag'i set et
+                $order->is_partially_cancelled = true;
+            }
+
+            // Toplam tutarı güncelle
+            $totals = $order->updateTotalAmount();
+            \Log::info('Order totals after cancellation', $totals);
+
+            $order->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ürün başarıyla iptal edildi',
+                'order' => $order->fresh()->load('items')
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('Order item cancellation error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'order_id' => $order->id,
+                'item_id' => $itemId
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ürün iptal edilirken bir hata oluştu: ' . $e->getMessage(),
+                'error_details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

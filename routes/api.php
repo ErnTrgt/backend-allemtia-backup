@@ -113,6 +113,9 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/orders', [OrderController::class, 'store']);
         Route::get('/user/orders', [OrderController::class, 'userOrders']);
+
+        // Sipariş içindeki tek bir ürün iptal etme
+        Route::post('/orders/{order}/cancel-item/{itemId}', [OrderController::class, 'cancelOrderItem']);
     });
 
 

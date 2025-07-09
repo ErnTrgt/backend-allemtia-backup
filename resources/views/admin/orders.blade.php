@@ -34,6 +34,7 @@
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'processing']) }}">Processing</a>
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'shipped']) }}">Shipped</a>
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'delivered']) }}">Delivered</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['is_partially_cancelled' => '1']) }}">Partially Cancelled</a>
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'cancelled']) }}">Cancelled</a>
                             </div>
                         </div>
@@ -80,17 +81,22 @@
                                                 @case('cancelled') badge-danger @break
                                                 @default badge-secondary
                                             @endswitch
+                                            @if($order->is_partially_cancelled) badge-warning @endif
                                         ">
-                                            @switch($order->status)
-                                                @case('pending') Beklemede @break
-                                                @case('waiting_payment') Ödeme Bekleniyor @break
-                                                @case('paid') Ödendi @break
-                                                @case('processing') Hazırlanıyor @break
-                                                @case('shipped') Kargoda @break
-                                                @case('delivered') Teslim Edildi @break
-                                                @case('cancelled') İptal Edildi @break
-                                                @default {{ ucfirst($order->status) }}
-                                            @endswitch
+                                            @if($order->is_partially_cancelled)
+                                                Kısmen İptal
+                                            @else
+                                                @switch($order->status)
+                                                    @case('pending') Beklemede @break
+                                                    @case('waiting_payment') Ödeme Bekleniyor @break
+                                                    @case('paid') Ödendi @break
+                                                    @case('processing') Hazırlanıyor @break
+                                                    @case('shipped') Kargoda @break
+                                                    @case('delivered') Teslim Edildi @break
+                                                    @case('cancelled') İptal Edildi @break
+                                                    @default {{ ucfirst($order->status) }}
+                                                @endswitch
+                                            @endif
                                         </span>
                                     </td>
                                     <td>
