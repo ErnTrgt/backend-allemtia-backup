@@ -61,7 +61,9 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::put('/admin/product/{id}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.product.toggleStatus');
     Route::delete('/admin/product/{id}', [AdminController::class, 'delete'])->name('admin.product.delete');
     Route::put('/orders/{order}/cancel', [AdminController::class, 'cancelOrder'])->name('admin.orders.cancel');
-    Route::get('/orders/{order}/invoice', [AdminController::class, 'invoice'])->name('admin.orders.invoice');
+    Route::get('/admin/orders/{order}/invoice', [AdminController::class, 'invoice'])->name('admin.orders.invoice');
+
+    //Route::get('/orders/{order}/invoice', [AdminController::class, 'invoice'])->name('admin.orders.invoice');
     Route::delete('/orders/{order}', [AdminController::class, 'destroy'])->name('admin.orders.delete');
     Route::put('/orders/{order}/status', [AdminController::class, 'updateStatus'])->name('admin.orders.updateStatus');
     Route::put('/admin/orders/update', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.update');
@@ -141,6 +143,7 @@ Route::middleware(['auth:seller'])->group(function () {
     Route::put('/seller/products/{id}/toggle-status', [SellerController::class, 'toggleStatus'])->name('seller.products.toggleStatus');
 
     Route::get('/seller/orders', [SellerController::class, 'orders'])->name('seller.orders');
+    Route::get('/seller/orders/{order}/print-items', [SellerController::class, 'printOrderItems'])->name('orders.print');
 
     // Seller Profile & Settings
     Route::get('/seller/profile', [SellerController::class, 'profile'])->name('seller.profile');

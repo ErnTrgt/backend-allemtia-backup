@@ -21,6 +21,7 @@ use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use App\Models\AboutSection;
 use Storage;
+use PDF; // PDF kütüphanesi için
 
 class AdminController extends Controller
 {
@@ -1072,9 +1073,11 @@ class AdminController extends Controller
                     'is_partially_cancelled' => true
                 ]);
             }
+
             // Toplam tutarı güncelle
             $totals = $order->updateTotalAmount();
             \Log::info('Admin: Order totals after cancellation', $totals);
+
             return redirect()->back()->with('success', 'Ürün başarıyla iptal edildi.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ürün iptal edilirken bir hata oluştu: ' . $e->getMessage());
@@ -1242,7 +1245,80 @@ class AdminController extends Controller
         }
     }
 
+    /**
+     * Sipariş faturasını PDF olarak oluşturur ve görüntüler
+     * 
+     * @param int $order Sipariş ID
+     * @return \Illuminate\Http\Response
+     */
+    public function invoice($order)
+    {
+        try {
+            // Sipariş bilgilerini al
+            $order = Order::with([
+                'items.product.images',
+                'items.product.user'
+            ])->findOrFail($order);
 
+            // İptal edilen ürünlerin toplamını hesapla
+            $cancelledTotal = $order->items->where('is_cancelled', true)->sum('subtotal');
+            // Güncel toplam tutarı hesapla
+            $currentTotal = $order->total - $cancelledTotal;
+
+            // Sipariş notlarını hazırla
+            $orderNotes = [
+                'customer_note' => $order->notes,
+                'status_note' => $order->status_note,
+                'cancellation_reason' => $order->cancellation_reason,
+                'seller_note' => $order->seller_note
+            ];
+
+            // Takip bilgilerini hazırla
+            $trackingInfo = null;
+            if ($order->tracking_number) {
+                $trackingInfo = [
+                    'number' => $order->tracking_number,
+                    'status' => $order->status
+                ];
+            }
+
+            // PDF oluştur
+            $pdf = PDF::loadView('admin.invoice', compact('order', 'cancelledTotal', 'currentTotal', 'orderNotes', 'trackingInfo'));
+
+            // PDF ayarlarını yapılandır
+            $pdf->setPaper('a4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'defaultFont' => 'DejaVu Sans',
+                'dpi' => 150,
+                'isPhpEnabled' => true,
+                'isJavascriptEnabled' => true,
+                'chroot' => public_path(),
+            ]);
+
+            // Header ve footer için inline HTML kullanımı
+            $header = view('admin.invoice-header')->render();
+            $footer = view('admin.invoice-footer', compact('order', 'trackingInfo'))->render();
+
+            // Header ve footer'ı PDF'e ekle
+            $pdf->setOption('header-html', $header);
+            $pdf->setOption('footer-html', $footer);
+            $pdf->setOption('margin-top', 30);
+            $pdf->setOption('margin-bottom', 25);
+            $pdf->setOption('margin-left', 15);
+            $pdf->setOption('margin-right', 15);
+            $pdf->setOption('encoding', 'UTF-8');
+
+            // PDF'i görüntüle
+            return $pdf->stream("Fatura-{$order->order_number}.pdf");
+
+        } catch (\Exception $e) {
+            \Log::error('Fatura oluşturma hatası:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Fatura oluşturulurken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
 
 
 }

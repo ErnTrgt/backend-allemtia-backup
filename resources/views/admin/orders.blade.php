@@ -63,12 +63,40 @@
                         </thead>
                         <tbody>
                             @foreach ($orders as $order)
+                                @php
+                                    // İptal edilen ürünlerin toplamını hesapla
+                                    $cancelledTotal = $order->items->where('is_cancelled', true)->sum('subtotal');
+                                    // Güncel toplam tutarı hesapla
+                                    $currentTotal = $order->total - $cancelledTotal;
+                                    // İptal edilmiş ürün var mı?
+                                    $hasCancelledItems = $order->items->where('is_cancelled', true)->count() > 0;
+                                    // Tüm ürünler iptal edilmiş mi?
+                                    $allItemsCancelled = $hasCancelledItems && $order->items->count() === $order->items->where('is_cancelled', true)->count();
+                                @endphp
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $order->order_number }}</td>
+                                    <td>
+                                        {{ $order->order_number }}
+                                        @if($hasCancelledItems)
+                                            @if($allItemsCancelled)
+                                                <span class="badge badge-danger badge-sm">İptal Edildi</span>
+                                            @else
+                                                <span class="badge badge-danger badge-sm">Kısmi İptal</span>
+                                            @endif
+                                        @endif
+                                    </td>
                                     <td>{{ $order->customer_name }}</td>
                                     <td>{{ $order->customer_email }}</td>
-                                    <td>₺{{ number_format($order->total, 2) }}</td>
+                                    <td>
+                                        @if($hasCancelledItems)
+                                            <div class="d-flex flex-column">
+                                                <del class="text-muted">₺{{ number_format($order->total, 2) }}</del>
+                                                <strong class="text-success">₺{{ number_format($currentTotal, 2) }}</strong>
+                                            </div>
+                                        @else
+                                            <strong>₺{{ number_format($order->total, 2) }}</strong>
+                                        @endif
+                                    </td>
                                     <td>
                                         <span class="badge 
                                             @switch($order->status)
@@ -81,9 +109,12 @@
                                                 @case('cancelled') badge-danger @break
                                                 @default badge-secondary
                                             @endswitch
-                                            @if($order->is_partially_cancelled) badge-warning @endif
+                                            @if(($order->is_partially_cancelled || $hasCancelledItems) && !$allItemsCancelled) badge-warning @endif
+                                            @if($allItemsCancelled) badge-danger @endif
                                         ">
-                                            @if($order->is_partially_cancelled)
+                                            @if($order->status === 'cancelled' || $allItemsCancelled)
+                                                İptal Edildi
+                                            @elseif($order->is_partially_cancelled || ($hasCancelledItems && !$allItemsCancelled))
                                                 Kısmen İptal
                                             @else
                                                 @switch($order->status)
@@ -93,7 +124,6 @@
                                                     @case('processing') Hazırlanıyor @break
                                                     @case('shipped') Kargoda @break
                                                     @case('delivered') Teslim Edildi @break
-                                                    @case('cancelled') İptal Edildi @break
                                                     @default {{ ucfirst($order->status) }}
                                                 @endswitch
                                             @endif
@@ -206,7 +236,19 @@
                                                                 </p>
                                                             </div>
                                                             <div class="col-md-4">
+                                                                @if($hasCancelledItems)
+                                                                <p>
+                                                                    <strong>Total:</strong> 
+                                                                    <del class="text-muted">₺{{ number_format($order->total, 2) }}</del>
+                                                                    <span class="text-success">₺{{ number_format($currentTotal, 2) }}</span>
+                                                                </p>
+                                                                <p>
+                                                                    <strong>Cancelled:</strong> 
+                                                                    <span class="text-danger">₺{{ number_format($cancelledTotal, 2) }}</span>
+                                                                </p>
+                                                                @else
                                                                 <p><strong>Total:</strong> ₺{{ number_format($order->total, 2) }}</p>
+                                                                @endif
                                                                 <p><strong>Date:</strong> {{ $order->created_at->format('d M Y H:i') }}</p>
                                                             </div>
                                                         </div>

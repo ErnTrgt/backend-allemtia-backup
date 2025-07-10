@@ -94,6 +94,17 @@
                                         $sellerItems = $order->items->where('product.user_id', auth()->id());
                                         $sellerTotal = $sellerItems->sum('subtotal');
                                         $sellerQuantity = $sellerItems->sum('quantity');
+                                        
+                                        // İptal edilen ürünlerin toplam ve adet bilgilerini hesapla
+                                        $cancelledItems = $sellerItems->where('is_cancelled', true);
+                                        $cancelledTotal = $cancelledItems->sum('subtotal');
+                                        $cancelledQuantity = $cancelledItems->sum('quantity');
+                                        
+                                        // Güncel kazanç hesapla
+                                        $currentEarning = $sellerTotal - $cancelledTotal;
+                                        
+                                        // Satıcının tüm ürünleri iptal edilmiş mi?
+                                        $allSellerItemsCancelled = $cancelledItems->count() > 0 && $sellerItems->count() === $cancelledItems->count();
                                     @endphp
                                     
                                     @if($sellerItems->count() > 0)
@@ -103,6 +114,13 @@
                                             <div>
                                                 <strong class="text-primary">#{{ $order->order_number }}</strong>
                                                 <br><small class="text-muted">{{ $sellerQuantity }} items</small>
+                                                @if($cancelledItems->count() > 0)
+                                                    @if($allSellerItemsCancelled)
+                                                        <span class="badge badge-danger">Tamamen İptal</span>
+                                                    @else
+                                                        <span class="badge badge-danger">{{ $cancelledItems->count() }} iptal</span>
+                                                    @endif
+                                                @endif
                                             </div>
                                         </td>
                                         <td>
@@ -119,7 +137,9 @@
                                                             <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}" 
                                                                  alt="Product" class="product-thumb-mini mr-2">
                                                         @endif
-                                                        <span class="text-truncate">{{ Str::limit($item->product_name, 20) }}</span>
+                                                        <span class="text-truncate {{ $item->is_cancelled ? 'text-muted text-decoration-line-through' : '' }}">
+                                                            {{ Str::limit($item->product_name, 20) }}
+                                                        </span>
                                                     </div>
                                                 @endforeach
                                                 @if($sellerItems->count() > 2)
@@ -128,12 +148,29 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <strong class="text-success h6">₺{{ number_format($sellerTotal, 2) }}</strong>
+                                            @if($cancelledItems->count() > 0)
+                                                <div>
+                                                    <del class="text-muted">₺{{ number_format($sellerTotal, 2) }}</del>
+                                                </div>
+                                                <strong class="text-success h6">₺{{ number_format($currentEarning, 2) }}</strong>
+                                            @else
+                                                <strong class="text-success h6">₺{{ number_format($sellerTotal, 2) }}</strong>
+                                            @endif
                                         </td>
                                         <td>
-                                            <span class="status-badge status-{{ $order->status }}">
-                                                {{ ucfirst($order->status) }}
-                                            </span>
+                                            @if($order->status === 'cancelled' || $allSellerItemsCancelled)
+                                                <span class="status-badge status-cancelled">
+                                                    İptal Edildi
+                                                </span>
+                                            @elseif($order->is_partially_cancelled || ($cancelledItems->count() > 0 && !$allSellerItemsCancelled))
+                                                <span class="status-badge status-warning">
+                                                    Kısmen İptal
+                                                </span>
+                                            @else
+                                                <span class="status-badge status-{{ $order->status }}">
+                                                    {{ ucfirst($order->status) }}
+                                                </span>
+                                            @endif
                                         </td>
                                         <td>
                                             <small>{{ $order->created_at->format('d M Y') }}</small>
@@ -177,6 +214,17 @@
                         $sellerItems = $order->items->where('product.user_id', auth()->id());
                         $sellerTotal = $sellerItems->sum('subtotal');
                         $sellerQuantity = $sellerItems->sum('quantity');
+                        
+                        // İptal edilen ürünlerin toplam ve adet bilgilerini hesapla
+                        $cancelledItems = $sellerItems->where('is_cancelled', true);
+                        $cancelledTotal = $cancelledItems->sum('subtotal');
+                        $cancelledQuantity = $cancelledItems->sum('quantity');
+                        
+                        // Güncel kazanç hesapla
+                        $currentEarning = $sellerTotal - $cancelledTotal;
+                        
+                        // Satıcının tüm ürünleri iptal edilmiş mi?
+                        $allSellerItemsCancelled = $cancelledItems->count() > 0 && $sellerItems->count() === $cancelledItems->count();
                     @endphp
                     
                     @if($sellerItems->count() > 0)
@@ -188,9 +236,19 @@
                                     <h6 class="text-primary mb-1">#{{ $order->order_number }}</h6>
                                     <small class="text-muted">{{ $order->created_at->format('d M Y H:i') }}</small>
                                 </div>
-                                <span class="status-badge status-{{ $order->status }}">
-                                    {{ ucfirst($order->status) }}
-                                </span>
+                                @if($order->status === 'cancelled' || $allSellerItemsCancelled)
+                                    <span class="status-badge status-cancelled">
+                                        İptal Edildi
+                                    </span>
+                                @elseif($order->is_partially_cancelled || ($cancelledItems->count() > 0 && !$allSellerItemsCancelled))
+                                    <span class="status-badge status-warning">
+                                        Kısmen İptal
+                                    </span>
+                                @else
+                                    <span class="status-badge status-{{ $order->status }}">
+                                        {{ ucfirst($order->status) }}
+                                    </span>
+                                @endif
                             </div>
 
                             <!-- Customer Info -->
@@ -208,17 +266,31 @@
                             <div class="products-section mb-3">
                                 <div class="d-flex align-items-center mb-2">
                                     <i class="dw dw-box text-muted mr-2"></i>
-                                    <span class="font-weight-bold">My Products ({{ $sellerQuantity }} items)</span>
+                                    <span class="font-weight-bold">
+                                        My Products ({{ $sellerQuantity }} items)
+                                        @if($cancelledItems->count() > 0)
+                                            @if($allSellerItemsCancelled)
+                                                <span class="badge badge-danger ml-1">Tamamen İptal</span>
+                                            @else
+                                                <span class="badge badge-danger ml-1">{{ $cancelledItems->count() }} iptal</span>
+                                            @endif
+                                        @endif
+                                    </span>
                                 </div>
                                 <div class="products-mobile-list">
                                     @foreach($sellerItems->take(3) as $item)
-                                        <div class="product-mobile-item">
+                                        <div class="product-mobile-item {{ $item->is_cancelled ? 'bg-light' : '' }}">
                                             @if($item->product && $item->product->images->isNotEmpty())
                                                 <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}" 
                                                      alt="Product" class="product-thumb-mobile">
                                             @endif
                                             <div class="product-mobile-info">
-                                                <div class="product-mobile-name">{{ $item->product_name }}</div>
+                                                <div class="product-mobile-name {{ $item->is_cancelled ? 'text-muted text-decoration-line-through' : '' }}">
+                                                    {{ $item->product_name }}
+                                                    @if($item->is_cancelled)
+                                                        <span class="badge badge-danger ml-1">İptal</span>
+                                                    @endif
+                                                </div>
                                                 <div class="product-mobile-details">
                                                     Qty: {{ $item->quantity }} × ₺{{ number_format($item->price, 2) }}
                                                 </div>
@@ -237,7 +309,14 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="earnings-mobile">
                                     <small class="text-muted">My Earnings</small>
-                                    <div class="h5 text-success mb-0">₺{{ number_format($sellerTotal, 2) }}</div>
+                                    @if($cancelledItems->count() > 0)
+                                        <div>
+                                            <del class="text-muted">₺{{ number_format($sellerTotal, 2) }}</del>
+                                        </div>
+                                        <div class="h5 text-success mb-0">₺{{ number_format($currentEarning, 2) }}</div>
+                                    @else
+                                        <div class="h5 text-success mb-0">₺{{ number_format($sellerTotal, 2) }}</div>
+                                    @endif
                                 </div>
                                 <div class="mobile-actions">
                                     <button class="btn btn-sm btn-outline-primary mr-1" data-toggle="modal" data-target="#viewOrderModal{{ $order->id }}">
@@ -546,6 +625,7 @@
         .status-shipped { background-color: #cce7ff; color: #004085; }
         .status-delivered { background-color: #d4edda; color: #155724; }
         .status-cancelled { background-color: #f8d7da; color: #721c24; }
+        .status-warning { background-color: #fff3cd; color: #856404; } /* Kısmen iptal için eklendi */
 
         /* Product Thumbnails */
         .product-thumb-mini {
