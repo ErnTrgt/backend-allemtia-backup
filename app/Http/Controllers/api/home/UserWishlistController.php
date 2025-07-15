@@ -70,7 +70,36 @@ class UserWishlistController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
-        $wishlistItem = Wishlist::where('user_id', $user->id)->findOrFail($id);
+
+        // Log ekleyelim
+        \Log::info('Wishlist silme isteği', [
+            'user_id' => $user->id,
+            'id_param' => $id
+        ]);
+
+        // Önce wishlist item ID olarak deneyelim
+        $wishlistItem = Wishlist::where('user_id', $user->id)->find($id);
+
+        // Eğer bulunamadıysa, product_id olarak deneyelim
+        if (!$wishlistItem) {
+            \Log::info('Wishlist item bulunamadı, product_id olarak deneniyor');
+            $wishlistItem = Wishlist::where('user_id', $user->id)
+                ->where('product_id', $id)
+                ->first();
+        }
+
+        if (!$wishlistItem) {
+            \Log::error('Wishlist item bulunamadı');
+            return response()->json([
+                'success' => false,
+                'message' => 'Ürün favorilerinizde bulunamadı.'
+            ], 404);
+        }
+
+        \Log::info('Wishlist item bulundu, siliniyor', [
+            'wishlist_id' => $wishlistItem->id,
+            'product_id' => $wishlistItem->product_id
+        ]);
 
         $wishlistItem->delete();
 

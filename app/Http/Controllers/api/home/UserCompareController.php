@@ -70,7 +70,36 @@ class UserCompareController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
-        $compareItem = Compare::where('user_id', $user->id)->findOrFail($id);
+
+        // Log ekleyelim
+        \Log::info('Compare silme isteği', [
+            'user_id' => $user->id,
+            'id_param' => $id
+        ]);
+
+        // Önce compare item ID olarak deneyelim
+        $compareItem = Compare::where('user_id', $user->id)->find($id);
+
+        // Eğer bulunamadıysa, product_id olarak deneyelim
+        if (!$compareItem) {
+            \Log::info('Compare item bulunamadı, product_id olarak deneniyor');
+            $compareItem = Compare::where('user_id', $user->id)
+                ->where('product_id', $id)
+                ->first();
+        }
+
+        if (!$compareItem) {
+            \Log::error('Compare item bulunamadı');
+            return response()->json([
+                'success' => false,
+                'message' => 'Ürün karşılaştırma listenizde bulunamadı.'
+            ], 404);
+        }
+
+        \Log::info('Compare item bulundu, siliniyor', [
+            'compare_id' => $compareItem->id,
+            'product_id' => $compareItem->product_id
+        ]);
 
         $compareItem->delete();
 

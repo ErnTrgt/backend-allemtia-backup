@@ -34,6 +34,8 @@ class User extends Authenticatable
         'postal_code',
         'google_id',
         'avatar',
+        'created_at',
+        'bank_account',
     ];
 
     /**
