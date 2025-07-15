@@ -128,9 +128,20 @@ class AdminController extends Controller
             $query->where('is_partially_cancelled', (bool) $request->is_partially_cancelled);
         }
 
+        // Satıcı filtresi
+        if ($request->has('seller_id')) {
+            $sellerId = $request->seller_id;
+            $query->whereHas('items.product', function ($q) use ($sellerId) {
+                $q->where('user_id', $sellerId);
+            });
+        }
+
         $orders = $query->latest()->get();
 
-        return view('admin.orders', compact('orders'));
+        // Tüm satıcıları al
+        $sellers = User::where('role', 'seller')->get();
+
+        return view('admin.orders', compact('orders', 'sellers'));
     }
 
     // AdminController.php - showOrder metodu
@@ -1316,6 +1327,93 @@ class AdminController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Fatura oluşturma hatası:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Fatura oluşturulurken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Belirli bir satıcıya ait sipariş ürünlerinin faturasını PDF olarak oluşturur
+     * 
+     * @param int $orderId Sipariş ID
+     * @param int $sellerId Satıcı ID
+     * @return \Illuminate\Http\Response
+     */
+    public function sellerInvoice($orderId, $sellerId)
+    {
+        try {
+            // Siparişi ve satıcıya ait ürünleri getir
+            $order = Order::with(['items.product.images', 'items.product.user'])
+                ->whereHas('items.product', function ($q) use ($sellerId) {
+                    $q->where('user_id', $sellerId);
+                })
+                ->findOrFail($orderId);
+
+            // Satıcıyı bul
+            $seller = User::where('role', 'seller')->findOrFail($sellerId);
+
+            // Sadece bu satıcıya ait ürünleri filtrele
+            $sellerItems = $order->items->filter(function ($item) use ($sellerId) {
+                return $item->product && $item->product->user_id == $sellerId;
+            });
+
+            // İptal edilen ürünlerin toplamını hesapla
+            $cancelledTotal = $sellerItems->where('is_cancelled', true)->sum('subtotal');
+
+            // Güncel toplam tutarı hesapla
+            $sellerTotal = $sellerItems->sum('subtotal');
+            $currentTotal = $sellerTotal - $cancelledTotal;
+
+            // Sipariş notlarını hazırla
+            $orderNotes = [
+                'customer_note' => $order->notes,
+                'status_note' => $order->status_note,
+                'cancellation_reason' => $order->cancellation_reason,
+                'seller_note' => $order->seller_note
+            ];
+
+            // Takip bilgilerini hazırla
+            $trackingInfo = null;
+            if ($order->tracking_number) {
+                $trackingInfo = [
+                    'number' => $order->tracking_number,
+                    'status' => $order->status
+                ];
+            }
+
+            // PDF oluştur - satıcı faturası şablonunu kullan
+            $pdf = PDF::loadView('admin.seller-invoice', compact('order', 'seller', 'sellerItems', 'cancelledTotal', 'currentTotal', 'sellerTotal', 'orderNotes', 'trackingInfo'));
+
+            // PDF ayarlarını yapılandır
+            $pdf->setPaper('a4', 'portrait');
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'defaultFont' => 'DejaVu Sans',
+                'dpi' => 150,
+                'isPhpEnabled' => true,
+                'isJavascriptEnabled' => true,
+                'chroot' => public_path(),
+            ]);
+
+            // Header ve footer için inline HTML kullanımı
+            $header = view('admin.invoice-header')->render();
+            $footer = view('admin.invoice-footer', compact('order', 'trackingInfo'))->render();
+
+            // Header ve footer'ı PDF'e ekle
+            $pdf->setOption('header-html', $header);
+            $pdf->setOption('footer-html', $footer);
+            $pdf->setOption('margin-top', 30);
+            $pdf->setOption('margin-bottom', 25);
+            $pdf->setOption('margin-left', 15);
+            $pdf->setOption('margin-right', 15);
+            $pdf->setOption('encoding', 'UTF-8');
+
+            // PDF'i görüntüle
+            return $pdf->stream("Fatura-{$order->order_number}-{$seller->name}.pdf");
+
+        } catch (\Exception $e) {
+            \Log::error('Satıcı faturası oluşturma hatası:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Fatura oluşturulurken bir hata oluştu: ' . $e->getMessage());
         }
     }

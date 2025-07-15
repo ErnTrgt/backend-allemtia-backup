@@ -67,6 +67,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::delete('/orders/{order}', [AdminController::class, 'destroy'])->name('admin.orders.delete');
     Route::put('/orders/{order}/status', [AdminController::class, 'updateStatus'])->name('admin.orders.updateStatus');
     Route::put('/admin/orders/update', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.update');
+    Route::get('/admin/orders/{order}/seller/{seller}/invoice', [AdminController::class, 'sellerInvoice'])->name('admin.orders.seller.invoice');
 
 
     Route::get('/admin/seller/{id}/products', [AdminController::class, 'sellerProducts'])->name('admin.seller.products');
@@ -144,6 +145,10 @@ Route::middleware(['auth:seller'])->group(function () {
 
     Route::get('/seller/orders', [SellerController::class, 'orders'])->name('seller.orders');
     Route::get('/seller/orders/{order}/print-items', [SellerController::class, 'printOrderItems'])->name('orders.print');
+
+    // Sepette unutulan ürünler için mail gönderme
+    Route::post('/seller/abandoned-cart/send-emails', [SellerController::class, 'sendAbandonedCartEmails'])->name('abandoned-cart.send-emails');
+
 
     // Seller Profile & Settings
     Route::get('/seller/profile', [SellerController::class, 'profile'])->name('seller.profile');

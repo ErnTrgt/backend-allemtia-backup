@@ -22,7 +22,7 @@
                         </nav>
                     </div>
                     <div class="col-md-6 col-sm-12 text-right">
-                        <div class="dropdown">
+                        <div class="dropdown d-inline-block mr-2">
                             <a class="btn btn-primary dropdown-toggle" href="#" role="button" data-toggle="dropdown">
                                 Filter By Status
                             </a>
@@ -36,6 +36,20 @@
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'delivered']) }}">Delivered</a>
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['is_partially_cancelled' => '1']) }}">Partially Cancelled</a>
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'cancelled']) }}">Cancelled</a>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown d-inline-block">
+                            <a class="btn btn-success dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                                Filter By Seller
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="{{ route('admin.orders') }}">All Sellers</a>
+                                @foreach($sellers as $seller)
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['seller_id' => $seller->id]) }}">
+                                    {{ $seller->name }}
+                                </a>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -57,6 +71,7 @@
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Payment Method</th>
+                                <th>Sellers</th>
                                 <th>Date</th>
                                 <th class="datatable-nosort">Action</th>
                             </tr>
@@ -72,6 +87,11 @@
                                     $hasCancelledItems = $order->items->where('is_cancelled', true)->count() > 0;
                                     // Tüm ürünler iptal edilmiş mi?
                                     $allItemsCancelled = $hasCancelledItems && $order->items->count() === $order->items->where('is_cancelled', true)->count();
+                                    
+                                    // Siparişteki satıcıları al
+                                    $orderSellers = $order->items->map(function($item) {
+                                        return $item->product->user ?? null;
+                                    })->filter()->unique('id');
                                 @endphp
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
@@ -135,6 +155,17 @@
                                             @case('cash_on_delivery') Kapıda Nakit @break
                                             @default {{ ucfirst($order->payment_method) }}
                                         @endswitch
+                                    </td>
+                                    <td>
+                                        @foreach($orderSellers as $seller)
+                                            <span class="badge badge-pill badge-info mb-1">
+                                                {{ $seller->name }}
+                                                <a href="{{ route('admin.orders', ['seller_id' => $seller->id]) }}" class="text-white ml-1" title="Filter by this seller">
+                                                    <i class="icon-copy fa fa-filter" aria-hidden="true"></i>
+                                                </a>
+                                            </span>
+                                            {{ !$loop->last ? ' ' : '' }}
+                                        @endforeach
                                     </td>
                                     <td>{{ $order->created_at->format('d M Y H:i') }}</td>
                                     <td>

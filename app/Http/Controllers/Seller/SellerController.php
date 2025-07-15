@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\CategoryRequest;
 use App\Models\Coupon;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\ProductImage;
@@ -17,11 +18,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Log;
 use Storage;
+use App\Models\Cart;
+use App\Models\Wishlist;
+use Illuminate\Support\Facades\DB;
+use App\Models\User; // Added for sendAbandonedCartEmails
+use Illuminate\Support\Facades\Mail; // Added for sendAbandonedCartEmails
+use App\Mail\AbandonedCartReminder; // Added for sendAbandonedCartEmails
+
 class SellerController extends Controller
 {
     public function dashboard()
     {
-
         // Satıcının kategori taleplerini al
         $pendingRequests = CategoryRequest::where('seller_id', auth()->id())
             ->where('status', 'pending')
@@ -35,18 +42,346 @@ class SellerController extends Controller
             ->where('status', 'rejected')
             ->count();
 
-
         // Satıcıya ait ürünlerin sayısı
-        $productCount = Product::where('user_id', auth()->id())->count(); // seller_id yerine id
-        $orderCount = Order::where('id', auth()->id())->count(); // seller_id yerine id
+        $productCount = Product::where('user_id', auth()->id())->count();
+
+        // Satıcının siparişlerini al
+        $orderCount = Order::whereHas('items.product', function ($q) {
+            $q->where('user_id', auth()->id());
+        })->count();
+
+        // Aktif siparişleri al (tamamlanmamış ve iptal edilmemiş)
+        $activeOrdersCount = Order::whereHas('items.product', function ($q) {
+            $q->where('user_id', auth()->id());
+        })->whereNotIn('status', ['delivered', 'cancelled'])->count();
+
+        // Aktif kuponları al
+        $couponCount = Coupon::where('seller_id', auth()->id())
+            ->where('active', true)
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>=', now());
+            })->count();
+
+        // Düşük stoklu ürünleri al (stok 10'dan az)
+        $lowStockProducts = Product::where('user_id', auth()->id())
+            ->where('stock', '<', 10)
+            ->where('stock', '>', 0)
+            ->with('images')
+            ->orderBy('stock', 'asc')
+            ->take(5)
+            ->get();
+
+        // Son 5 siparişi al
+        $recentOrders = Order::whereHas('items.product', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+            ->with(['items.product'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Satış istatistikleri için veri hazırlama
+        $salesData = $this->prepareSalesData();
+
+        // Detaylı satış istatistikleri
+        $salesStats = $this->getDetailedSalesStats();
+
+        // Sepete eklenen ürünler
+        $cartItems = Cart::whereHas('product', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+            ->with(['product.images', 'user'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Favorilere eklenen ürünler
+        $wishlistItems = Wishlist::whereHas('product', function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+            ->with(['product.images', 'user'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Sepete en çok eklenen ürünler
+        $topCartProducts = Cart::select('product_id', \DB::raw('COUNT(*) as cart_count'))
+            ->whereHas('product', function ($q) {
+                $q->where('user_id', auth()->id());
+            })
+            ->groupBy('product_id')
+            ->orderByDesc('cart_count')
+            ->with('product.images')
+            ->take(3)
+            ->get();
+
+        // Favorilere en çok eklenen ürünler
+        $topWishlistProducts = Wishlist::select('product_id', \DB::raw('COUNT(*) as wishlist_count'))
+            ->whereHas('product', function ($q) {
+                $q->where('user_id', auth()->id());
+            })
+            ->groupBy('product_id')
+            ->orderByDesc('wishlist_count')
+            ->with('product.images')
+            ->take(3)
+            ->get();
 
         return view('seller.dashboard', compact(
             'productCount',
             'orderCount',
             'pendingRequests',
             'approvedRequests',
-            'rejectedRequests'
+            'rejectedRequests',
+            'activeOrdersCount',
+            'couponCount',
+            'lowStockProducts',
+            'recentOrders',
+            'salesData',
+            'salesStats',
+            'cartItems',
+            'wishlistItems',
+            'topCartProducts',
+            'topWishlistProducts'
         ));
+    }
+
+    /**
+     * Satış istatistikleri için veri hazırlar
+     * @return array
+     */
+    private function prepareSalesData()
+    {
+        $sellerId = auth()->id();
+
+        // Haftalık satış verileri (son 7 gün)
+        $weeklyData = [];
+        $weeklyLabels = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $weeklyLabels[] = $date->locale('tr')->dayName;
+
+            $dailySales = Order::whereDate('created_at', $date->format('Y-m-d'))
+                ->whereHas('items.product', function ($query) use ($sellerId) {
+                    $query->where('user_id', $sellerId);
+                })
+                ->whereNotIn('status', ['cancelled'])
+                ->with([
+                    'items' => function ($query) use ($sellerId) {
+                        $query->whereHas('product', function ($q) use ($sellerId) {
+                            $q->where('user_id', $sellerId);
+                        })->where('is_cancelled', false);
+                    }
+                ])
+                ->get()
+                ->sum(function ($order) {
+                    return $order->items->sum('subtotal');
+                });
+
+            $weeklyData[] = round($dailySales, 2);
+        }
+
+        // Aylık satış verileri (son 12 ay)
+        $monthlyData = [];
+        $monthlyLabels = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthlyLabels[] = $date->locale('tr')->monthName;
+
+            $monthlySales = Order::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->whereHas('items.product', function ($query) use ($sellerId) {
+                    $query->where('user_id', $sellerId);
+                })
+                ->whereNotIn('status', ['cancelled'])
+                ->with([
+                    'items' => function ($query) use ($sellerId) {
+                        $query->whereHas('product', function ($q) use ($sellerId) {
+                            $q->where('user_id', $sellerId);
+                        })->where('is_cancelled', false);
+                    }
+                ])
+                ->get()
+                ->sum(function ($order) {
+                    return $order->items->sum('subtotal');
+                });
+
+            $monthlyData[] = round($monthlySales, 2);
+        }
+
+        // Yıllık satış verileri (son 5 yıl)
+        $yearlyData = [];
+        $yearlyLabels = [];
+
+        for ($i = 4; $i >= 0; $i--) {
+            $year = now()->subYears($i)->year;
+            $yearlyLabels[] = (string) $year;
+
+            $yearlySales = Order::whereYear('created_at', $year)
+                ->whereHas('items.product', function ($query) use ($sellerId) {
+                    $query->where('user_id', $sellerId);
+                })
+                ->whereNotIn('status', ['cancelled'])
+                ->with([
+                    'items' => function ($query) use ($sellerId) {
+                        $query->whereHas('product', function ($q) use ($sellerId) {
+                            $q->where('user_id', $sellerId);
+                        })->where('is_cancelled', false);
+                    }
+                ])
+                ->get()
+                ->sum(function ($order) {
+                    return $order->items->sum('subtotal');
+                });
+
+            $yearlyData[] = round($yearlySales, 2);
+        }
+
+        return [
+            'weekly' => [
+                'data' => $weeklyData,
+                'labels' => $weeklyLabels
+            ],
+            'monthly' => [
+                'data' => $monthlyData,
+                'labels' => $monthlyLabels
+            ],
+            'yearly' => [
+                'data' => $yearlyData,
+                'labels' => $yearlyLabels
+            ]
+        ];
+    }
+
+    /**
+     * Detaylı satış istatistikleri
+     * @return array
+     */
+    private function getDetailedSalesStats()
+    {
+        $sellerId = auth()->id();
+
+        // Toplam satış tutarı (tamamlanmış siparişler)
+        $totalRevenue = Order::whereHas('items.product', function ($query) use ($sellerId) {
+            $query->where('user_id', $sellerId);
+        })
+            ->whereIn('status', ['delivered', 'shipped', 'processing', 'paid'])
+            ->with([
+                'items' => function ($query) use ($sellerId) {
+                    $query->whereHas('product', function ($q) use ($sellerId) {
+                        $q->where('user_id', $sellerId);
+                    })->where('is_cancelled', false);
+                }
+            ])
+            ->get()
+            ->sum(function ($order) {
+                return $order->items->sum('subtotal');
+            });
+
+        // İptal edilen tutar
+        $cancelledRevenue = Order::whereHas('items.product', function ($query) use ($sellerId) {
+            $query->where('user_id', $sellerId);
+        })
+            ->with([
+                'items' => function ($query) use ($sellerId) {
+                    $query->whereHas('product', function ($q) use ($sellerId) {
+                        $q->where('user_id', $sellerId);
+                    })->where('is_cancelled', true);
+                }
+            ])
+            ->get()
+            ->sum(function ($order) {
+                return $order->items->sum('subtotal');
+            });
+
+        // En çok satılan 3 ürün
+        $bestSellingProducts = OrderItem::whereHas('product', function ($query) use ($sellerId) {
+            $query->where('user_id', $sellerId);
+        })
+            ->where('is_cancelled', false)
+            ->select('product_id', \DB::raw('SUM(quantity) as total_quantity'), \DB::raw('SUM(subtotal) as total_revenue'))
+            ->groupBy('product_id')
+            ->orderBy('total_quantity', 'desc')
+            ->with('product.images')
+            ->take(3)
+            ->get();
+
+        // En az satılan 3 ürün (en az 1 kez satılmış)
+        $leastSellingProducts = OrderItem::whereHas('product', function ($query) use ($sellerId) {
+            $query->where('user_id', $sellerId);
+        })
+            ->where('is_cancelled', false)
+            ->select('product_id', \DB::raw('SUM(quantity) as total_quantity'), \DB::raw('SUM(subtotal) as total_revenue'))
+            ->groupBy('product_id')
+            ->orderBy('total_quantity', 'asc')
+            ->with('product.images')
+            ->take(3)
+            ->get();
+
+        // Ortalama sipariş değeri
+        $avgOrderValue = 0;
+        $orderCount = Order::whereHas('items.product', function ($q) use ($sellerId) {
+            $q->where('user_id', $sellerId);
+        })->count();
+
+        if ($orderCount > 0) {
+            $avgOrderValue = $totalRevenue / $orderCount;
+        }
+
+        // Bu ayın satışları
+        $thisMonthRevenue = Order::whereHas('items.product', function ($query) use ($sellerId) {
+            $query->where('user_id', $sellerId);
+        })
+            ->whereIn('status', ['delivered', 'shipped', 'processing', 'paid'])
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->with([
+                'items' => function ($query) use ($sellerId) {
+                    $query->whereHas('product', function ($q) use ($sellerId) {
+                        $q->where('user_id', $sellerId);
+                    })->where('is_cancelled', false);
+                }
+            ])
+            ->get()
+            ->sum(function ($order) {
+                return $order->items->sum('subtotal');
+            });
+
+        // Geçen aya göre değişim
+        $lastMonthRevenue = Order::whereHas('items.product', function ($query) use ($sellerId) {
+            $query->where('user_id', $sellerId);
+        })
+            ->whereIn('status', ['delivered', 'shipped', 'processing', 'paid'])
+            ->whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->with([
+                'items' => function ($query) use ($sellerId) {
+                    $query->whereHas('product', function ($q) use ($sellerId) {
+                        $q->where('user_id', $sellerId);
+                    })->where('is_cancelled', false);
+                }
+            ])
+            ->get()
+            ->sum(function ($order) {
+                return $order->items->sum('subtotal');
+            });
+
+        $monthlyGrowth = 0;
+        if ($lastMonthRevenue > 0) {
+            $monthlyGrowth = (($thisMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100;
+        }
+
+        return [
+            'totalRevenue' => round($totalRevenue, 2),
+            'cancelledRevenue' => round($cancelledRevenue, 2),
+            'avgOrderValue' => round($avgOrderValue, 2),
+            'thisMonthRevenue' => round($thisMonthRevenue, 2),
+            'monthlyGrowth' => round($monthlyGrowth, 2),
+            'bestSellingProducts' => $bestSellingProducts,
+            'leastSellingProducts' => $leastSellingProducts
+        ];
     }
 
     public function products()
@@ -69,18 +404,20 @@ class SellerController extends Controller
 
 
     // SellerController.php
+    /**
+     * Satıcının siparişlerini listeler
+     */
     public function orders(Request $request)
     {
-        $sellerId = auth()->id();
+        $user = auth()->user();
 
-        // Satıcının ürünlerinin bulunduğu siparişleri getir
-        $query = Order::with(['items.product.images', 'items.product.user'])
-            ->whereHas('items.product', function ($q) use ($sellerId) {
-                $q->where('user_id', $sellerId);
-            });
+        // Satıcının kendi ürünlerinin bulunduğu siparişleri al
+        $query = Order::whereHas('items.product', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->with(['items.product.images', 'items.product.user']);
 
-        // Status filtreleme
-        if ($request->has('status') && $request->status) {
+        // Status filtresi
+        if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
@@ -90,26 +427,23 @@ class SellerController extends Controller
     }
 
     /**
-     * Satıcıya ait sipariş ürünlerinin faturasını PDF olarak oluşturur
-     * 
-     * @param int $orderId Sipariş ID
-     * @return \Illuminate\Http\Response
+     * Satıcının siparişlerindeki ürünleri PDF olarak yazdırır
      */
     public function printOrderItems($orderId)
     {
         try {
-            $sellerId = auth()->id();
+            $user = auth()->user();
 
             // Siparişi ve satıcıya ait ürünleri getir
             $order = Order::with(['items.product.images', 'items.product.user'])
-                ->whereHas('items.product', function ($q) use ($sellerId) {
-                    $q->where('user_id', $sellerId);
+                ->whereHas('items.product', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
                 })
                 ->findOrFail($orderId);
 
             // Sadece bu satıcıya ait ürünleri filtrele
-            $sellerItems = $order->items->filter(function ($item) use ($sellerId) {
-                return $item->product && $item->product->user_id == $sellerId;
+            $sellerItems = $order->items->filter(function ($item) use ($user) {
+                return $item->product && $item->product->user_id == $user->id;
             });
 
             // İptal edilen ürünlerin toplamını hesapla
@@ -137,7 +471,7 @@ class SellerController extends Controller
             }
 
             // PDF oluştur - satıcı faturası şablonunu kullan
-            $pdf = \PDF::loadView('seller.invoice', compact('order', 'sellerItems', 'cancelledTotal', 'currentTotal', 'sellerTotal', 'orderNotes', 'trackingInfo'));
+            $pdf = PDF::loadView('seller.invoice', compact('order', 'user', 'sellerItems', 'cancelledTotal', 'currentTotal', 'sellerTotal', 'orderNotes', 'trackingInfo'));
 
             // PDF ayarlarını yapılandır
             $pdf->setPaper('a4', 'portrait');
@@ -166,7 +500,7 @@ class SellerController extends Controller
             $pdf->setOption('encoding', 'UTF-8');
 
             // PDF'i görüntüle
-            return $pdf->stream("Fatura-{$order->order_number}-Satici.pdf");
+            return $pdf->stream("Fatura-{$order->order_number}-{$user->name}.pdf");
 
         } catch (\Exception $e) {
             \Log::error('Satıcı faturası oluşturma hatası:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
@@ -602,6 +936,128 @@ class SellerController extends Controller
             return redirect()->back()->with('success', 'Ürün başarıyla iptal edildi.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ürün iptal edilirken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sepette unutulan ürünler için hatırlatma e-postası gönderir
+     */
+    public function sendAbandonedCartEmails(Request $request)
+    {
+        try {
+            $sellerId = auth()->id();
+
+            // 24 saat önce sepete eklenen ama hala sepette duran ürünleri bul
+            $abandonedCarts = Cart::where('updated_at', '<=', now()->subHours(24))
+                ->whereHas('product', function ($q) use ($sellerId) {
+                    $q->where('user_id', $sellerId);
+                })
+                ->with(['user', 'product.images'])
+                ->get()
+                ->groupBy('user_id'); // Kullanıcıya göre grupla
+
+            $totalEmailsSent = 0;
+            $emailsSentTo = []; // Hangi müşterilere e-posta gönderildiğini takip etmek için
+
+            foreach ($abandonedCarts as $userId => $cartItems) {
+                $user = User::find($userId);
+
+                // Kullanıcı yoksa veya e-posta adresi yoksa atla
+                if (!$user || !$user->email) {
+                    continue;
+                }
+
+                // Satıcının ürünlerini hazırla
+                $products = [];
+                $totalValue = 0;
+                $productNames = [];
+
+                foreach ($cartItems as $item) {
+                    if ($item->product) {
+                        $products[] = [
+                            'id' => $item->product->id,
+                            'name' => $item->product->name,
+                            'price' => $item->product->price,
+                            'quantity' => $item->quantity,
+                            'image' => $item->product->images->first()->image_path ?? null,
+                            'subtotal' => $item->product->price * $item->quantity
+                        ];
+
+                        $totalValue += $item->product->price * $item->quantity;
+                        $productNames[] = $item->product->name;
+                    }
+                }
+
+                // Ürün yoksa e-posta gönderme
+                if (empty($products)) {
+                    continue;
+                }
+
+                // E-posta verilerini hazırla
+                $emailData = [
+                    'user' => $user,
+                    'seller' => auth()->user(),
+                    'products' => $products,
+                    'totalValue' => $totalValue,
+                    'cartUrl' => url('/cart')
+                ];
+
+                // E-posta gönder
+                Mail::to($user->email)->send(new AbandonedCartReminder($emailData));
+                $totalEmailsSent++;
+
+                // Gönderilen e-postaları kaydet
+                $emailsSentTo[] = [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'product_count' => count($products),
+                    'total_value' => $totalValue,
+                    'products' => implode(', ', $productNames)
+                ];
+            }
+
+            // Konsola gönderilen e-postaları yazdır
+            \Log::info('Sepette Unutulan Ürün Hatırlatması E-postaları Gönderildi', [
+                'total_sent' => $totalEmailsSent,
+                'emails_sent_to' => $emailsSentTo
+            ]);
+
+            // AJAX isteği ise JSON yanıtı döndür
+            if ($request->ajax()) {
+                if ($totalEmailsSent > 0) {
+                    return response()->json([
+                        'success' => "Toplam {$totalEmailsSent} müşteriye sepette unutulan ürün hatırlatma e-postası gönderildi.",
+                        'emails' => $emailsSentTo
+                    ]);
+                } else {
+                    return response()->json([
+                        'info' => "Sepette unutulmuş ürün bulunamadı veya hatırlatma e-postası gönderilebilecek müşteri yok."
+                    ]);
+                }
+            }
+
+            // Normal form gönderimi ise redirect ile yanıt ver
+            if ($totalEmailsSent > 0) {
+                $emailList = collect($emailsSentTo)->pluck('email')->implode(', ');
+                return redirect()->back()->with('success', "Toplam {$totalEmailsSent} müşteriye sepette unutulan ürün hatırlatma e-postası gönderildi. Gönderilen e-postalar: {$emailList}");
+            } else {
+                return redirect()->back()->with('info', "Sepette unutulmuş ürün bulunamadı veya hatırlatma e-postası gönderilebilecek müşteri yok.");
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Sepette Unutulan Ürün Hatırlatması E-posta Hatası', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // AJAX isteği ise JSON yanıtı döndür
+            if ($request->ajax()) {
+                return response()->json([
+                    'error' => "E-posta gönderimi sırasında bir hata oluştu: " . $e->getMessage()
+                ]);
+            }
+
+            return redirect()->back()->with('error', "E-posta gönderimi sırasında bir hata oluştu: " . $e->getMessage());
         }
     }
 

@@ -253,6 +253,11 @@
                                             <div class="seller-info">
                                                 <strong>{{ $item->product->user->name }}</strong>
                                                 <br><small class="text-muted">{{ $item->product->user->email }}</small>
+                                                <br>
+                                                <a href="{{ route('admin.orders.seller.invoice', ['order' => $order->id, 'seller' => $item->product->user->id]) }}" 
+                                                   class="btn btn-xs btn-outline-primary mt-1" target="_blank">
+                                                    <i class="dw dw-print"></i> Satıcı Faturası
+                                                </a>
                                             </div>
                                         @else
                                             <span class="text-muted">Unknown Seller</span>
