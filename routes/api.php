@@ -45,6 +45,12 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+
+        // Şifre sıfırlama rotaları
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
+        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
         // Google OAuth rotaları
         Route::get('/google', [GoogleAuthController::class, 'redirectToGoogle']);
         Route::get('/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);

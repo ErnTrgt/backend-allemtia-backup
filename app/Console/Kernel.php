@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\HashPlainPasswords::class,
         Commands\SendAbandonedCartEmails::class,
+        \App\Console\Commands\TestMailConfig::class,
+
     ];
 
     /**
