@@ -33,11 +33,11 @@ class ResetPasswordMail extends Mailable
     {
         // Basit düz metin içerik ekleyelim (fallback)
         $this->text('emails.reset-password-plain')
-            ->subject('Şifre Sıfırlama Kodunuz: ' . $this->resetCode);
+            ->subject('Allemtia - Şifre Sıfırlama Kodunuz');
 
         // Ayrıca markdown template'i de ekleyelim    
-        return $this->subject('Şifre Sıfırlama Kodu')
-            ->markdown('emails.reset-password')
+        return $this->subject('Allemtia - Şifre Sıfırlama Kodunuz')
+            ->markdown('emails.reset-password', ['slot' => 'Allemtia'])
             ->with([
                 'resetCode' => $this->resetCode,
             ]);

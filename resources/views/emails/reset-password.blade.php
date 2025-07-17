@@ -1,20 +1,24 @@
 @component('mail::message')
-# Şifre Sıfırlama Kodu
+# Allemtia - Şifre Sıfırlama
 
-Şifre sıfırlama talebiniz alınmıştır.
+Sayın Müşterimiz,
 
-Şifrenizi sıfırlamak için aşağıdaki kodu kullanın:
+Hesabınız için şifre sıfırlama talebinde bulundunuz. Şifrenizi sıfırlamak için aşağıdaki doğrulama kodunu kullanabilirsiniz:
 
 @component('mail::panel')
 <div style="text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px;">{{ $resetCode }}</div>
 @endcomponent
 
-Bu kod 1 saat boyunca geçerlidir.
+Bu doğrulama kodu **60 dakika** boyunca geçerlidir.
 
-Eğer bu talebi siz yapmadıysanız, herhangi bir işlem yapmanız gerekmez.
+Eğer bu talebi siz yapmadıysanız, lütfen hesabınızın güvenliğini kontrol edin ve gerekirse bizimle iletişime geçin.
 
-Teşekkürler,<br>
-{{ config('app.name') }} Ekibi
+@component('mail::button', ['url' => config('app.url')])
+Allemtia'ya Git
+@endcomponent
+
+Saygılarımızla,<br>
+**Allemtia Müşteri Destek Ekibi**
 
 <small>Bu e-posta otomatik olarak gönderilmiştir, lütfen yanıtlamayınız.</small>
-@endcomponent
+@endcomponent 
