@@ -21,9 +21,11 @@ use App\Http\Controllers\api\home\UserWishlistController;
 use App\Http\Controllers\api\home\UserCompareController;
 
 Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
+    // Ürün rotaları
     Route::get('products', [ProductController::class, 'index'])->name('products');
-    Route::get('/products/category/{categoryId}', [ProductController::class, 'getProductsByCategory'])->name('products');
+    Route::get('products/category/{categoryId}', [ProductController::class, 'getProductsByCategory'])->name('products.by.category');
     Route::get('products/{id}', [ProductController::class, 'show'])->name('products.show');
+
     Route::get('about', [AboutController::class, 'index']);
     Route::get('/faqs', [FaqController::class, 'index']);
     Route::get('/sliders', [SliderController::class, 'index']);
@@ -31,7 +33,10 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
     Route::get('blogs', [BlogController::class, 'index']);
     Route::get('blogs/{id}', [BlogController::class, 'showBlog']);
 
+    // Kategori rotaları
     Route::get('categories', [CategoryController::class, 'index'])->name('categories');
+    Route::get('all-categories', [CategoryController::class, 'getAllCategories'])->name('all.categories');
+    Route::get('categories/{categoryId}/products', [CategoryController::class, 'getProductsByCategory'])->name('category.products');
 
     Route::post('/register-vendor', [VendorRegisterController::class, 'store']);
     Route::get('/vendors', [VendorController::class, 'index']);
@@ -44,7 +49,6 @@ Route::group(['prefix' => 'home', 'as' => 'home.'], function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-
 
         // Şifre sıfırlama rotaları
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);

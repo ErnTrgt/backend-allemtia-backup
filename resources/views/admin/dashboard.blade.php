@@ -304,21 +304,21 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if ($category->subcategories->isEmpty())
+                                    @if ($category->children->isEmpty())
                                         <span class="badge badge-light">No Subcategories</span>
                                     @else
                                         <div class="subcategory-list">
-                                            @foreach ($category->subcategories->take(3) as $subcategory)
-                                                <span class="badge badge-info">{{ $subcategory->name }}</span>
+                                            @foreach ($category->children->take(3) as $child)
+                                                <span class="badge badge-info">{{ $child->name }}</span>
                                             @endforeach
-                                            @if($category->subcategories->count() > 3)
-                                                <span class="badge badge-secondary">+{{ $category->subcategories->count() - 3 }} more</span>
+                                            @if($category->children->count() > 3)
+                                                <span class="badge badge-secondary">+{{ $category->children->count() - 3 }} more</span>
                                             @endif
                                         </div>
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="badge badge-pill badge-primary">{{ $category->subcategories->count() }}</span>
+                                    <span class="badge badge-pill badge-primary">{{ $category->children->count() }}</span>
                                 </td>
                                 <td>
                                     <div class="dropdown">

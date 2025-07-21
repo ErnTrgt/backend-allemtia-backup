@@ -27,6 +27,18 @@
                         <span class="mtext">Orders</span>
                     </a>
                 </li>
+                  <li class="{{ request()->routeIs('seller.cart-items') ? 'active' : '' }}">
+                    <a href="{{ route('seller.cart-items') }}" class="dropdown-toggle no-arrow">
+                        <span class="micon bi bi-cart-plus"></span>
+                        <span class="mtext">Cart Items</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('seller.wishlist-items') ? 'active' : '' }}">
+                    <a href="{{ route('seller.wishlist-items') }}" class="dropdown-toggle no-arrow">
+                        <span class="micon bi bi-heart"></span>
+                        <span class="mtext">Wishlist Items</span>
+                    </a>
+                </li>
                 <li class="{{ request()->routeIs('seller.coupons.*') ? 'active' : '' }}">
                     <a href="{{ route('seller.coupons.index') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-tag"></span>

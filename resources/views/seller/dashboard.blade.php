@@ -292,7 +292,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="sales-chart" style="min-height: 300px;"></div>
+                        <div id="sales-chart" style="min-height: 300px;">
+                            cok yakında...
+                        </div>
                     </div>
                 </div>
                 

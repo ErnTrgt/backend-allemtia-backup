@@ -39,8 +39,8 @@ class AdminController extends Controller
         $rejectedRequests = CategoryRequest::where('status', 'rejected')->count();
 
         $totalCategories = Category::count();
-        $totalSubcategories = Subcategory::count();
-        $categoriesWithSubcategories = Category::with('subcategories')->get();
+        $totalSubcategories = Category::whereNotNull('parent_id')->count();
+        $categoriesWithSubcategories = Category::whereNull('parent_id')->with('children')->get();
         // Role göre kullanıcı sayıları
         $adminCount = User::where('role', 'admin')->count();
         $sellerCount = User::where('role', 'seller')->count();
@@ -616,17 +616,22 @@ class AdminController extends Controller
 
     public function categories()
     {
-        $categories = Category::with('subcategories')->get();
-        return view('admin.categories', compact('categories'));
+        $categories = Category::whereNull('parent_id')->with(['children.children'])->get();
+        $allCategories = Category::all(); // Alt kategori eklerken kullanmak için tüm kategoriler
+        return view('admin.categories', compact('categories', 'allCategories'));
     }
 
     public function storeCategory(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id',
         ]);
 
-        Category::create(['name' => $request->name]);
+        Category::create([
+            'name' => $request->name,
+            'parent_id' => $request->parent_id,
+        ]);
 
         return redirect()->route('admin.categories')->with('success', 'Category added successfully!');
     }
@@ -638,9 +643,9 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        Subcategory::create([
-            'category_id' => $request->category_id,
+        Category::create([
             'name' => $request->name,
+            'parent_id' => $request->category_id,
         ]);
 
         return redirect()->route('admin.categories')->with('success', 'Subcategory added successfully!');
@@ -652,24 +657,45 @@ class AdminController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'subcategories.*' => 'string|max:255',
+            'parent_id' => 'nullable|exists:categories,id',
+            'children.*' => 'string|max:255',
+            'grandchildren.*' => 'string|max:255',
         ]);
 
-        $category->update(['name' => $request->name]);
+        // Kategori adını güncelle
+        $category->update([
+            'name' => $request->name,
+            'parent_id' => $request->parent_id
+        ]);
 
-        if ($request->has('subcategories')) {
-            foreach ($request->subcategories as $subcategoryId => $subcategoryName) {
-                $subcategory = Subcategory::findOrFail($subcategoryId);
-                $subcategory->update(['name' => $subcategoryName]);
+        // Alt kategorileri güncelle (eğer varsa)
+        if ($request->has('children')) {
+            foreach ($request->children as $childId => $childName) {
+                $child = Category::findOrFail($childId);
+                $child->update(['name' => $childName]);
             }
         }
 
-        return redirect()->route('admin.categories')->with('success', 'Category and subcategories updated successfully!');
+        // Alt-alt kategorileri güncelle (eğer varsa)
+        if ($request->has('grandchildren')) {
+            foreach ($request->grandchildren as $grandchildId => $grandchildName) {
+                $grandchild = Category::findOrFail($grandchildId);
+                $grandchild->update(['name' => $grandchildName]);
+            }
+        }
+
+        return redirect()->route('admin.categories')->with('success', 'Kategori başarıyla güncellendi!');
     }
 
     public function deleteCategory($id)
     {
         $category = Category::findOrFail($id);
+
+        // Alt kategorileri de sil veya ana kategoriye taşı
+        foreach ($category->children as $child) {
+            $child->delete(); // Ya da $child->update(['parent_id' => null]);
+        }
+
         $category->delete();
 
         return redirect()->route('admin.categories')->with('success', 'Category deleted successfully!');

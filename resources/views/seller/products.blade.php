@@ -110,19 +110,14 @@
                                                         <select name="category_id" id="category{{ $product->id }}"
                                                             class="form-control" required>
                                                             <option value="">Select Category</option>
-                                                            @foreach ($categories as $category)
-                                                                <option value="{{ $category->id }}"
-                                                                    {{ $product->category_id === $category->id ? 'selected' : '' }}>
-                                                                    {{ $category->name }}
+                                                            @foreach ($categoryTree as $item)
+                                                                @php
+                                                                    $prefix = str_repeat('-- ', $item['level']);
+                                                                @endphp
+                                                                <option value="{{ $item['category']->id }}"
+                                                                    {{ $product->category_id === $item['category']->id ? 'selected' : '' }}>
+                                                                    {{ $prefix }}{{ $item['category']->name }}
                                                                 </option>
-                                                                @if ($category->children->count())
-                                                                    @foreach ($category->children as $child)
-                                                                        <option value="{{ $child->id }}"
-                                                                            {{ $product->category_id === $child->id ? 'selected' : '' }}>
-                                                                            -- {{ $child->name }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                @endif
                                                             @endforeach
                                                         </select>
                                                     </div>
@@ -190,13 +185,11 @@
                             <label for="category">Category</label>
                             <select name="category_id" id="category" class="form-control" required>
                                 <option value="">Select Category</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @if ($category->children->count())
-                                        @foreach ($category->children as $child)
-                                            <option value="{{ $child->id }}">-- {{ $child->name }}</option>
-                                        @endforeach
-                                    @endif
+                                @foreach ($categoryTree as $item)
+                                    @php
+                                        $prefix = str_repeat('-- ', $item['level']);
+                                    @endphp
+                                    <option value="{{ $item['category']->id }}">{{ $prefix }}{{ $item['category']->name }}</option>
                                 @endforeach
                             </select>
                         </div>

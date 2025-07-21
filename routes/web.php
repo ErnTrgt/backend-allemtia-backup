@@ -149,6 +149,9 @@ Route::middleware(['auth:seller'])->group(function () {
     // Sepette unutulan ürünler için mail gönderme
     Route::post('/seller/abandoned-cart/send-emails', [SellerController::class, 'sendAbandonedCartEmails'])->name('abandoned-cart.send-emails');
 
+    // Sepet ve Favoriler
+    Route::get('/seller/cart-items', [SellerController::class, 'cartItems'])->name('seller.cart-items');
+    Route::get('/seller/wishlist-items', [SellerController::class, 'wishlistItems'])->name('seller.wishlist-items');
 
     // Seller Profile & Settings
     Route::get('/seller/profile', [SellerController::class, 'profile'])->name('seller.profile');

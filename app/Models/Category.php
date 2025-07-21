@@ -20,17 +20,47 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
-    public function subcategories()
+
+    public function products()
     {
-        return $this->hasMany(Subcategory::class, 'category_id');
+        return $this->hasMany(Product::class, 'category_id');
     }
+
     public function productImages()
     {
         return $this->hasMany(ProductImage::class, 'product_id', 'id');
     }
-    //Alt kategoriler ilişkisi
-    // public function subcategories()
-    // {
-    //     return $this->hasMany(Category::class);
-    // }
+
+    /**
+     * Bir kategorinin başka bir kategorinin alt kategorisi olup olmadığını kontrol eder
+     * 
+     * @param Category|int $category Kontrol edilecek kategori veya ID'si
+     * @return bool
+     */
+    public function isDescendantOf($category)
+    {
+        if (!$category) {
+            return false;
+        }
+
+        $categoryId = is_object($category) ? $category->id : $category;
+
+        // Kendi kendinin alt kategorisi olamaz
+        if ($this->id === $categoryId) {
+            return true;
+        }
+
+        // Mevcut kategorinin üst kategorilerini kontrol et
+        $parent = $this->parent;
+        while ($parent) {
+            if ($parent->id === $categoryId) {
+                return true;
+            }
+            $parent = $parent->parent;
+        }
+
+        return false;
+    }
 }
+
+

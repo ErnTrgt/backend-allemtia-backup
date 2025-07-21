@@ -11,19 +11,29 @@
             color: #333;
             margin: 0;
             padding: 0;
+            background-color: #fff9f5;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(255, 102, 0, 0.05);
         }
         .header {
             text-align: center;
             padding: 20px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #ffe6d5;
         }
-        .header img {
-            max-width: 150px;
+        .logo-text {
+            color: #ff6600;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: Arial, Helvetica, sans-serif;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
         }
         .content {
             padding: 20px 0;
@@ -32,23 +42,24 @@
             text-align: center;
             padding: 20px 0;
             font-size: 12px;
-            color: #777;
-            border-top: 1px solid #eee;
+            color: #ff8533;
+            border-top: 1px solid #ffe6d5;
         }
         h1 {
-            color: #2c3e50;
+            color: #ff6600;
             font-size: 24px;
         }
         h2 {
-            color: #3498db;
+            color: #ff6600;
             font-size: 20px;
         }
         .product {
             margin-bottom: 20px;
             padding: 15px;
-            border: 1px solid #eee;
+            border: 1px solid #ffe6d5;
             border-radius: 5px;
             display: flex;
+            background-color: #ffffff;
         }
         .product img {
             width: 80px;
@@ -79,7 +90,7 @@
         }
         .btn {
             display: inline-block;
-            background-color: #3498db;
+            background-color: #ff6600;
             color: white;
             text-decoration: none;
             padding: 10px 20px;
@@ -88,7 +99,7 @@
             margin-top: 20px;
         }
         .btn:hover {
-            background-color: #2980b9;
+            background-color: #e65a00;
         }
         .center {
             text-align: center;
@@ -98,7 +109,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('logo.png') }}" alt="Logo">
+            <div class="logo-text">ALLEMTIA</div>
             <h1>Sepetinizdeki Ürünler Sizi Bekliyor!</h1>
         </div>
         
@@ -147,7 +158,7 @@
             <p>Bu e-posta {{ $data['seller']->name }} tarafından gönderilmiştir.</p>
             <p>© {{ date('Y') }} Tüm hakları saklıdır.</p>
             <p>
-                <small>Bu e-postayı almak istemiyorsanız, <a href="#">buraya tıklayarak</a> abonelikten çıkabilirsiniz.</small>
+                <small>Bu e-postayı almak istemiyorsanız, <a href="#" style="color: #ff8533;">buraya tıklayarak</a> abonelikten çıkabilirsiniz.</small>
             </p>
         </div>
     </div>
