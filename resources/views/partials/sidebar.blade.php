@@ -2,7 +2,7 @@
 <div class="left-side-bar">
     <div class="brand-logo">
         <a href="#">
-            <img src="{{ asset('admin/vendors/images/logo.png') }}" alt="Logo">
+            <img src="{{ asset('admin/src/images/emtialogo.png') }}" alt="Logo">
         </a>
     </div>
     <div class="menu-block customscroll">
@@ -37,6 +37,8 @@
                         <span class="micon bi bi-cart-check"></span>
                         <span class="mtext">Orders</span>
                     </a>
+
+                    
                 </li>
                 <li class="{{ Request::is('admin/about*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/about') }}" class="dropdown-toggle no-arrow">

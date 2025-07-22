@@ -412,28 +412,45 @@ class AdminController extends Controller
 
     public function details($id)
     {
-        $product = Product::with(['images', 'user'])->findOrFail($id);
-        return view('admin.product-details', compact('product'));
+        $product = Product::with(['images', 'user', 'category'])->findOrFail($id);
+        $categories = Category::all(); // Tüm kategorileri yükle
+        return view('admin.product-details', compact('product', 'categories'));
     }
 
+    // Route fonksiyonunu düzeltelim
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
+        // Validasyon ekle
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
+
         // Tüm alanları güncelle
-        $product->update($request->except('images'));
+        $product->update($request->except('images', 'delete_images'));
+
+        // Silinecek görseller varsa sil
+        if ($request->has('delete_images')) {
+            foreach ($request->delete_images as $imageId) {
+                $image = $product->images()->find($imageId);
+                if ($image) {
+                    // Dosyayı diskten sil
+                    if (\Storage::exists('public/' . $image->image_path)) {
+                        \Storage::delete('public/' . $image->image_path);
+                    }
+                    // Veritabanından kaydı sil
+                    $image->delete();
+                }
+            }
+        }
 
         // Yeni görselleri yükle
         if ($request->hasFile('images')) {
-            // Mevcut görselleri isteğe bağlı olarak silebilirsiniz
-            foreach ($product->images as $image) {
-                if (\Storage::exists('public/' . $image->image_path)) {
-                    \Storage::delete('public/' . $image->image_path);
-                }
-                $image->delete();
-            }
-
-            // Yeni görselleri yükle ve kaydet
             foreach ($request->file('images') as $file) {
                 $path = $file->store('products', 'public');
                 $product->images()->create([
@@ -442,7 +459,7 @@ class AdminController extends Controller
             }
         }
 
-        return redirect()->route('admin.products')->with('success', 'Product updated successfully with images.');
+        return redirect()->route('admin.product.details', $product->id)->with('success', 'Ürün başarıyla güncellendi.');
     }
 
     // Profile işlemleri

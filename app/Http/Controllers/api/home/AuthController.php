@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\home;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\ReCaptcha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +26,7 @@ class AuthController extends Controller
             'phone' => 'required',
             'password' => 'required|min:6',
             'gender' => 'nullable|string',
+            'recaptcha' => ['required', new ReCaptcha],
         ]);
 
         $user = User::create([
@@ -45,7 +47,8 @@ class AuthController extends Controller
         $v = Validator::make($r->all(), [
             'email' => 'required|email',
             'password' => 'required',
-            'remember_me' => 'boolean' // Remember me ekledik
+            'remember_me' => 'boolean', // Remember me ekledik
+            'recaptcha' => ['required', new ReCaptcha],
         ]);
 
         if ($v->fails()) {
@@ -129,6 +132,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
+            'recaptcha' => ['required', new ReCaptcha],
         ], [
             'email.exists' => 'Bu e-posta adresi kayıtlı değil.'
         ]);
@@ -293,6 +297,7 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'token' => 'required|string',
             'password' => 'required|string|min:6|confirmed',
+            'recaptcha' => ['required', new ReCaptcha],
         ]);
 
         if ($validator->fails()) {

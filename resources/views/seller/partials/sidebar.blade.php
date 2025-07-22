@@ -2,7 +2,7 @@
 <div class="left-side-bar">
     <div class="brand-logo">
         <a href="{{ route('seller.dashboard') }}">
-            <img src="{{ asset('admin/vendors/images/logo.png') }}" alt="Logo">
+            <img src="{{ asset('admin/src/images/emtialogo.png') }}" alt="Logo">
         </a>
     </div>
     <div class="menu-block customscroll">

@@ -90,7 +90,7 @@
                                             </a>
                                             <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                                                 <!-- View -->
-                                                <a class="dropdown-item" href="#"><i class="dw dw-eye"></i> View</a>
+                                                {{-- <a class="dropdown-item" href="#"><i class="dw dw-eye"></i> View</a> --}}
 
                                                 <!-- Edit -->
                                                 <a class="dropdown-item" href="#" data-toggle="modal"
