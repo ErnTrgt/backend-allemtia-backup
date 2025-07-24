@@ -48,7 +48,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
             'remember_me' => 'boolean', // Remember me ekledik
-            'recaptcha' => ['required', new ReCaptcha],
+            // 'recaptcha' => ['required', new ReCaptcha],
         ]);
 
         if ($v->fails()) {
@@ -132,7 +132,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
-            'recaptcha' => ['required', new ReCaptcha],
+            // 'recaptcha' => ['required', new ReCaptcha],
         ], [
             'email.exists' => 'Bu e-posta adresi kayıtlı değil.'
         ]);
@@ -297,7 +297,7 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'token' => 'required|string',
             'password' => 'required|string|min:6|confirmed',
-            'recaptcha' => ['required', new ReCaptcha],
+            // 'recaptcha' => ['required', new ReCaptcha],
         ]);
 
         if ($validator->fails()) {

@@ -1,6 +1,6 @@
 @extends('layouts.layout')
 
-@section('title', 'Orders')
+@section('title', 'Siparişler')
 
 @section('content')
     <!-- CSRF Token meta tag -->
@@ -12,39 +12,39 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="title">
-                            <h4>Orders Management</h4>
+                            <h4>Sipariş Yönetimi</h4>
                         </div>
                         <nav aria-label="breadcrumb" role="navigation">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Orders</li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Ana Sayfa</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Siparişler</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-md-6 col-sm-12 text-right">
                         <div class="dropdown d-inline-block mr-2">
                             <a class="btn btn-primary dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                Filter By Status
+                                Duruma Göre Filtrele
                             </a>
                             <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="{{ route('admin.orders') }}">All</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'pending']) }}">Pending</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'waiting_payment']) }}">Waiting Payment</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'paid']) }}">Paid</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'processing']) }}">Processing</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'shipped']) }}">Shipped</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'delivered']) }}">Delivered</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['is_partially_cancelled' => '1']) }}">Partially Cancelled</a>
-                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'cancelled']) }}">Cancelled</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders') }}">Tümü</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'pending']) }}">Beklemede</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'waiting_payment']) }}">Ödeme Bekleniyor</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'paid']) }}">Ödendi</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'processing']) }}">Hazırlanıyor</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'shipped']) }}">Kargoda</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'delivered']) }}">Teslim Edildi</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['is_partially_cancelled' => '1']) }}">Kısmi İptal</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders', ['status' => 'cancelled']) }}">İptal Edildi</a>
                             </div>
                         </div>
                         
                         <div class="dropdown d-inline-block">
                             <a class="btn btn-success dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                Filter By Seller
+                                Satıcıya Göre Filtrele
                             </a>
                             <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="{{ route('admin.orders') }}">All Sellers</a>
+                                <a class="dropdown-item" href="{{ route('admin.orders') }}">Tüm Satıcılar</a>
                                 @foreach($sellers as $seller)
                                 <a class="dropdown-item" href="{{ route('admin.orders', ['seller_id' => $seller->id]) }}">
                                     {{ $seller->name }}
@@ -58,22 +58,22 @@
 
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">Orders List</h4>
+                    <h4 class="text-blue h4">Sipariş Listesi</h4>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Order Number</th>
-                                <th>Customer</th>
-                                <th>Email</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Payment Method</th>
-                                <th>Sellers</th>
-                                <th>Date</th>
-                                <th class="datatable-nosort">Action</th>
+                                <th>Sipariş Numarası</th>
+                                <th>Müşteri</th>
+                                <th>E-posta</th>
+                                <th>Toplam</th>
+                                <th>Durum</th>
+                                <th>Ödeme Yöntemi</th>
+                                <th>Satıcılar</th>
+                                <th>Tarih</th>
+                                <th class="datatable-nosort">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -160,7 +160,7 @@
                                         @foreach($orderSellers as $seller)
                                             <span class="badge badge-pill badge-info mb-1">
                                                 {{ $seller->name }}
-                                                <a href="{{ route('admin.orders', ['seller_id' => $seller->id]) }}" class="text-white ml-1" title="Filter by this seller">
+                                                <a href="{{ route('admin.orders', ['seller_id' => $seller->id]) }}" class="text-white ml-1" title="Bu satıcıya göre filtrele">
                                                     <i class="icon-copy fa fa-filter" aria-hidden="true"></i>
                                                 </a>
                                             </span>
@@ -177,18 +177,18 @@
                                             <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                                                 <a class="dropdown-item"
                                                     href="{{ route('admin.orders.show', $order->id) }}">
-                                                    <i class="dw dw-eye"></i> View Details
+                                                    <i class="dw dw-eye"></i> Detayları Görüntüle
                                                 </a>
                                                 <a class="dropdown-item" data-toggle="modal"
                                                     data-target="#editOrderModal{{ $order->id }}" href="#">
-                                                    <i class="dw dw-edit2"></i> Edit Status
+                                                    <i class="dw dw-edit2"></i> Durumu Düzenle
                                                 </a>
                                                 <a class="dropdown-item" href="#" onclick="printInvoice({{ $order->id }})">
-                                                    <i class="dw dw-print"></i> Print Invoice
+                                                    <i class="dw dw-print"></i> Fatura Yazdır
                                                 </a>
                                                 <a class="dropdown-item" href="#"
-                                                    onclick="if(confirm('Are you sure you want to delete this order?')) deleteOrder({{ $order->id }});">
-                                                    <i class="dw dw-delete-3"></i> Delete
+                                                    onclick="if(confirm('Bu siparişi silmek istediğinizden emin misiniz?')) deleteOrder({{ $order->id }});">
+                                                    <i class="dw dw-delete-3"></i> Sil
                                                 </a>
                                             </div>
                                         </div>
@@ -201,7 +201,7 @@
                                     <div class="modal-dialog modal-lg modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h4 class="modal-title">Update Order - {{ $order->order_number }}</h4>
+                                                <h4 class="modal-title">Sipariş Güncelle - {{ $order->order_number }}</h4>
                                                 <button type="button" class="close" data-dismiss="modal"
                                                     aria-hidden="true">×</button>
                                             </div>
@@ -213,7 +213,7 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="orderStatus{{ $order->id }}">Order Status</label>
+                                                                <label for="orderStatus{{ $order->id }}">Sipariş Durumu</label>
                                                                 <select name="status" id="orderStatus{{ $order->id }}" class="form-control" required>
                                                                     <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Beklemede</option>
                                                                     <option value="waiting_payment" {{ $order->status == 'waiting_payment' ? 'selected' : '' }}>Ödeme Bekleniyor</option>
@@ -227,38 +227,38 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="trackingNumber{{ $order->id }}">Tracking Number</label>
+                                                                <label for="trackingNumber{{ $order->id }}">Takip Numarası</label>
                                                                 <input type="text" name="tracking_number" id="trackingNumber{{ $order->id }}"
                                                                     class="form-control" value="{{ $order->tracking_number ?? '' }}"
-                                                                    placeholder="Enter tracking number">
+                                                                    placeholder="Takip numarasını girin">
                                                             </div>
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="form-group">
-                                                        <label for="statusNote{{ $order->id }}">Status Update Note</label>
+                                                        <label for="statusNote{{ $order->id }}">Durum Güncelleme Notu</label>
                                                         <textarea name="status_note" id="statusNote{{ $order->id }}" class="form-control" rows="3"
-                                                            placeholder="Add a note about this status update (optional)..."></textarea>
+                                                            placeholder="Bu durum güncellmesi hakkında bir not ekleyin (isteğe bağlı)..."></textarea>
                                                     </div>
 
                                                     <!-- Cancel Reason (sadece iptal seçildiğinde göster) -->
                                                     <div class="form-group" id="cancelReasonGroup{{ $order->id }}" style="{{ $order->status == 'cancelled' ? 'display: block;' : 'display: none;' }}">
-                                                        <label for="cancelReason{{ $order->id }}">Cancellation Reason</label>
+                                                        <label for="cancelReason{{ $order->id }}">İptal Nedeni</label>
                                                         <textarea name="cancel_reason" id="cancelReason{{ $order->id }}" class="form-control" rows="2"
-                                                            placeholder="Enter reason for cancellation...">{{ $order->cancellation_reason ?? '' }}</textarea>
+                                                            placeholder="İptal nedenini girin...">{{ $order->cancellation_reason ?? '' }}</textarea>
                                                     </div>
 
                                                     <!-- Order Details -->
                                                     <div class="mt-4">
-                                                        <h6 class="text-blue">Order Information</h6>
+                                                        <h6 class="text-blue">Sipariş Bilgileri</h6>
                                                         <div class="row">
                                                             <div class="col-md-4">
-                                                                <p><strong>Customer:</strong> {{ $order->customer_name }}</p>
-                                                                <p><strong>Phone:</strong> {{ $order->customer_phone }}</p>
+                                                                <p><strong>Müşteri:</strong> {{ $order->customer_name }}</p>
+                                                                <p><strong>Telefon:</strong> {{ $order->customer_phone }}</p>
                                                             </div>
                                                             <div class="col-md-4">
-                                                                <p><strong>Email:</strong> {{ $order->customer_email }}</p>
-                                                                <p><strong>Payment:</strong> 
+                                                                <p><strong>E-posta:</strong> {{ $order->customer_email }}</p>
+                                                                <p><strong>Ödeme:</strong> 
                                                                     @switch($order->payment_method)
                                                                         @case('eft') EFT/Havale @break
                                                                         @case('cash_on_delivery') Kapıda Nakit @break
@@ -269,27 +269,27 @@
                                                             <div class="col-md-4">
                                                                 @if($hasCancelledItems)
                                                                 <p>
-                                                                    <strong>Total:</strong> 
+                                                                    <strong>Toplam:</strong> 
                                                                     <del class="text-muted">₺{{ number_format($order->total, 2) }}</del>
                                                                     <span class="text-success">₺{{ number_format($currentTotal, 2) }}</span>
                                                                 </p>
                                                                 <p>
-                                                                    <strong>Cancelled:</strong> 
+                                                                    <strong>İptal Edilen:</strong> 
                                                                     <span class="text-danger">₺{{ number_format($cancelledTotal, 2) }}</span>
                                                                 </p>
                                                                 @else
-                                                                <p><strong>Total:</strong> ₺{{ number_format($order->total, 2) }}</p>
+                                                                <p><strong>Toplam:</strong> ₺{{ number_format($order->total, 2) }}</p>
                                                                 @endif
-                                                                <p><strong>Date:</strong> {{ $order->created_at->format('d M Y H:i') }}</p>
+                                                                <p><strong>Tarih:</strong> {{ $order->created_at->format('d M Y H:i') }}</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Close</button>
+                                                        data-dismiss="modal">Kapat</button>
                                                     <button type="submit" class="btn btn-primary">
-                                                        Update Order
+                                                        Sipariş Güncelle
                                                     </button>
                                                 </div>
                                             </form>
@@ -386,15 +386,15 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showNotification('Order deleted successfully', 'success');
+                    showNotification('Sipariş başarıyla silindi', 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
-                    showNotification(data.message || 'Error deleting order', 'error');
+                    showNotification(data.message || 'Sipariş silinirken hata oluştu', 'error');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                showNotification('Delete functionality needs to be implemented', 'error');
+                console.error('Hata:', error);
+                showNotification('Silme fonksiyonu uygulanması gerekiyor', 'error');
             });
         }
     </script>

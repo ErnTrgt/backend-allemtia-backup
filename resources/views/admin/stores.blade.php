@@ -1,6 +1,6 @@
 @extends('layouts.layout')
 
-@section('title', 'Store Management')
+@section('title', 'Mağaza Yönetimi')
 
 @section('content')
     <!-- CSRF Token meta tag -->
@@ -12,25 +12,25 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="title">
-                            <h4>Store Management</h4>
+                            <h4>Mağaza Yönetimi</h4>
                         </div>
                         <nav aria-label="breadcrumb" role="navigation">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Stores</li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Ana Sayfa</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Mağazalar</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-md-6 col-sm-12 text-right">
                         <div class="dropdown">
                             <a class="btn btn-primary dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                Filter By Status
+                                Duruma Göre Filtrele
                             </a>
                             <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="{{ route('admin.stores') }}">All Stores</a>
-                                <a class="dropdown-item" href="{{ route('admin.stores', ['status' => 'approved']) }}">Active</a>
-                                <a class="dropdown-item" href="{{ route('admin.stores', ['status' => 'rejected']) }}">Inactive</a>
-                                <a class="dropdown-item" href="{{ route('admin.stores', ['status' => 'pending']) }}">Pending Approval</a>
+                                <a class="dropdown-item" href="{{ route('admin.stores') }}">Tüm Mağazalar</a>
+                                <a class="dropdown-item" href="{{ route('admin.stores', ['status' => 'approved']) }}">Aktif</a>
+                                <a class="dropdown-item" href="{{ route('admin.stores', ['status' => 'rejected']) }}">Pasif</a>
+                                <a class="dropdown-item" href="{{ route('admin.stores', ['status' => 'pending']) }}">Onay Bekleyen</a>
                             </div>
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                                 <i class="dw dw-store"></i>
                             </div>
                         </div>
-                        <div class="font-14 text-secondary font-weight-medium">Total Stores</div>
+                        <div class="font-14 text-secondary font-weight-medium">Toplam Mağaza</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-12">
@@ -58,7 +58,7 @@
                                 <i class="dw dw-check"></i>
                             </div>
                         </div>
-                        <div class="font-14 text-secondary font-weight-medium">Active Stores</div>
+                        <div class="font-14 text-secondary font-weight-medium">Aktif Mağazalar</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-12">
@@ -69,7 +69,7 @@
                                 <i class="dw dw-clock"></i>
                             </div>
                         </div>
-                        <div class="font-14 text-secondary font-weight-medium">Pending Approval</div>
+                        <div class="font-14 text-secondary font-weight-medium">Onay Bekleyen</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-12">
@@ -80,7 +80,7 @@
                                 <i class="dw dw-ban"></i>
                             </div>
                         </div>
-                        <div class="font-14 text-secondary font-weight-medium">Inactive Stores</div>
+                        <div class="font-14 text-secondary font-weight-medium">Pasif Mağazalar</div>
                     </div>
                 </div>
             </div>
@@ -88,21 +88,21 @@
             <!-- Stores Table -->
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">Stores List</h4>
-                    <p class="text-muted">Manage all seller stores</p>
+                    <h4 class="text-blue h4">Mağaza Listesi</h4>
+                    <p class="text-muted">Tüm satıcı mağazalarını yönet</p>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
                                 <th class="table-plus">#</th>
-                                <th>Store Info</th>
-                                <th>Owner Details</th>
-                                <th>Products</th>
-                                <th>Performance</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th class="datatable-nosort">Actions</th>
+                                <th>Mağaza Bilgisi</th>
+                                <th>Sahip Detayları</th>
+                                <th>Ürünler</th>
+                                <th>Performans</th>
+                                <th>Durum</th>
+                                <th>Oluşturulma</th>
+                                <th class="datatable-nosort">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,7 +158,15 @@
                                                 <br><small class="text-muted">{{ $store->phone }}</small>
                                             @endif
                                             <br><span class="badge {{ $store->status === 'approved' ? 'badge-success' : ($store->status === 'pending' ? 'badge-warning' : 'badge-danger') }}">
-                                                {{ ucfirst($store->status) }}
+                                                @if($store->status === 'approved')
+                                                    Onaylandı
+                                                @elseif($store->status === 'pending')
+                                                    Beklemede
+                                                @elseif($store->status === 'rejected')
+                                                    Reddedildi
+                                                @else
+                                                    {{ ucfirst($store->status) }}
+                                                @endif
                                             </span>
                                         </div>
                                     </td>
@@ -166,11 +174,11 @@
                                         <div class="product-stats">
                                             <div class="stat-item">
                                                 <strong>{{ $totalProducts }}</strong>
-                                                <small class="text-muted d-block">Products</small>
+                                                <small class="text-muted d-block">Ürünler</small>
                                             </div>
                                             <div class="stat-item">
                                                 <strong>{{ $activeProducts }}</strong>
-                                                <small class="text-muted d-block">Active</small>
+                                                <small class="text-muted d-block">Aktif</small>
                                             </div>
                                         </div>
                                     </td>
@@ -178,11 +186,11 @@
                                         <div class="performance-stats">
                                             <div class="stat-item">
                                                 <strong>₺{{ number_format($totalRevenue, 0) }}</strong>
-                                                <small class="text-muted d-block">Revenue</small>
+                                                <small class="text-muted d-block">Gelir</small>
                                             </div>
                                             <div class="stat-item">
                                                 <strong>{{ $totalOrders }}</strong>
-                                                <small class="text-muted d-block">Orders</small>
+                                                <small class="text-muted d-block">Sipariş</small>
                                             </div>
                                             <div class="stat-item">
                                                 <div class="rating">
@@ -190,7 +198,7 @@
                                                         <i class="fa fa-star {{ $i <= $rating ? 'text-warning' : 'text-muted' }}"></i>
                                                     @endfor
                                                 </div>
-                                                <small class="text-muted d-block">{{ number_format($rating, 1) }} Rating</small>
+                                                <small class="text-muted d-block">{{ number_format($rating, 1) }} Değerlendirme</small>
                                             </div>
                                         </div>
                                     </td>
@@ -203,7 +211,15 @@
                                                 @default badge-secondary
                                             @endswitch
                                         ">
-                                            {{ ucfirst($store->status) }}
+                                            @if($store->status === 'approved')
+                                                Onaylandı
+                                            @elseif($store->status === 'pending')
+                                                Beklemede
+                                            @elseif($store->status === 'rejected')
+                                                Reddedildi
+                                            @else
+                                                {{ ucfirst($store->status) }}
+                                            @endif
                                         </span>
                                     </td>
                                     <td>
@@ -219,30 +235,30 @@
                                             <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                                                 <a class="dropdown-item" data-toggle="modal"
                                                     data-target="#viewStoreModal{{ $store->id }}" href="#">
-                                                    <i class="dw dw-eye"></i> View Details
+                                                    <i class="dw dw-eye"></i> Detayları Görüntüle
                                                 </a>
                                                 <a class="dropdown-item" 
                                                     href="{{ route('admin.seller.products', $store->id) }}">
-                                                    <i class="dw dw-box"></i> View Products
+                                                    <i class="dw dw-box"></i> Ürünleri Görüntüle
                                                 </a>
                                                 <a class="dropdown-item" data-toggle="modal"
                                                     data-target="#editStoreModal{{ $store->id }}" href="#">
-                                                    <i class="dw dw-edit2"></i> Edit Store
+                                                    <i class="dw dw-edit2"></i> Mağaza Düzenle
                                                 </a>
                                                 @if($store->status === 'approved')
                                                     <a class="dropdown-item" href="#"
                                                         onclick="toggleStoreStatus({{ $store->id }})">
-                                                        <i class="dw dw-ban"></i> Deactivate
+                                                        <i class="dw dw-ban"></i> Pasifleştir
                                                     </a>
                                                 @else
                                                     <a class="dropdown-item" href="#"
                                                         onclick="toggleStoreStatus({{ $store->id }})">
-                                                        <i class="dw dw-check"></i> Activate
+                                                        <i class="dw dw-check"></i> Aktifleştir
                                                     </a>
                                                 @endif
                                                 <a class="dropdown-item text-danger" href="#"
                                                     onclick="deleteStore({{ $store->id }})">
-                                                    <i class="dw dw-delete-3"></i> Delete
+                                                    <i class="dw dw-delete-3"></i> Sil
                                                 </a>
                                             </div>
                                         </div>
@@ -255,7 +271,7 @@
                                     <div class="modal-dialog modal-lg modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header bg-primary text-white">
-                                                <h4 class="modal-title">Store Details - {{ $store->store_name ?? $store->name }}</h4>
+                                                <h4 class="modal-title">Mağaza Detayları - {{ $store->store_name ?? $store->name }}</h4>
                                                 <button type="button" class="close text-white" data-dismiss="modal"
                                                     aria-hidden="true">×</button>
                                             </div>
@@ -283,33 +299,41 @@
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="owner-profile">
-                                                            <h6>Owner Information</h6>
+                                                            <h6>Sahip Bilgileri</h6>
                                                             <div class="info-item">
-                                                                <span class="info-label">Name:</span>
+                                                                <span class="info-label">İsim:</span>
                                                                 <span class="info-value">{{ $store->name }}</span>
                                                             </div>
                                                             <div class="info-item">
-                                                                <span class="info-label">Email:</span>
+                                                                <span class="info-label">E-posta:</span>
                                                                 <span class="info-value">{{ $store->email }}</span>
                                                             </div>
                                                             @if($store->phone)
                                                                 <div class="info-item">
-                                                                    <span class="info-label">Phone:</span>
+                                                                    <span class="info-label">Telefon:</span>
                                                                     <span class="info-value">{{ $store->phone }}</span>
                                                                 </div>
                                                             @endif
                                                             <div class="info-item">
-                                                                <span class="info-label">Status:</span>
+                                                                <span class="info-label">Durum:</span>
                                                                 <span class="badge {{ $store->status === 'approved' ? 'badge-success' : ($store->status === 'pending' ? 'badge-warning' : 'badge-danger') }}">
-                                                                    {{ ucfirst($store->status) }}
+                                                                    @if($store->status === 'approved')
+                                                                        Onaylandı
+                                                                    @elseif($store->status === 'pending')
+                                                                        Beklemede
+                                                                    @elseif($store->status === 'rejected')
+                                                                        Reddedildi
+                                                                    @else
+                                                                        {{ ucfirst($store->status) }}
+                                                                    @endif
                                                                 </span>
                                                             </div>
                                                             <div class="info-item">
-                                                                <span class="info-label">Commission Rate:</span>
+                                                                <span class="info-label">Komisyon Oranı:</span>
                                                                 <span class="info-value">{{ $store->commission_rate ?? 10 }}%</span>
                                                             </div>
                                                             <div class="info-item">
-                                                                <span class="info-label">Joined:</span>
+                                                                <span class="info-label">Katılma:</span>
                                                                 <span class="info-value">{{ $store->created_at->format('d M Y') }}</span>
                                                             </div>
                                                         </div>
@@ -319,30 +343,30 @@
                                                 <!-- Performance Metrics -->
                                                 <div class="row mt-4">
                                                     <div class="col-12">
-                                                        <h6>Performance Metrics</h6>
+                                                        <h6>Performans Metrikleri</h6>
                                                         <div class="row">
                                                             <div class="col-md-3">
                                                                 <div class="metric-card">
                                                                     <div class="metric-value">{{ $totalProducts }}</div>
-                                                                    <div class="metric-label">Total Products</div>
+                                                                    <div class="metric-label">Toplam Ürün</div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-3">
                                                                 <div class="metric-card">
                                                                     <div class="metric-value">{{ $totalOrders }}</div>
-                                                                    <div class="metric-label">Total Orders</div>
+                                                                    <div class="metric-label">Toplam Sipariş</div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-3">
                                                                 <div class="metric-card">
                                                                     <div class="metric-value">₺{{ number_format($totalRevenue, 0) }}</div>
-                                                                    <div class="metric-label">Revenue</div>
+                                                                    <div class="metric-label">Gelir</div>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-3">
                                                                 <div class="metric-card">
                                                                     <div class="metric-value">{{ number_format($rating, 1) }} ⭐</div>
-                                                                    <div class="metric-label">Rating</div>
+                                                                    <div class="metric-label">Değerlendirme</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -350,9 +374,9 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
                                                 <a href="{{ route('admin.seller.products', $store->id) }}" class="btn btn-primary">
-                                                    View Products
+                                                    Ürünleri Görüntüle
                                                 </a>
                                             </div>
                                         </div>
@@ -365,7 +389,7 @@
                                     <div class="modal-dialog modal-lg modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header bg-success text-white">
-                                                <h4 class="modal-title">Edit Store</h4>
+                                                <h4 class="modal-title">Mağaza Düzenle</h4>
                                                 <button type="button" class="close text-white" data-dismiss="modal"
                                                     aria-hidden="true">×</button>
                                             </div>
@@ -376,31 +400,31 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="storeName{{ $store->id }}">Store Name</label>
+                                                                <label for="storeName{{ $store->id }}">Mağaza Adı</label>
                                                                 <input type="text" name="store_name" id="storeName{{ $store->id }}"
                                                                     class="form-control" value="{{ $store->store_name ?? $store->name }}" required>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="storeStatus{{ $store->id }}">Status</label>
+                                                                <label for="storeStatus{{ $store->id }}">Durum</label>
                                                                 <select name="status" id="storeStatus{{ $store->id }}" class="form-control" required>
-                                                                    <option value="approved" {{ $store->status === 'approved' ? 'selected' : '' }}>Active</option>
-                                                                    <option value="rejected" {{ $store->status === 'rejected' ? 'selected' : '' }}>Inactive</option>
-                                                                    <option value="pending" {{ $store->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                                                    <option value="approved" {{ $store->status === 'approved' ? 'selected' : '' }}>Aktif</option>
+                                                                    <option value="rejected" {{ $store->status === 'rejected' ? 'selected' : '' }}>Pasif</option>
+                                                                    <option value="pending" {{ $store->status === 'pending' ? 'selected' : '' }}>Beklemede</option>
                                                                 </select>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="storeDescription{{ $store->id }}">Description</label>
+                                                        <label for="storeDescription{{ $store->id }}">Açıklama</label>
                                                         <textarea name="description" id="storeDescription{{ $store->id }}" 
                                                             class="form-control" rows="3">{{ $store->store_description ?? '' }}</textarea>
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="storeCommission{{ $store->id }}">Commission Rate (%)</label>
+                                                                <label for="storeCommission{{ $store->id }}">Komisyon Oranı (%)</label>
                                                                 <input type="number" name="commission_rate" id="storeCommission{{ $store->id }}"
                                                                     class="form-control" value="{{ $store->commission_rate ?? 10 }}" 
                                                                     min="0" max="100" step="0.1">
@@ -415,22 +439,22 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="storeAddress{{ $store->id }}">Address</label>
+                                                        <label for="storeAddress{{ $store->id }}">Adres</label>
                                                         <textarea name="address" id="storeAddress{{ $store->id }}" 
                                                             class="form-control" rows="2">{{ $store->address ?? '' }}</textarea>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="storeLogo{{ $store->id }}">Store Logo</label>
+                                                        <label for="storeLogo{{ $store->id }}">Mağaza Logosu</label>
                                                         <input type="file" name="logo" id="storeLogo{{ $store->id }}"
                                                             class="form-control-file" accept="image/*">
                                                         @if(isset($store->logo) && $store->logo)
-                                                            <small class="text-muted">Current logo will be replaced if new one is uploaded</small>
+                                                            <small class="text-muted">Mevcut logo yenisiyle değiştirilecektir</small>
                                                         @endif
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-success">Update Store</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
+                                                    <button type="submit" class="btn btn-success">Mağaza Güncelle</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -441,8 +465,8 @@
                                     <td colspan="8" class="text-center py-5">
                                         <div class="empty-state">
                                             <i class="dw dw-store text-muted mb-3" style="font-size: 48px;"></i>
-                                            <h5 class="text-muted">No stores found</h5>
-                                            <p class="text-muted">No seller stores have been created yet.</p>
+                                            <h5 class="text-muted">Mağaza bulunamadı</h5>
+                                            <p class="text-muted">Henüz satıcı mağazası oluşturulmamış.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -583,7 +607,7 @@
         @if(session('success'))
             Swal.fire({
                 icon: 'success',
-                title: 'Success!',
+                title: 'Başarılı!',
                 text: '{{ session('success') }}',
                 timer: 3000,
                 showConfirmButton: false
@@ -593,7 +617,7 @@
         @if(session('error'))
             Swal.fire({
                 icon: 'error',
-                title: 'Error!',
+                title: 'Hata!',
                 text: '{{ session('error') }}',
                 timer: 3000,
                 showConfirmButton: false
@@ -602,13 +626,14 @@
 
         function toggleStoreStatus(storeId) {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to change the status of this store?",
+                title: 'Emin misiniz?',
+                text: "Bu mağazanın durumunu değiştirmek istiyor musunuz?",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, change it!'
+                confirmButtonText: 'Evet, değiştir!',
+                cancelButtonText: 'İptal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Create form and submit
@@ -630,14 +655,14 @@
 
         function deleteStore(storeId) {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "This will permanently delete the store and all associated data!",
+                title: 'Emin misiniz?',
+                text: "Bu mağazayı ve tüm ilişkili verileri kalıcı olarak silecek!",
                 icon: 'error',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel'
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'İptal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Create form and submit

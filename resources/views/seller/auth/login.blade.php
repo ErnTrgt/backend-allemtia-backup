@@ -15,7 +15,7 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <div class="brand-logo">
                 <a href="{{ route('seller.login.submit') }}">
-                    <img src="{{ asset('/admin/vendors/images/deskapp-logo.svg') }}" alt="" />
+                    <img src="{{ asset('admin/src/images/emtialogo.png') }}" alt="" />
                 </a>
             </div>
         </div>
