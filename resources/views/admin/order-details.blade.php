@@ -1,6 +1,6 @@
 @extends('layouts.layout')
 
-@section('title', 'Order Details')
+@section('title', 'Sipariş Detayları')
 
 @section('content')
     <!-- Base URL'i sabit olarak tanımla -->
@@ -15,22 +15,22 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="title">
-                            <h4>Order Details</h4>
+                            <h4>Sipariş Detayları</h4>
                         </div>
                         <nav aria-label="breadcrumb" role="navigation">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                                <li class="breadcrumb-item"><a href="{{ route('admin.orders') }}">Orders</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Order #{{ $order->order_number }}</li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Ana Sayfa</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.orders') }}">Siparişler</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Sipariş #{{ $order->order_number }}</li>
                             </ol>
                         </nav>
                     </div>
                     <div class="col-md-6 col-sm-12 text-right">
                         <a href="{{ route('admin.orders') }}" class="btn btn-secondary">
-                            <i class="dw dw-arrow-left"></i> Back to Orders
+                            <i class="dw dw-arrow-left"></i> Siparişlere Dön
                         </a>
                         <button onclick="printOrder()" class="btn btn-primary ml-2">
-                            <i class="dw dw-print"></i> Print Order
+                            <i class="dw dw-print"></i> Sipariş Yazdır
                         </button>
                     </div>
                 </div>
@@ -41,10 +41,10 @@
                 <div class="pd-20">
                     <div class="row">
                         <div class="col-md-8">
-                            <h4 class="text-blue mb-10">Order #{{ $order->order_number }}</h4>
+                            <h4 class="text-blue mb-10">Sipariş #{{ $order->order_number }}</h4>
                             <p class="text-muted mb-0">
                                 <i class="dw dw-calendar1 mr-2"></i>
-                                Ordered on {{ $order->created_at->format('d M Y, H:i') }}
+                                Sipariş tarihi {{ $order->created_at->format('d M Y, H:i') }}
                             </p>
                         </div>
                         <div class="col-md-4 text-right">
@@ -80,7 +80,7 @@
                             </div>
                             <div class="order-total mt-3">
                                 <h3 class="text-primary mb-0">₺{{ number_format($order->total, 2) }}</h3>
-                                <small class="text-muted">Total Amount</small>
+                                <small class="text-muted">Toplam Tutar</small>
                             </div>
                         </div>
                     </div>
@@ -93,26 +93,26 @@
                     <div class="card-box mb-30">
                         <div class="pd-20 bg-primary text-white">
                             <h5 class="mb-0">
-                                <i class="dw dw-user1 mr-2"></i>Customer Information
+                                <i class="dw dw-user1 mr-2"></i>Müşteri Bilgileri
                             </h5>
                         </div>
                         <div class="pd-20">
                             <div class="profile-info">
                                 <div class="info-item mb-3">
-                                    <span class="info-label">Name:</span>
+                                    <span class="info-label">İsim:</span>
                                     <span class="info-value">{{ $order->customer_name }}</span>
                                 </div>
                                 <div class="info-item mb-3">
-                                    <span class="info-label">Email:</span>
+                                    <span class="info-label">E-posta:</span>
                                     <span class="info-value">{{ $order->customer_email }}</span>
                                 </div>
                                 <div class="info-item mb-3">
-                                    <span class="info-label">Phone:</span>
+                                    <span class="info-label">Telefon:</span>
                                     <span class="info-value">{{ $order->customer_phone }}</span>
                                 </div>
                                 @if($order->shipping_address)
                                 <div class="info-item">
-                                    <span class="info-label">Address:</span>
+                                    <span class="info-label">Adres:</span>
                                     <span class="info-value">
                                         @if(is_string($order->shipping_address))
                                             @php $address = json_decode($order->shipping_address, true); @endphp
@@ -135,13 +135,13 @@
                     <div class="card-box mb-30">
                         <div class="pd-20 bg-success text-white">
                             <h5 class="mb-0">
-                                <i class="dw dw-credit-card mr-2"></i>Payment & Shipping
+                                <i class="dw dw-credit-card mr-2"></i>Ödeme ve Kargo
                             </h5>
                         </div>
                         <div class="pd-20">
                             <div class="profile-info">
                                 <div class="info-item mb-3">
-                                    <span class="info-label">Payment Method:</span>
+                                    <span class="info-label">Ödeme Yöntemi:</span>
                                     <span class="info-value">
                                         @switch($order->payment_method)
                                             @case('eft') 
@@ -157,24 +157,24 @@
                                 </div>
                                 @if($order->tracking_number)
                                 <div class="info-item mb-3">
-                                    <span class="info-label">Tracking Number:</span>
+                                    <span class="info-label">Takip Numarası:</span>
                                     <span class="info-value">
                                         <code>{{ $order->tracking_number }}</code>
                                         <button class="btn btn-sm btn-outline-primary ml-2" onclick="copyToClipboard('{{ $order->tracking_number }}')">
-                                            Copy
+                                            Kopyala
                                         </button>
                                     </span>
                                 </div>
                                 @endif
                                 @if($order->status_note)
                                 <div class="info-item mb-3">
-                                    <span class="info-label">Order Note:</span>
+                                    <span class="info-label">Sipariş Notu:</span>
                                     <span class="info-value">{{ $order->status_note }}</span>
                                 </div>
                                 @endif
                                 @if($order->status === 'cancelled' && $order->cancellation_reason)
                                 <div class="info-item">
-                                    <span class="info-label">Cancellation Reason:</span>
+                                    <span class="info-label">İptal Nedeni:</span>
                                     <span class="info-value text-danger">{{ $order->cancellation_reason }}</span>
                                 </div>
                                 @endif
@@ -188,7 +188,7 @@
             <div class="card-box mb-30">
                 <div class="pd-20 bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="dw dw-box mr-2"></i>Order Items ({{ $order->items->count() }} items)
+                        <i class="dw dw-box mr-2"></i>Sipariş Ürünleri ({{ $order->items->count() }} ürün)
                         @if($order->items->where('is_cancelled', true)->count() > 0)
                             <span class="badge badge-danger ml-2">{{ $order->items->where('is_cancelled', true)->count() }} İptal Edilmiş Ürün</span>
                         @endif
@@ -200,13 +200,13 @@
                             <thead>
                                 <tr>
                                     <th style="width: 60px;">#</th>
-                                    <th>Product</th>
-                                    <th>Seller</th>
-                                    <th>Size</th>
-                                    <th>Price</th>
-                                    <th>Quantity</th>
-                                    <th>Subtotal</th>
-                                    <th>Status</th>
+                                    <th>Ürün</th>
+                                    <th>Satıcı</th>
+                                    <th>Beden</th>
+                                    <th>Fiyat</th>
+                                    <th>Miktar</th>
+                                    <th>Ara Toplam</th>
+                                    <th>Durum</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -260,7 +260,7 @@
                                                 </a>
                                             </div>
                                         @else
-                                            <span class="text-muted">Unknown Seller</span>
+                                            <span class="text-muted">Bilinmeyen Satıcı</span>
                                         @endif
                                     </td>
                                     <td>
@@ -340,7 +340,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="table-active">
-                                    <td colspan="6" class="text-right"><strong>Total Amount:</strong></td>
+                                    <td colspan="6" class="text-right"><strong>Toplam Tutar:</strong></td>
                                     <td colspan="2"><strong class="text-primary h5">₺{{ number_format($order->total, 2) }}</strong></td>
                                 </tr>
                                 @if($order->items->where('is_cancelled', true)->count() > 0)
@@ -372,7 +372,7 @@
             <div class="card-box mb-30">
                 <div class="pd-20 bg-warning text-white">
                     <h5 class="mb-0">
-                        <i class="dw dw-timeline mr-2"></i>Order Timeline
+                        <i class="dw dw-timeline mr-2"></i>Sipariş Zaman Çizelgesi
                     </h5>
                 </div>
                 <div class="pd-20">
@@ -380,7 +380,7 @@
                         <div class="timeline-item">
                             <div class="timeline-marker bg-primary"></div>
                             <div class="timeline-content">
-                                <h6>Order Placed</h6>
+                                <h6>Sipariş Verildi</h6>
                                 <p class="text-muted mb-0">{{ $order->created_at->format('d M Y, H:i') }}</p>
                             </div>
                         </div>
@@ -388,7 +388,7 @@
                         <div class="timeline-item">
                             <div class="timeline-marker bg-success"></div>
                             <div class="timeline-content">
-                                <h6>Order Confirmed</h6>
+                                <h6>Sipariş Onaylandı</h6>
                                 <p class="text-muted mb-0">{{ $order->updated_at->format('d M Y, H:i') }}</p>
                             </div>
                         </div>
@@ -397,9 +397,9 @@
                         <div class="timeline-item">
                             <div class="timeline-marker bg-info"></div>
                             <div class="timeline-content">
-                                <h6>Order Shipped</h6>
+                                <h6>Sipariş Kargoya Verildi</h6>
                                 @if($order->tracking_number)
-                                    <p class="text-muted mb-0">Tracking: {{ $order->tracking_number }}</p>
+                                    <p class="text-muted mb-0">Takip: {{ $order->tracking_number }}</p>
                                 @endif
                             </div>
                         </div>
@@ -408,8 +408,8 @@
                         <div class="timeline-item">
                             <div class="timeline-marker bg-success"></div>
                             <div class="timeline-content">
-                                <h6>Order Delivered</h6>
-                                <p class="text-muted mb-0">Order completed successfully</p>
+                                <h6>Sipariş Teslim Edildi</h6>
+                                <p class="text-muted mb-0">Sipariş başarıyla tamamlandı</p>
                             </div>
                         </div>
                         @endif
@@ -417,7 +417,7 @@
                         <div class="timeline-item">
                             <div class="timeline-marker bg-danger"></div>
                             <div class="timeline-content">
-                                <h6>Order Cancelled</h6>
+                                <h6>Sipariş İptal Edildi</h6>
                                 @if($order->cancellation_reason)
                                     <p class="text-muted mb-0">{{ $order->cancellation_reason }}</p>
                                 @endif
@@ -573,9 +573,9 @@
         
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(function() {
-                alert('Tracking number copied to clipboard!');
+                alert('Takip numarası panoya kopyalandı!');
             }, function(err) {
-                console.error('Could not copy text: ', err);
+                console.error('Metin kopyalanamadı: ', err);
             });
         }
         

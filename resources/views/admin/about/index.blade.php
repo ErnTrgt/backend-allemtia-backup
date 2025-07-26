@@ -1,6 +1,6 @@
 @extends('layouts.layout')
 
-@section('title', 'About Page Content')
+@section('title', 'Hakkımızda Sayfa İçeriği')
 
 @section('content')
 <div class="pd-ltr-20 xs-pd-20-10">
@@ -9,18 +9,18 @@
             <div class="row">
                 <div class="col-md-6 col-sm-12">
                     <div class="title">
-                        <h4>About Page Content Management</h4>
+                        <h4>Hakkımızda Sayfa İçerik Yönetimi</h4>
                     </div>
                     <nav aria-label="breadcrumb" role="navigation">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">About Page</li>
+                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Ana Sayfa</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Hakkımızda Sayfası</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="col-md-6 col-sm-12 text-right">
                     <button class="btn btn-success" data-toggle="modal" data-target="#addAboutModal">
-                        + Add New Section
+                        + Yeni Bölüm Ekle
                     </button>
                 </div>
             </div>
@@ -28,19 +28,19 @@
 
         <div class="card-box mb-30">
             <div class="pd-20">
-                <h4 class="text-blue h4">About Page Sections</h4>
+                <h4 class="text-blue h4">Hakkımızda Sayfa Bölümleri</h4>
             </div>
             <div class="pb-20">
                 <table class="data-table table stripe hover nowrap dt-responsive" style="width:100%">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Section Key</th>
-                            <th>Title</th>
-                            <th>Content</th>
-                            <th>Status</th>
-                            <th>Image</th>
-                            <th class="datatable-nosort">Action</th>
+                            <th>Bölüm Anahtarı</th>
+                            <th>Başlık</th>
+                            <th>İçerik</th>
+                            <th>Durum</th>
+                            <th>Resim</th>
+                            <th class="datatable-nosort">İşlem</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,14 +52,14 @@
                             <td>{{ Str::limit(strip_tags($section->content), 50) }}</td>
                             <td>
                                 <span class="badge {{ $section->status ? 'badge-success' : 'badge-danger' }}">
-                                    {{ $section->status ? 'Active' : 'Inactive' }}
+                                    {{ $section->status ? 'Aktif' : 'Pasif' }}
                                 </span>
                             </td>
                             <td>
                                 @if($section->image)
                                     <img src="{{ asset('storage/' . $section->image) }}" alt="Section Image" width="80">
                                 @else
-                                    <span>No Image</span>
+                                    <span>Resim Yok</span>
                                 @endif
                             </td>
                             <td>
@@ -69,18 +69,18 @@
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                                         <a class="dropdown-item" href="{{ route('admin.about.edit', $section->id) }}">
-                                            <i class="dw dw-edit2"></i> Edit
+                                            <i class="dw dw-edit2"></i> Düzenle
                                         </a>
                                         <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('toggle-status-{{ $section->id }}').submit();">
                                             <i class="dw {{ $section->status ? 'dw-ban' : 'dw-check' }}"></i>
-                                            {{ $section->status ? 'Deactivate' : 'Activate' }}
+                                            {{ $section->status ? 'Pasifleştir' : 'Aktifleştir' }}
                                         </a>
                                         <form id="toggle-status-{{ $section->id }}" action="{{ route('admin.about.toggleStatus', $section->id) }}" method="POST" style="display: none;">
                                             @csrf
                                             @method('PUT')
                                         </form>
                                         <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('delete-about-{{ $section->id }}').submit();">
-                                            <i class="dw dw-delete-3"></i> Delete
+                                            <i class="dw dw-delete-3"></i> Sil
                                         </a>
                                         <form id="delete-about-{{ $section->id }}" action="{{ route('admin.about.delete', $section->id) }}" method="POST" style="display: none;">
                                             @csrf
@@ -104,32 +104,32 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Add New About Section</h4>
+                <h4 class="modal-title">Yeni Hakkımızda Bölümü Ekle</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             </div>
             <form action="{{ route('admin.about.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Section Key <small>(e.g. heading, area, features)</small></label>
+                        <label>Bölüm Anahtarı <small>(örn: heading, area, features)</small></label>
                         <input type="text" name="section_key" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Title</label>
+                        <label>Başlık</label>
                         <input type="text" name="title" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Content</label>
+                        <label>İçerik</label>
                         <textarea name="content" class="form-control" rows="5"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Image</label>
+                        <label>Resim</label>
                         <input type="file" name="image" class="form-control-file">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Add Section</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Bölüm Ekle</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
                 </div>
             </form>
         </div>

@@ -12,9 +12,9 @@
                 <li class="{{ request()->routeIs('seller.dashboard') ? 'active' : '' }}">
                     <a href="{{ route('seller.dashboard') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-house"></span>
-                        <span class="mtext">Dashboard</span>
+                        <span class="mtext">Dasssssshboard</span>
                     </a>
-                </li>
+                </li> 
                 <li class="{{ request()->routeIs('seller.products*') ? 'active' : '' }}">
                     <a href="{{ route('seller.products') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-box-seam"></span>

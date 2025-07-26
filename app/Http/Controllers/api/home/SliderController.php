@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Api\home;
+namespace App\Http\Controllers\api\home;
 
 use App\Http\Controllers\Controller;
 use App\Models\Slider;
