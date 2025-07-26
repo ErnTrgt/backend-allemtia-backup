@@ -167,10 +167,22 @@ class OrderController extends Controller
                 ], 401);
             }
 
+            // Siparişleri ürün görselleriyle birlikte çek
             $orders = Order::where('user_id', $user->id)
-                ->with('items')
+                ->with(['items.product.images'])
                 ->orderBy('created_at', 'desc')
                 ->get();
+
+            // Her sipariş öğesine ürün görseli ekle
+            foreach ($orders as $order) {
+                foreach ($order->items as $item) {
+                    if ($item->relationLoaded('product') && $item->product && $item->product->relationLoaded('images') && $item->product->images->isNotEmpty()) {
+                        $item->product_image = url('storage/' . $item->product->images->first()->image_path);
+                    } else {
+                        $item->product_image = null;
+                    }
+                }
+            }
 
             \Log::info('Orders found:', ['count' => $orders->count()]);
 
