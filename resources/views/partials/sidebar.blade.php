@@ -11,31 +11,31 @@
                 <li class="{{ Request::is('admin/dashboard') ? 'active' : '' }}">
                     <a href="{{ url('/admin/dashboard') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-speedometer2"></span>
-                        <span class="mtext">Dashboard</span>
+                        <span class="mtext">Anasayfa</span>
                     </a>
                 </li>
                 <li class="{{ Request::is('admin/users*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/users') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-people"></span>
-                        <span class="mtext">Users</span>
+                        <span class="mtext">Kullanıcılar</span>
                     </a>
                 </li>
                 <li class="{{ Request::is('admin/products*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/products') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-box-seam"></span>
-                        <span class="mtext">Products</span>
+                        <span class="mtext">Ürünler</span>
                     </a>
                 </li>
                 <li class="{{ Request::is('admin/stores*') || Request::is('admin/store/*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/stores') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-shop"></span>
-                        <span class="mtext">Stores</span>
+                        <span class="mtext">Mağazalar</span>
                     </a>
                 </li>
                 <li class="{{ Request::is('admin/orders*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/orders') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-cart-check"></span>
-                        <span class="mtext">Orders</span>
+                        <span class="mtext">Siparişler</span>
                     </a>
 
                     
@@ -43,19 +43,19 @@
                 <li class="{{ Request::is('admin/about*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/about') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-info-circle"></span>
-                        <span class="mtext">Abouts</span>
+                        <span class="mtext">Hakkımızda</span>
                     </a>
                 </li>
                   <li class="{{ Request::is('admin/blogs*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/blogs') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-info-circle"></span>
-                        <span class="mtext">Blog</span>
+                        <span class="mtext">Bloglar</span>
                     </a>
                 </li>
                 <li class="{{ Request::is('admin/faqs*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/faqs') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-question-circle"></span>
-                        <span class="mtext">Faq</span>
+                        <span class="mtext">Sıkça Sorulan Sorular</span>
                     </a>
                 </li>
                 <li class="{{ Request::is('admin/sliders*') ? 'active' : '' }}">
@@ -67,20 +67,20 @@
                 <li class="{{ Request::is('admin/coupons*') ? 'active' : '' }}">
                     <a href="{{ url('/admin/coupons') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-tag"></span>
-                        <span class="mtext">Coupon</span>
+                        <span class="mtext">Kuponlar</span>
                     </a>
                 </li>
                 <li class="dropdown {{ Request::is('admin/profile*') || Request::is('admin/account*') ? 'active show' : '' }}">
                     <a href="javascript:;" class="dropdown-toggle">
                         <span class="micon bi bi-gear"></span>
-                        <span class="mtext">Settings</span>
+                        <span class="mtext">Ayarlar</span>
                     </a>
                     <ul class="submenu" style="{{ Request::is('admin/profile*') || Request::is('admin/account*') ? 'display: block;' : '' }}">
                         <li class="{{ Request::is('admin/profile*') ? 'active' : '' }}">
-                            <a href="{{ url('/admin/profile') }}">Profile</a>
+                            <a href="{{ url('/admin/profile') }}">Profil</a>
                         </li>
                         <li class="{{ Request::is('admin/account*') ? 'active' : '' }}">
-                            <a href="#">Account</a>
+                            <a href="#">Hesap</a>
                         </li>
                     </ul>
                 </li>

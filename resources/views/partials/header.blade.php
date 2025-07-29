@@ -102,10 +102,10 @@
                 @csrf
             </form>
             <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-                <a class="dropdown-item" href="{{ url('/admin/profile') }}"><i class="dw dw-user1"></i> Profile</a>
-                <a class="dropdown-item" href="#"><i class="dw dw-settings2"></i> Setting</a>
+                <a class="dropdown-item" href="{{ url('/admin/profile') }}"><i class="dw dw-user1"></i> Profil</a>
+                <a class="dropdown-item" href="#"><i class="dw dw-settings2"></i> Ayarlar</a>
                 <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="dw dw-logout"></i> Log Out
+                    <i class="dw dw-logout"></i> Çıkış Yap
                 </a>
             </div>
         </div>

@@ -8,31 +8,30 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="title">
-                            <h4>My Products</h4>
+                            <h4>Ürünlerim</h4>
                         </div>
                     </div>
                     <div class="col-md-6 col-sm-12 text-right">
-                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">Add New
-                            Product</a>
+                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">Yeni Ürün Ekle</a>
                     </div>
                 </div>
             </div>
 
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">Products Table</h4>
+                    <h4 class="text-blue h4">Ürünler Tablosu</h4>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
-                                <th class="table-plus datatable-nosort">Image</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Status</th>
-                                <th class="datatable-nosort">Action</th>
+                                <th class="table-plus datatable-nosort">Görsel</th>
+                                <th>Adı</th>
+                                <th>Açıklama</th>
+                                <th>Fiyat</th>
+                                <th>Stok</th>
+                                <th>Durum</th>
+                                <th class="datatable-nosort">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -43,7 +42,7 @@
                                             <img src="{{ asset('storage/' . $product->images->first()->image_path) }}"
                                                 alt="Product Image" width="100" height="100">
                                         @else
-                                            <span>No Image</span>
+                                            <span>Görsel Yok</span>
                                         @endif
                                     </td>
                                     <td>{{ $product->name }}</td>
@@ -52,7 +51,7 @@
                                     <td>{{ $product->stock }}</td>
                                     <td>
                                         <span class="badge {{ $product->status ? 'badge-success' : 'badge-danger' }}">
-                                            {{ $product->status ? 'Active' : 'Inactive' }}
+                                            {{ $product->status ? 'Aktif' : 'Deaktif' }}
                                         </span>
                                     </td>
                                     <td>
@@ -64,15 +63,15 @@
                                             <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                                                 <a class="dropdown-item"
                                                     href="{{ route('seller.products.details', $product->id) }}">
-                                                    <i class="dw dw-eye"></i> View
+                                                    <i class="dw dw-eye"></i> Görüntüle
                                                 </a>
                                                 <a class="dropdown-item" data-toggle="modal"
                                                     data-target="#editProductModal{{ $product->id }}" href="#"><i
-                                                        class="dw dw-edit2"></i> Edit</a>
+                                                        class="dw dw-edit2"></i> Düzenle</a>
                                                 <a class="dropdown-item" href="#"
                                                     onclick="event.preventDefault(); document.getElementById('toggle-status-{{ $product->id }}').submit();">
                                                     <i class="dw {{ $product->status ? 'dw-ban' : 'dw-check' }}"></i>
-                                                    {{ $product->status ? 'Deactivate' : 'Activate' }}
+                                                    {{ $product->status ? 'Deaktif Et' : 'Aktif Et' }}
                                                 </a>
                                                 <form id="toggle-status-{{ $product->id }}"
                                                     action="{{ route('seller.products.toggleStatus', $product->id) }}"
@@ -91,7 +90,7 @@
                                     <div class="modal-dialog modal-lg modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h4 class="modal-title" id="editProductModalLabel">Edit Product</h4>
+                                                <h4 class="modal-title" id="editProductModalLabel">Ürünü Düzenle</h4>
                                                 <button type="button" class="close" data-dismiss="modal"
                                                     aria-hidden="true">×</button>
                                             </div>
@@ -101,15 +100,15 @@
                                                 @method('PUT')
                                                 <div class="modal-body">
                                                     <div class="form-group">
-                                                        <label for="productName">Product Name</label>
+                                                        <label for="productName">Ürün Adı</label>
                                                         <input type="text" name="name" id="productName"
                                                             class="form-control" value="{{ $product->name }}" required>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="category{{ $product->id }}">Category</label>
+                                                        <label for="category{{ $product->id }}">Kategori</label>
                                                         <select name="category_id" id="category{{ $product->id }}"
                                                             class="form-control" required>
-                                                            <option value="">Select Category</option>
+                                                            <option value="">Kategori Seçin</option>
                                                             @foreach ($categoryTree as $item)
                                                                 @php
                                                                     $prefix = str_repeat('-- ', $item['level']);
@@ -122,22 +121,22 @@
                                                         </select>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="productPrice">Price</label>
+                                                        <label for="productPrice">Fiyat</label>
                                                         <input type="number" name="price" id="productPrice"
                                                             class="form-control" value="{{ $product->price }}"
                                                             step="0.01" required>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="productStock">Stock</label>
+                                                        <label for="productStock">Stok</label>
                                                         <input type="number" name="stock" id="productStock"
                                                             class="form-control" value="{{ $product->stock }}" required>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="productDescription">Description</label>
+                                                        <label for="productDescription">Açıklama</label>
                                                         <textarea name="description" id="productDescription" class="form-control" rows="4">{{ $product->description }}</textarea>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="editProductImages">Additional Images</label>
+                                                        <label for="editProductImages">Ekstra Görsel</label>
                                                         <input type="file" name="images[]" id="editProductImages"
                                                             class="form-control-file" multiple>
                                                     </div>
@@ -145,8 +144,8 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                                        data-dismiss="modal">Kapat</button>
+                                                    <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -155,7 +154,7 @@
                                 <!-- Edit Product Modal End -->
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">No products found.</td>
+                                    <td colspan="6" class="text-center">Ürün bulunamadı.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -171,20 +170,20 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="addProductModalLabel">Add New Product</h4>
+                    <h4 class="modal-title" id="addProductModalLabel">Yeni Ürün Ekle</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
                 <form action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="productName">Product Name</label>
+                            <label for="productName">Ürün Adı</label>
                             <input type="text" name="name" id="productName" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="category">Category</label>
+                            <label for="category">Kategori</label>
                             <select name="category_id" id="category" class="form-control" required>
-                                <option value="">Select Category</option>
+                                <option value="">Kategori Seçin</option>
                                 @foreach ($categoryTree as $item)
                                     @php
                                         $prefix = str_repeat('-- ', $item['level']);
@@ -194,27 +193,27 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="productPrice">Price</label>
+                            <label for="productPrice">Fiyat</label>
                             <input type="number" name="price" id="productPrice" class="form-control" step="0.01"
                                 required>
                         </div>
                         <div class="form-group">
-                            <label for="productStock">Stock</label>
+                            <label for="productStock">Stok</label>
                             <input type="number" name="stock" id="productStock" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="productDescription">Description</label>
+                            <label for="productDescription">Açıklama</label>
                             <textarea name="description" id="productDescription" class="form-control" rows="4"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="productImages">Product Images</label>
+                            <label for="productImages">Ürün Görsel</label>
                             <input type="file" name="images[]" id="productImages" class="form-control-file" multiple>
                         </div>
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
                     </div>
                 </form>
             </div>

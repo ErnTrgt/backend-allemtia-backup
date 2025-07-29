@@ -9,17 +9,17 @@
 
     <div class="card-box mb-30">
         <div class="pd-20">
-            <h4 class="text-blue h4">Product List</h4>
+            <h4 class="text-blue h4">Ürünler</h4>
         </div>
         <div class="pb-20">
             <table class="data-table table stripe hover nowrap">
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Product Name</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th class="datatable-nosort">Action</th>
+                        <th>Ürün Adı</th>
+                        <th>Fiyat</th>
+                        <th>Stok</th>
+                        <th class="datatable-nosort">İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,7 +30,7 @@
                             <td>${{ $product->price }}</td>
                             <td>{{ $product->stock }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-primary">View</a>
+                                <a href="#" class="btn btn-sm btn-primary">Görüntüle</a>
                             </td>
                         </tr>
                     @endforeach

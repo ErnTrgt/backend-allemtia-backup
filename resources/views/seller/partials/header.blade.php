@@ -103,12 +103,12 @@
                 <span class="user-name">{{ auth()->user()->name }}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-                <a class="dropdown-item" href="{{ route('seller.profile') }}"><i class="dw dw-user1"></i> Profile</a>
+                <a class="dropdown-item" href="{{ route('seller.profile') }}"><i class="dw dw-user1"></i> Profil</a>
                 <a class="dropdown-item" href="{{ route('seller.password.change') }}"><i class="dw dw-settings2"></i>
-                    Change Password</a>
+                    Şifre Değiştir</a>
                 <a class="dropdown-item" href="#"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="dw dw-logout"></i> Log Out
+                    <i class="dw dw-logout"></i> Çıkış Yap
                 </a>
                 <form id="logout-form" action="{{ route('seller.logout') }}" method="POST" style="display: none;">
                     @csrf
@@ -124,9 +124,9 @@
 <div class="right-sidebar">
     <div class="sidebar-title">
         <h3 class="weight-600 font-16 text-blue">
-            Layout Settings
+            Layout Ayarları
             <span class="btn-block font-weight-400 font-12"
-                >User Interface Settings</span
+                >Kullanıcı Arabirim Ayarları</span
             >
         </h3>
         <div class="close-sidebar" data-toggle="right-sidebar-close">
@@ -135,35 +135,35 @@
     </div>
     <div class="right-sidebar-body customscroll">
         <div class="right-sidebar-body-content">
-            <h4 class="weight-600 font-18 pb-10">Header Background</h4>
+            <h4 class="weight-600 font-18 pb-10">Başlık Arka Planı</h4>
             <div class="sidebar-btn-group pb-30 mb-10">
                 <a
                     href="javascript:void(0);"
                     class="btn btn-outline-primary header-white active "
-                    >White</a
+                    >Beyaz</a
                 >
                 <a
                     href="javascript:void(0);"
                     class="btn btn-outline-primary header-dark "
-                    >Dark</a
+                    >Koyu</a
                 >
             </div>
 
-            <h4 class="weight-600 font-18 pb-10">Sidebar Background</h4>
+            <h4 class="weight-600 font-18 pb-10">Sol Menü Arka Planı</h4>
             <div class="sidebar-btn-group pb-30 mb-10">
                 <a
                     href="javascript:void(0);"
                     class="btn btn-outline-primary sidebar-light"
-                    >White</a
+                    >Beyaz</a
                 >
                 <a
                     href="javascript:void(0);"
                     class="btn btn-outline-primary sidebar-dark active"
-                    >Dark</a
+                    >Koyu</a
                 >
             </div>
 
-            <h4 class="weight-600 font-18 pb-10">Menu Dropdown Icon</h4>
+            <h4 class="weight-600 font-18 pb-10">Menü Açılır İkonu</h4>
             <div class="sidebar-radio-group pb-10 mb-10">
                 <div class="custom-control custom-radio custom-control-inline">
                     <input
@@ -204,7 +204,7 @@
                 </div>
             </div>
 
-            <h4 class="weight-600 font-18 pb-10">Menu List Icon</h4>
+            <h4 class="weight-600 font-18 pb-10">Menü Liste İkonu</h4>
             <div class="sidebar-radio-group pb-30 mb-10">
                 <div class="custom-control custom-radio custom-control-inline">
                     <input
@@ -284,7 +284,7 @@
 
             <div class="reset-options pt-30 text-center">
                 <button class="btn btn-danger" id="reset-settings">
-                    Reset Settings
+                    Ayarları Sıfırla
                 </button>
             </div>
         </div>

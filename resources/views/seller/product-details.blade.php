@@ -10,18 +10,18 @@
                 <div class="row">
                     <div class="col-md-12 col-sm-12">
                         <div class="title">
-                            <h4>Product Detail</h4>
+                            <h4>Ürün Detayı</h4>
                         </div>
                         <nav aria-label="breadcrumb" role="navigation">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item">
-                                    <a href="{{ route('seller.dashboard') }}">Home</a>
+                                    <a href="{{ route('seller.dashboard') }}">Anasayfa</a>
                                 </li>
                                 <li class="breadcrumb-item">
-                                    <a href="{{ route('seller.products') }}">Products</a>
+                                    <a href="{{ route('seller.products') }}">Ürünler</a>
                                 </li>
                                 <li class="breadcrumb-item active" aria-current="page">
-                                    Product Detail
+                                    Ürün Detayı
                                 </li>
                             </ol>
                         </nav>
@@ -56,21 +56,21 @@
                                     <ins>${{ $product->price }}</ins>
                                 </div>
                                 <div class="stock">
-                                    <p>Stock: {{ $product->stock }}</p>
+                                    <p>Stok: {{ $product->stock }}</p>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 col-6">
                                         <!-- Düzenle Butonu -->
                                         <a href="#" class="btn btn-primary btn-block" data-toggle="modal"
                                             data-target="#editProductModal">
-                                            Edit
+                                            Düzenle
                                         </a>
                                     </div>
                                     <div class="col-md-6 col-6">
                                         <!-- Aktif/Deaktif Butonu -->
                                         <a href="#" class="btn btn-outline-primary btn-block"
                                             onclick="event.preventDefault(); document.getElementById('toggle-status-form').submit();">
-                                            {{ $product->status ? 'Deactivate' : 'Activate' }}
+                                            {{ $product->status ? 'Deaktif Et' : 'Aktif Et' }}
                                         </a>
                                         <form id="toggle-status-form"
                                             action="{{ route('seller.products.toggleStatus', $product->id) }}"
@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                <h4 class="mb-20">Recent Products</h4>
+                <h4 class="mb-20">Son Eklenen Ürünler</h4>
                 <div class="product-list">
                     <ul class="row">
                         @foreach ($recentProducts as $recentProduct)
@@ -107,7 +107,7 @@
                                             <ins>${{ $recentProduct->price }}</ins>
                                         </div>
                                         <a href="{{ route('seller.products.details', $recentProduct->id) }}"
-                                            class="btn btn-outline-primary">Read More</a>
+                                            class="btn btn-outline-primary">Daha Fazla</a>
                                     </div>
                                 </div>
                             </li>
@@ -124,7 +124,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="editProductModalLabel">Edit Product</h4>
+                    <h4 class="modal-title" id="editProductModalLabel">Ürünü Düzenle</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
                 <form action="{{ route('seller.products.update', $product->id) }}" method="POST"
@@ -133,14 +133,14 @@
                     @method('PUT')
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="productName">Product Name</label>
+                            <label for="productName">Ürün Adı</label>
                             <input type="text" name="name" id="productName" class="form-control"
                                 value="{{ $product->name }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="category">Category</label>
+                            <label for="category">Kategori</label>
                             <select name="category_id" id="category" class="form-control" required>
-                                <option value="">Select Category</option>
+                                <option value="">Kategori Seçin</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}"
                                         {{ $product->category_id == $category->id ? 'selected' : '' }}>
@@ -159,28 +159,28 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="productPrice">Price</label>
+                            <label for="productPrice">Fiyat</label>
                             <input type="number" name="price" id="productPrice" class="form-control"
                                 value="{{ $product->price }}" step="0.01" required>
                         </div>
                         <div class="form-group">
-                            <label for="productStock">Stock</label>
+                            <label for="productStock">Stok</label>
                             <input type="number" name="stock" id="productStock" class="form-control"
                                 value="{{ $product->stock }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="productDescription">Description</label>
+                            <label for="productDescription">Açıklama</label>
                             <textarea name="description" id="productDescription" class="form-control" rows="4">{{ $product->description }}</textarea>
                         </div>
                         <div class="form-group">
-                            <label for="editProductImages">Additional Images</label>
+                            <label for="editProductImages">Ekstra Görsel</label>
                             <input type="file" name="images[]" id="editProductImages" class="form-control-file"
                                 multiple>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
                     </div>
                 </form>
             </div>

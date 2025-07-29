@@ -7,18 +7,18 @@
         <div class="min-height-200px">
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">Subcategory Requests</h4>
+                    <h4 class="text-blue h4">Alt Kategori İstekleri</h4>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
-                                <th>Seller</th>
-                                <th>Category</th>
-                                <th>Subcategory Name</th>
-                                <th>Status</th>
-                                <th>Requested At</th>
-                                <th>Action</th>
+                                <th>Satıcı</th>
+                                <th>Kategori</th>
+                                <th>Alt Kategori Adı</th>
+                                <th>Durum</th>
+                                <th>İstek Tarihi</th>
+                                <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -41,11 +41,11 @@
                                             @method('PUT')
                                             <select name="status" class="form-control" onchange="this.form.submit()">
                                                 <option value="pending"
-                                                    {{ $request->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                                    {{ $request->status == 'pending' ? 'selected' : '' }}>Beklemede</option>
                                                 <option value="approved"
-                                                    {{ $request->status == 'approved' ? 'selected' : '' }}>Approved</option>
+                                                    {{ $request->status == 'approved' ? 'selected' : '' }}>Onaylandı</option>
                                                 <option value="rejected"
-                                                    {{ $request->status == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                                    {{ $request->status == 'rejected' ? 'selected' : '' }}>Reddedildi</option>
                                             </select>
                                         </form>
                                     </td>

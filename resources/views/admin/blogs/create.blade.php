@@ -225,16 +225,14 @@
                                         <i class="dw dw-upload mr-1"></i>Kapak Görseli Yükle
                                     </label>
                                     <div class="upload-area" id="uploadArea">
-                                        <div class="upload-content">
-                                            <i class="dw dw-cloud-upload upload-icon"></i>
-                                            <p class="upload-text">Görsel sürükleyin veya tıklayarak seçin</p>
-                                            <p class="upload-formats">JPG, PNG, GIF, WEBP (Max: 2MB)</p>
-                                            <button type="button" class="btn btn-primary btn-sm mt-2" id="selectFileBtn">
-                                                <i class="dw dw-folder-open mr-1"></i>Dosya Seç
-                                            </button>
-                                        </div>
-                                        <input type="file" class="file-input @error('blog_img') is-invalid @enderror" 
-                                               id="blog_img" name="blog_img" accept="image/*" hidden>
+                                        <label for="blog_img" class="upload-label">
+                                            <div class="upload-content">
+                                                <i class="dw dw-cloud-upload upload-icon"></i>
+                                                <p class="upload-text">Görsel sürükleyin veya tıklayarak seçin</p>
+                                                <p class="upload-formats">JPG, PNG, GIF, WEBP (Max: 2MB)</p>
+                                            </div>
+                                            <input type="file" class="file-input" id="blog_img" name="blog_img" accept="image/*">
+                                        </label>
                                     </div>
                                     @error('blog_img')
                                         <span class="invalid-feedback d-block">{{ $message }}</span>
@@ -247,8 +245,7 @@
                                         <i class="dw dw-eye mr-1"></i>Görsel Önizleme
                                     </label>
                                     <div class="image-preview-container">
-                                        <img id="preview" src="#" alt="Görsel önizleme" 
-                                             class="img-fluid rounded shadow-sm">
+                                        <img id="preview" src="#" alt="Görsel önizleme" class="img-fluid rounded shadow-sm">
                                         <div class="image-overlay">
                                             <div class="image-info">
                                                 <i class="dw dw-upload text-primary"></i>
@@ -612,14 +609,18 @@
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
 }
 
-.upload-content {
-    pointer-events: none; /* Content alanında pointer events'i kapat */
+.upload-label {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
 }
 
-.upload-content .btn {
-    pointer-events: auto; /* Sadece buton için pointer events'i aç */
-    z-index: 2;
+.upload-content {
     position: relative;
+    z-index: 2;
 }
 
 .upload-icon {
@@ -635,7 +636,7 @@
 }
 
 .upload-text {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #495057;
     margin: 10px 0 5px 0;
@@ -644,29 +645,21 @@
 .upload-formats {
     font-size: 12px;
     color: #6c757d;
-    margin: 0 0 15px 0;
+    margin: 15px 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
 }
 
-/* Dosya Seç Butonu - DÜZELTİLMİŞ */
-.upload-content .btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    border: none;
-    border-radius: 25px;
-    padding: 8px 20px;
-    font-weight: 600;
-    font-size: 13px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
-}
-
-.upload-content .btn-primary:hover {
-    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
-}
-
-.upload-content .btn-primary:active {
-    transform: translateY(0);
+/* File input gizlenmesi */
+.file-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
 }
 
 /* Image Preview */
@@ -1039,83 +1032,67 @@ $(document).ready(function() {
     const removePreview = document.getElementById('removePreview');
     const changeImage = document.getElementById('changeImage');
 
-    // "Dosya Seç" butonunu ID ile seç
-    const selectFileBtn = document.getElementById('selectFileBtn');
-
-    // "Dosya Seç" butonuna direkt event listener ekle
-    if (selectFileBtn) {
-        selectFileBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Dosya Seç butonuna tıklandı'); // Debug için
-            fileInput.click();
-        });
-    }
-
-    // Upload area'ya tıklama (butona tıklanmadığında)
-    uploadArea.addEventListener('click', function(e) {
-        // Eğer tıklanan element buton değilse
-        if (e.target.id !== 'selectFileBtn' && !e.target.closest('#selectFileBtn')) {
-            fileInput.click();
-        }
-    });
-
     // Change image button
     if (changeImage) {
         changeImage.addEventListener('click', function() {
-            fileInput.click();
+            if (fileInput) {
+                fileInput.click();
+            }
         });
     }
 
     // Drag and drop
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
 
-    uploadArea.addEventListener('dragleave', function(e) {
-        // Sadece upload area'dan çıkıldığında removeClass yap
-        if (!uploadArea.contains(e.relatedTarget)) {
+        uploadArea.addEventListener('dragleave', function(e) {
+            // Sadece upload area'dan çıkıldığında removeClass yap
+            if (!uploadArea.contains(e.relatedTarget)) {
+                uploadArea.classList.remove('dragover');
+            }
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
             uploadArea.classList.remove('dragover');
-        }
-    });
-
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].type.startsWith('image/')) {
-            fileInput.files = files;
-            handleFileSelect(files[0]);
-        } else {
-            alert('Lütfen sadece resim dosyası yükleyin.');
-        }
-    });
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            } else {
+                alert('Lütfen sadece resim dosyası yükleyin.');
+            }
+        });
+    }
 
     // File input change
-    fileInput.addEventListener('change', function(e) {
-        console.log('File input changed'); // Debug için
-        if (e.target.files.length > 0) {
-            const file = e.target.files[0];
-            
-            // Dosya türü kontrolü
-            if (!file.type.startsWith('image/')) {
-                alert('Lütfen sadece resim dosyası seçin.');
-                fileInput.value = '';
-                return;
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                
+                // Dosya türü kontrolü
+                if (!file.type.startsWith('image/')) {
+                    alert('Lütfen sadece resim dosyası seçin.');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                // Dosya boyutu kontrolü (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Dosya boyutu 2MB\'dan küçük olmalıdır.');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                handleFileSelect(file);
             }
-            
-            // Dosya boyutu kontrolü (2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                alert('Dosya boyutu 2MB\'dan küçük olmalıdır.');
-                fileInput.value = '';
-                return;
-            }
-            
-            handleFileSelect(file);
-        }
-    });
+        });
+    }
 
     // Handle file selection
     function handleFileSelect(file) {
@@ -1146,29 +1123,31 @@ $(document).ready(function() {
     }
 
     // Remove preview
-    removePreview.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        // Confirmation dialog
-        if (confirm('Seçilen görseli kaldırmak istediğinizden emin misiniz?')) {
-            fileInput.value = '';
-            imagePreviewSection.style.display = 'none';
-            uploadArea.style.display = 'block';
-            preview.src = '#';
+    if (removePreview) {
+        removePreview.addEventListener('click', (e) => {
+            e.preventDefault();
             
-            // Update image status
-            document.getElementById('imageStatus').textContent = '❌';
-            updateCompletionProgress();
-            
-            // Smooth scroll back to upload area
-            setTimeout(() => {
-                uploadArea.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
-            }, 100);
-        }
-    });
+            // Confirmation dialog
+            if (confirm('Seçilen görseli kaldırmak istediğinizden emin misiniz?')) {
+                fileInput.value = '';
+                imagePreviewSection.style.display = 'none';
+                uploadArea.style.display = 'block';
+                preview.src = '#';
+                
+                // Update image status
+                document.getElementById('imageStatus').textContent = '❌';
+                updateCompletionProgress();
+                
+                // Smooth scroll back to upload area
+                setTimeout(() => {
+                    uploadArea.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }, 100);
+            }
+        });
+    }
 
     // Completion Progress
     function updateCompletionProgress() {

@@ -15,7 +15,7 @@
                         </div>
                         <nav aria-label="breadcrumb" role="navigation" class="mt-2">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('seller.dashboard') }}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('seller.dashboard') }}">Anasayfa</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">Sepet Öğeleri</li>
                             </ol>
                         </nav>

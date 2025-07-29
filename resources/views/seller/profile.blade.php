@@ -9,14 +9,14 @@
                 <div class="row">
                     <div class="col-md-12 col-sm-12">
                         <div class="title">
-                            <h4>Profile</h4>
+                            <h4>Profil</h4>
                         </div>
                         <nav aria-label="breadcrumb" role="navigation">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item">
-                                    <a href="{{ url('/seller/dashboard') }}">Home</a>
+                                    <a href="{{ url('/seller/dashboard') }}">Anasayfa</a>
                                 </li>
-                                <li class="breadcrumb-item active" aria-current="page">Profile</li>
+                                <li class="breadcrumb-item active" aria-current="page">Profil</li>
                             </ol>
                         </nav>
                     </div>
@@ -40,7 +40,7 @@
                                 <div class="modal-dialog modal-dialog-centered" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Update Profile Photo</h5>
+                                            <h5 class="modal-title">Profil Fotoğrafını Güncelle</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
@@ -61,16 +61,16 @@
                                                            name="avatar" 
                                                            accept="image/*" 
                                                            required>
-                                                    <label class="custom-file-label" for="avatarInput">Choose file</label>
+                                                    <label class="custom-file-label" for="avatarInput">Dosya Seçin</label>
                                                 </div>
                                                 <div class="mt-2">
-                                                    <small class="text-muted">Allowed formats: JPG, JPEG, PNG, GIF. Max size: 2MB</small>
+                                                    <small class="text-muted">İzin verilen formatlar: JPG, JPEG, PNG, GIF. Max boyut: 2MB</small>
                                                 </div>
                                             </form>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            <button type="button" class="btn btn-primary" onclick="uploadAvatar()">Upload Photo</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                                            <button type="button" class="btn btn-primary" onclick="uploadAvatar()">Fotoğrafı Yükle</button>
                                         </div>
                                     </div>
                                 </div>
@@ -78,20 +78,20 @@
                         </div>
                         <h5 class="text-center h5 mb-0">{{ auth()->user()->name }}</h5>
                         <p class="text-center text-muted font-14">
-                            {{ auth()->user()->store_name ?? 'Seller Account' }}
+                            {{ auth()->user()->store_name ?? 'Satıcı Hesabı' }}
                         </p>
                         <div class="profile-info">
-                            <h5 class="mb-20 h5 text-blue">Contact Information</h5>
+                            <h5 class="mb-20 h5 text-blue">İletişim Bilgileri</h5>
                             <ul>
-                                <li><span>Email Address:</span> {{ auth()->user()->email }}</li>
-                                <li><span>Phone Number:</span> {{ auth()->user()->phone ?? 'Not provided' }}</li>
-                                <li><span>Country:</span> {{ auth()->user()->country ?? 'Not provided' }}</li>
+                                <li><span>Email Adresi:</span> {{ auth()->user()->email }}</li>
+                                <li><span>Telefon Numarası:</span> {{ auth()->user()->phone ?? 'Not provided' }}</li>
+                                <li><span>Ülke:</span> {{ auth()->user()->country ?? 'Not provided' }}</li>
                                 <li>
                                     <span>Şehir:</span>
                                     {{ auth()->user()->state ?? 'Not provided' }}
                                 </li>
                                 <li>
-                                    <span>Address:</span>
+                                    <span>Adres:</span>
                                     {{ auth()->user()->address ?? 'Not provided' }}
                                 </li>
                             </ul>
@@ -105,13 +105,13 @@
                                 <ul class="nav nav-tabs customtab" role="tablist">
                                     <li class="nav-item">
                                         <a class="nav-link active" data-toggle="tab" href="#timeline"
-                                            role="tab">Timeline</a>
+                                            role="tab">Zaman Çizelgesi</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#tasks" role="tab">Tasks</a>
+                                        <a class="nav-link" data-toggle="tab" href="#tasks" role="tab">Görevler</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#setting" role="tab">Settings</a>
+                                        <a class="nav-link" data-toggle="tab" href="#setting" role="tab">Ayarlar</a>
                                     </li>
                                 </ul>
                                 <div class="tab-content">
@@ -154,12 +154,12 @@
                                                 <!-- Open Task start -->
                                                 <div class="task-title row align-items-center">
                                                     <div class="col-md-8 col-sm-12">
-                                                        <h5>Open Tasks (4 Left)</h5>
+                                                        <h5>Açık Görevler (4 Kalan)</h5>
                                                     </div>
                                                     <div class="col-md-4 col-sm-12 text-right">
                                                         <a href="javascript:;" data-toggle="modal" data-target="#task-add"
                                                             class="bg-light-blue btn text-blue weight-500"><i
-                                                                class="ion-plus-round"></i> Add</a>
+                                                                class="ion-plus-round"></i> Ekle</a>
                                                     </div>
                                                 </div>
                                                 <div class="profile-task-list pb-30">
@@ -236,7 +236,7 @@
                                                 <!-- Close Task start -->
                                                 <div class="task-title row align-items-center">
                                                     <div class="col-md-12 col-sm-12">
-                                                        <h5>Closed Tasks</h5>
+                                                        <h5>Kapalı Görevler</h5>
                                                     </div>
                                                 </div>
                                                 <div class="profile-task-list close-tasks">
@@ -317,7 +317,7 @@
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title" id="exampleModalLongTitle">
-                                                                    Tasks Add
+                                                                    Görev Ekle
                                                                 </h5>
                                                                 <button type="button" class="close"
                                                                     data-dismiss="modal" aria-label="Close"
@@ -332,28 +332,28 @@
                                                                         <li>
                                                                             <form>
                                                                                 <div class="form-group row">
-                                                                                    <label class="col-md-4">Task
-                                                                                        Type</label>
+                                                                                    <label class="col-md-4">Görev
+                                                                                        Tipi</label>
                                                                                     <div class="col-md-8">
                                                                                         <input type="text"
                                                                                             class="form-control" />
                                                                                     </div>
                                                                                 </div>
                                                                                 <div class="form-group row">
-                                                                                    <label class="col-md-4">Task
-                                                                                        Message</label>
+                                                                                    <label class="col-md-4">Görev
+                                                                                        Mesajı</label>
                                                                                     <div class="col-md-8">
                                                                                         <textarea class="form-control"></textarea>
                                                                                     </div>
                                                                                 </div>
                                                                                 <div class="form-group row">
-                                                                                    <label class="col-md-4">Assigned
-                                                                                        to</label>
+                                                                                    <label class="col-md-4">Atanmış
+                                                                                        Kişi</label>
                                                                                     <div class="col-md-8">
                                                                                         <select
                                                                                             class="selectpicker form-control"
                                                                                             data-style="btn-outline-primary"
-                                                                                            title="Not Chosen"
+                                                                                            title="Seçilmedi"
                                                                                             multiple=""
                                                                                             data-selected-text-format="count"
                                                                                             data-count-selected-text="{0} people selected">
@@ -388,17 +388,16 @@
                                                                     <a href="#" data-toggle="tooltip"
                                                                         data-placement="bottom" title=""
                                                                         data-original-title="Add Task"><i
-                                                                            class="ion-plus-circled"></i> Add
-                                                                        More Task</a>
+                                                                            class="ion-plus-circled"></i> Daha Fazla Görev</a>
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-primary">
-                                                                    Add
+                                                                    Ekle
                                                                 </button>
                                                                 <button type="button" class="btn btn-secondary"
                                                                     data-dismiss="modal">
-                                                                    Close
+                                                                    Kapat
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -425,42 +424,42 @@
             @csrf
             <ul class="profile-edit-list row">
                 <li class="weight-500 col-md-12">
-                    <h4 class="text-blue h5 mb-20">Edit Your Personal Setting</h4>
+                    <h4 class="text-blue h5 mb-20">Kişisel Ayarlarınızı Düzenleyin</h4>
 
                     @if (session('success'))
                         <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
 
                     <div class="form-group">
-                        <label>Full Name</label>
+                        <label>Tam Adınız</label>
                         <input class="form-control form-control-lg" type="text" name="name" value="{{ $user->name }}" required />
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
+                        <label>Email Adresi</label>
                         <input class="form-control form-control-lg" type="email" name="email" value="{{ $user->email }}" required />
                     </div>
                     <div class="form-group">
-                        <label>Phone Number</label>
+                        <label>Telefon Numarası</label>
                         <input class="form-control form-control-lg" type="text" name="phone" value="{{ $user->phone }}" />
                     </div>
                     <div class="form-group">
-                        <label>Country</label>
+                        <label>Ülke</label>
                         <input class="form-control form-control-lg" type="text" name="country" value="{{ $user->country }}" />
                     </div>
                     <div class="form-group">
-                        <label>State/Province/Region</label>
+                        <label>Şehir/İl/İlçe</label>
                         <input class="form-control form-control-lg" type="text" name="state" value="{{ $user->state }}" />
                     </div>
                     <div class="form-group">
-                        <label>Postal Code</label>
+                        <label>Posta Kodu</label>
                         <input class="form-control form-control-lg" type="text" name="postal_code" value="{{ $user->postal_code }}" />
                     </div>
                     <div class="form-group">
-                        <label>Address</label>
+                        <label>Adres</label>
                         <textarea class="form-control" name="address">{{ $user->address }}</textarea>
                     </div>
                     <div class="form-group mb-0">
-                        <input type="submit" class="btn btn-primary" value="Update Information" />
+                        <input type="submit" class="btn btn-primary" value="Bilgileri Güncelle" />
                     </div>
                 </li>
             </ul>
