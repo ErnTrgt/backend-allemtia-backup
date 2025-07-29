@@ -594,4 +594,4 @@
             }
         }
     </script>
-@endsection
+@endsection  
