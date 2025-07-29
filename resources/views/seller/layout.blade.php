@@ -1,63 +1,48 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <title>@yield('title', 'Seller Panel') - Allemtia</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <!-- Existing CSS (for backward compatibility) -->
+    <title>@yield('title', 'Admin Panel')</title>
     <link rel="stylesheet" href="{{ asset('admin/vendors/styles/core.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/vendors/styles/icon-font.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/vendors/styles/style.css') }}">
     <link rel="stylesheet" href="{{ asset('admin/src/plugins/sweetalert2/sweetalert2.css') }}">
+
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/src/plugins/slick/slick.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin/src/plugins/datatables/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin/src/plugins/datatables/css/responsive.bootstrap4.min.css') }}">
-    
-    <!-- Modern Layout CSS -->
-    @include('seller.partials.modern-styles')
-    
+    <link rel="stylesheet" type="text/css"
+        href="{{ asset('admin/src/plugins/datatables/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" type="text/css"
+        href="{{ asset('admin/src/plugins/datatables/css/responsive.bootstrap4.min.css') }}">
     @stack('styles')
 </head>
 
 <body>
-    <div class="app-container">
-        <!-- Sidebar -->
-        @include('seller.partials.modern-sidebar')
+    {{-- @include('partials.preloader') --}}
 
-        <!-- Header -->
-        @include('seller.partials.modern-header')
-
-        <!-- Main Content -->
-        <main class="app-main">
-            <div class="main-content">
-                @if(View::hasSection('page-header'))
-                    <div class="page-header">
-                        @yield('page-header')
-                    </div>
-                @endif
-                
-                @yield('content')
-            </div>
-        </main>
+    <div class="header">
+        @include('seller.partials.header')
     </div>
 
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <div class="left-side-bar">
+        @include('seller.partials.sidebar')
+    </div>
 
-    <!-- Scripts -->
+    <div class="mobile-menu-overlay"></div>
+
+    <div class="main-container">
+        @yield('content')
+    </div>
+
+    <footer>
+        @include('partials.footer')
+    </footer>
+
     <script src="{{ asset('admin/vendors/scripts/core.js') }}"></script>
     <script src="{{ asset('admin/vendors/scripts/script.min.js') }}"></script>
+    <script src="{{ asset('admin/vendors/scripts/process.js') }}"></script>
+    <script src="{{ asset('admin/vendors/scripts/layout-settings.js') }}"></script>
     <script src="{{ asset('admin/src/plugins/slick/slick.min.js') }}"></script>
     <script src="{{ asset('admin/src/plugins/datatables/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('admin/src/plugins/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
@@ -133,10 +118,7 @@
         });
     </script>
 
-    
-    <!-- Modern Layout Scripts -->
-    @include('seller.partials.modern-scripts')
-    
     @stack('scripts')
 </body>
+
 </html>
