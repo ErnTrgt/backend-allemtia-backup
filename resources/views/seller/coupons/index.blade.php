@@ -11,17 +11,17 @@
         <div class="page-header">
             <div class="row">
                 <div class="col-md-6 col-sm-12">
-                    <div class="title"><h4>My Coupons</h4></div>
+                    <div class="title"><h4>Kuponlarım</h4></div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('seller.dashboard') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Coupons</li>
+                            <li class="breadcrumb-item"><a href="{{ route('seller.dashboard') }}">Anasayfa</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Kuponlar</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="col-md-6 text-right">
                     <button class="btn btn-success" data-toggle="modal" data-target="#addCouponModal">
-                        + Add New Coupon
+                        + Yeni Kupon Ekle
                     </button>
                 </div>
             </div>
@@ -30,13 +30,13 @@
 
         <!-- Coupon List -->
         <div class="card-box mb-30">
-            <div class="pd-20"><h4 class="text-blue h4">Your Coupon List</h4></div>
+            <div class="pd-20"><h4 class="text-blue h4">Kupon Listesi</h4></div>
             <div class="pb-20">
                 <table class="data-table table stripe hover nowrap dt-responsive" style="width:100%">
                     <thead>
                         <tr>
-                            <th>#</th><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th>
-                            <th>Usage (Used/Limit)</th><th>Expires At</th><th>Status</th><th>Actions</th>
+                            <th>#</th><th>Kod</th><th>Tip</th><th>Değer</th><th>Min Sipariş</th>
+                            <th>Kullanım (Kullanıldı/Limit)</th><th>Süre Bitişi</th><th>Durum</th><th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,7 +63,7 @@
                             <td>{{ $coupon->expires_at?->format('d.m.Y') ?? '-' }}</td>
                             <td>
                                 <span class="badge {{ $coupon->active?'badge-success':'badge-danger' }}">
-                                    {{ $coupon->active?'Active':'Inactive' }}
+                                    {{ $coupon->active?'Aktif':'Pasif' }}
                                 </span>
                             </td>
                             <td>
@@ -74,13 +74,13 @@
                                     <div class="dropdown-menu dropdown-menu-right">
                                         <!-- Edit -->
                                         <a class="dropdown-item" data-toggle="modal" data-target="#editCouponModal{{ $coupon->id }}" href="#">
-                                            <i class="dw dw-edit2"></i> Edit
+                                            <i class="dw dw-edit2"></i> Düzenle
                                         </a>
                                         <!-- Toggle -->
                                         <a class="dropdown-item" href="#"
                                            onclick="event.preventDefault(); document.getElementById('toggle-coupon-{{ $coupon->id }}').submit();">
                                             <i class="dw {{ $coupon->active?'dw-ban':'dw-check' }}"></i>
-                                            {{ $coupon->active?'Deactivate':'Activate' }}
+                                            {{ $coupon->active?'Devre Dışı Bırak':'Devreye Al' }}
                                         </a>
                                         <form id="toggle-coupon-{{ $coupon->id }}"
                                               action="{{ route('seller.coupons.toggle', $coupon->id) }}"
@@ -90,7 +90,7 @@
                                         <!-- Delete -->
                                         <a class="dropdown-item text-danger" href="#"
                                            onclick="event.preventDefault(); document.getElementById('delete-coupon-{{ $coupon->id }}').submit();">
-                                            <i class="dw dw-delete-3"></i> Delete
+                                            <i class="dw dw-delete-3"></i> Sil
                                         </a>
                                         <form id="delete-coupon-{{ $coupon->id }}"
                                               action="{{ route('seller.coupons.destroy', $coupon->id) }}"
@@ -107,7 +107,7 @@
                             <div class="modal-dialog modal-lg modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h4 class="modal-title">Edit Coupon: {{ $coupon->code }}</h4>
+                                        <h4 class="modal-title">Kupon Düzenle: {{ $coupon->code }}</h4>
                                         <button type="button" class="close" data-dismiss="modal">×</button>
                                     </div>
                                     <form action="{{ route('seller.coupons.update',$coupon->id) }}" method="POST">
@@ -115,51 +115,51 @@
                                         <div class="modal-body">
                                             <div class="form-row">
                                                 <div class="form-group col-md-4">
-                                                    <label>Code</label>
+                                                    <label>Kod</label>
                                                     <input type="text" name="code" class="form-control"
                                                            value="{{ $coupon->code }}" required>
                                                 </div>
                                                 <div class="form-group col-md-4">
-                                                    <label>Type</label>
+                                                    <label>Tip</label>
                                                     <select name="type" class="form-control" required>
-                                                        <option value="fixed"      {{ $coupon->type=='fixed'?'selected':'' }}>Fixed</option>
-                                                        <option value="percent"    {{ $coupon->type=='percent'?'selected':'' }}>Percent</option>
-                                                        <option value="free_shipping" {{ $coupon->type=='free_shipping'?'selected':'' }}>Free Shipping</option>
+                                                        <option value="fixed"      {{ $coupon->type=='fixed'?'selected':'' }}>Sabit</option>
+                                                        <option value="percent"    {{ $coupon->type=='percent'?'selected':'' }}>Yüzde</option>
+                                                        <option value="free_shipping" {{ $coupon->type=='free_shipping'?'selected':'' }}>Ücretsiz Kargo</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group col-md-4">
-                                                    <label>Value</label>
+                                                    <label>Değer</label>
                                                     <input type="number" step="0.01" min="0" name="value"
                                                            class="form-control" value="{{ $coupon->value }}" required>
                                                 </div>
                                             </div>
                                             <div class="form-row">
                                                 <div class="form-group col-md-4">
-                                                    <label>Min Order</label>
+                                                    <label>Min Sipariş</label>
                                                     <input type="number" step="0.01" min="0"
                                                            name="min_order_amount" class="form-control"
                                                            value="{{ $coupon->min_order_amount }}">
                                                 </div>
                                                 <div class="form-group col-md-4">
-                                                    <label>Usage Limit</label>
+                                                    <label>Kullanım Limit</label>
                                                     <input type="number" min="1" name="usage_limit"
                                                            class="form-control" value="{{ $coupon->usage_limit }}">
                                                 </div>
                                                 <div class="form-group col-md-4">
-                                                    <label>Expires At</label>
+                                                    <label>Süre Bitişi</label>
                                                     <input type="date" name="expires_at" class="form-control"
                                                            value="{{ $coupon->expires_at?->format('Y-m-d') }}">
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label>Status</label>
+                                                <label>Durum</label>
                                                 <select name="active" class="form-control" required>
-                                                    <option value="1" {{ $coupon->active?'selected':'' }}>Active</option>
-                                                    <option value="0" {{ !$coupon->active?'selected':'' }}>Inactive</option>
+                                                    <option value="1" {{ $coupon->active?'selected':'' }}>Aktif</option>
+                                                    <option value="0" {{ !$coupon->active?'selected':'' }}>Pasif</option>
                                                 </select>
                                             </div>
                                             <div class="form-group">
-                                                <label>Products</label>
+                                                <label>Ürünler</label>
                                                 <select name="product_ids[]" class="form-control" multiple>
                                                     @php $sel = $coupon->products->pluck('id')->toArray(); @endphp
                                                     @foreach($products as $p)
@@ -172,8 +172,8 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button class="btn btn-primary">Save</button>
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            <button class="btn btn-primary">Kaydet</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
                                         </div>
                                     </form>
                                 </div>
@@ -196,7 +196,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Add New Coupon</h4>
+                <h4 class="modal-title">Yeni Kupon Ekle</h4>
                 <button type="button" class="close" data-dismiss="modal">×</button>
             </div>
             <form action="{{ route('seller.coupons.store') }}" method="POST">
@@ -204,45 +204,45 @@
                 <div class="modal-body">
                     <div class="form-row">
                         <div class="form-group col-md-4">
-                            <label>Code</label>
+                            <label>Kod</label>
                             <input type="text" name="code" class="form-control" required>
                         </div>
                         <div class="form-group col-md-4">
-                            <label>Type</label>
+                            <label>Tip</label>
                             <select name="type" class="form-control" required>
-                                <option value="fixed">Fixed</option>
-                                <option value="percent">Percent</option>
-                                <option value="free_shipping">Free Shipping</option>
+                                <option value="fixed">Sabit</option>
+                                <option value="percent">Yüzde</option>
+                                <option value="free_shipping">Ücretsiz Kargo</option>
                             </select>
                         </div>
                         <div class="form-group col-md-4">
-                            <label>Value</label>
+                            <label>Değer</label>
                             <input type="number" step="0.01" min="0" name="value" class="form-control" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-4">
-                            <label>Min Order</label>
+                            <label>Min Sipariş</label>
                             <input type="number" step="0.01" min="0" name="min_order_amount" class="form-control">
                         </div>
                         <div class="form-group col-md-4">
-                            <label>Usage Limit</label>
+                            <label>Kullanım Limit</label>
                             <input type="number" min="1" name="usage_limit" class="form-control">
                         </div>
                         <div class="form-group col-md-4">
-                            <label>Expires At</label>
+                            <label>Süre Bitişi</label>
                             <input type="date" name="expires_at" class="form-control">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Status</label>
+                        <label>Durum</label>
                         <select name="active" class="form-control" required>
-                            <option value="1" selected>Active</option>
-                            <option value="0">Inactive</option>
+                            <option value="1" selected>Aktif</option>
+                            <option value="0">Pasif</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Products</label>
+                        <label>Ürünler</label>
                         <select name="product_ids[]" class="form-control" multiple>
                             @foreach($products as $p)
                                 <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -251,8 +251,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-success">Add</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-success">Ekle</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
                 </div>
             </form>
         </div>

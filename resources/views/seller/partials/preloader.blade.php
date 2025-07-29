@@ -7,6 +7,6 @@
             <div class="bar" id="bar1"></div>
         </div>
         <div class="percent" id="percent1">0%</div>
-        <div class="loading-text">Loading...</div>
+        <div class="loading-text">Yükleniyor...</div>
     </div>
 </div>

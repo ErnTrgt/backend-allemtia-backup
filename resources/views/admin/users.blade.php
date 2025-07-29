@@ -189,44 +189,96 @@
     <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addUserModalLabel">Yeni Kullanıcı Ekle</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-gradient-success text-white border-0">
+                    <h4 class="modal-title font-weight-bold">
+                        <i class="dw dw-add-user mr-2"></i>Yeni Kullanıcı Ekle
+                    </h4>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <form action="{{ route('admin.users.store') }}" method="POST">
                     @csrf
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="userName">Ad</label>
-                            <input type="text" name="name" id="userName" class="form-control" required>
+                    <div class="modal-body p-4">
+                        <!-- Temel Bilgiler -->
+                        <div class="form-section mb-4">
+                            <h6 class="text-primary font-weight-bold mb-3">
+                                <i class="dw dw-user mr-2"></i>Kişisel Bilgiler
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userName" class="font-weight-semibold text-dark">
+                                            <i class="dw dw-user1 mr-1 text-info"></i>Ad Soyad
+                                        </label>
+                                        <input type="text" name="name" id="userName" class="form-control form-control-lg border-2" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userPhone" class="font-weight-semibold text-dark">
+                                            <i class="dw dw-smartphone mr-1 text-warning"></i>Telefon Numarası
+                                        </label>
+                                        <input type="tel" name="phone" id="userPhone" class="form-control form-control-lg border-2" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="userEmail">E-posta</label>
-                            <input type="email" name="email" id="userEmail" class="form-control" required>
+
+                        <!-- Hesap Bilgileri -->
+                        <div class="form-section mb-4">
+                            <h6 class="text-success font-weight-bold mb-3">
+                                <i class="dw dw-key mr-2"></i>Hesap Bilgileri
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userEmail" class="font-weight-semibold text-dark">
+                                            <i class="dw dw-email mr-1 text-success"></i>E-posta
+                                        </label>
+                                        <input type="email" name="email" id="userEmail" class="form-control form-control-lg border-2" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userPassword" class="font-weight-semibold text-dark">
+                                            <i class="dw dw-padlock mr-1 text-danger"></i>Şifre
+                                        </label>
+                                        <input type="password" name="password" id="userPassword" class="form-control form-control-lg border-2" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="userPhone">Telefon Numarası</label>
-                            <input type="tel" name="phone" id="userPhone" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="userPassword">Şifre</label>
-                            <input type="password" name="password" id="userPassword" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="userRole">Rol</label>
-                            <select name="role" id="userRole" class="form-control" required>
-                                <option value="admin">Yönetici</option>
-                                <option value="seller">Satıcı</option>
-                                <option value="buyer">Alıcı</option>
-                            </select>
+
+                        <!-- Rol ve Yetki -->
+                        <div class="form-section">
+                            <h6 class="text-info font-weight-bold mb-3">
+                                <i class="dw dw-settings mr-2"></i>Rol ve Yetki
+                            </h6>
+                            <div class="form-group">
+                                <label for="userRole" class="font-weight-semibold text-dark">
+                                    <i class="dw dw-id-card mr-1 text-primary"></i>Kullanıcı Rolü
+                                </label>
+                                <select name="role" id="userRole" class="form-control form-control-lg border-2" required>
+                                    <option value="admin">👑 Yönetici</option>
+                                    <option value="seller">🏪 Satıcı</option>
+                                    <option value="buyer">👤 Alıcı</option>
+                                </select>
+                                <small class="text-muted">
+                                    <i class="dw dw-info mr-1"></i>
+                                    Kullanıcı rolü, erişim izinlerini belirler
+                                </small>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
-                        <button type="submit" class="btn btn-primary">Kullanıcı Ekle</button>
+                    <div class="modal-footer bg-light border-0 justify-content-between">
+                        <button type="button" class="btn btn-light btn-lg px-4" data-dismiss="modal">
+                            <i class="dw dw-cancel mr-2"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg px-4">
+                            <i class="dw dw-add mr-2"></i>Kullanıcı Ekle
+                        </button>
                     </div>
                 </form>
             </div>
@@ -239,69 +291,213 @@
         <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1" role="dialog"
             aria-labelledby="editUserModalLabel{{ $user->id }}" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-gradient-primary text-white border-0">
+                        <h4 class="modal-title font-weight-bold">
+                            <i class="dw dw-edit2 mr-2"></i>Kullanıcı Düzenle: <span class="badge badge-light text-primary">{{ $user->name }}</span>
+                        </h4>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                     <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                         @csrf
                         @method('PUT')
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editUserModalLabel{{ $user->id }}">
-                                Kullanıcı Düzenle
-                            </h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
+                        <div class="modal-body p-4">
+                            <!-- Temel Bilgiler -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-primary font-weight-bold mb-3">
+                                    <i class="dw dw-user mr-2"></i>Kişisel Bilgiler
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="userName{{ $user->id }}" class="font-weight-semibold text-dark">
+                                                <i class="dw dw-user1 mr-1 text-info"></i>Ad Soyad
+                                            </label>
+                                            <input type="text" name="name" id="userName{{ $user->id }}"
+                                                class="form-control form-control-lg border-2" value="{{ $user->name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="userPhone{{ $user->id }}" class="font-weight-semibold text-dark">
+                                                <i class="dw dw-smartphone mr-1 text-warning"></i>Telefon
+                                            </label>
+                                            <input type="text" name="phone" id="userPhone{{ $user->id }}"
+                                                class="form-control form-control-lg border-2" value="{{ $user->phone }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hesap Bilgileri -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-success font-weight-bold mb-3">
+                                    <i class="dw dw-key mr-2"></i>Hesap Bilgileri
+                                </h6>
+                                <div class="form-group">
+                                    <label for="userEmail{{ $user->id }}" class="font-weight-semibold text-dark">
+                                        <i class="dw dw-email mr-1 text-success"></i>E-posta
+                                    </label>
+                                    <input type="email" name="email" id="userEmail{{ $user->id }}"
+                                        class="form-control form-control-lg border-2" value="{{ $user->email }}" required>
+                                </div>
+                            </div>
+
+                            <!-- Rol ve Durum -->
+                            <div class="form-section">
+                                <h6 class="text-info font-weight-bold mb-3">
+                                    <i class="dw dw-settings mr-2"></i>Rol ve Durum
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="userRole{{ $user->id }}" class="font-weight-semibold text-dark">
+                                                <i class="dw dw-id-card mr-1 text-primary"></i>Kullanıcı Rolü
+                                            </label>
+                                            <select name="role" id="userRole{{ $user->id }}" class="form-control form-control-lg border-2" required>
+                                                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>👑 Yönetici
+                                                </option>
+                                                <option value="seller" {{ $user->role === 'seller' ? 'selected' : '' }}>🏪 Satıcı
+                                                </option>
+                                                <option value="buyer" {{ $user->role === 'buyer' ? 'selected' : '' }}>👤 Alıcı
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="userStatus{{ $user->id }}" class="font-weight-semibold text-dark">
+                                                <i class="dw dw-power mr-1 text-danger"></i>Hesap Durumu
+                                            </label>
+                                            <select name="status" id="userStatus{{ $user->id }}" class="form-control form-control-lg border-2" required>
+                                                <option value="pending" {{ $user->status === 'pending' ? 'selected' : '' }}>
+                                                    ⏳ Beklemede</option>
+                                                <option value="approved" {{ $user->status === 'approved' ? 'selected' : '' }}>
+                                                    ✅ Onaylandı</option>
+                                                <option value="rejected" {{ $user->status === 'rejected' ? 'selected' : '' }}>
+                                                    ❌ Reddedildi</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0 justify-content-between">
+                            <button type="button" class="btn btn-light btn-lg px-4" data-dismiss="modal">
+                                <i class="dw dw-cancel mr-2"></i>İptal
                             </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="userName{{ $user->id }}">Ad</label>
-                                <input type="text" name="name" id="userName{{ $user->id }}"
-                                    class="form-control" value="{{ $user->name }}" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="userEmail{{ $user->id }}">E-posta</label>
-                                <input type="email" name="email" id="userEmail{{ $user->id }}"
-                                    class="form-control" value="{{ $user->email }}" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="userPhone{{ $user->id }}">Telefon</label>
-                                <input type="text" name="phone" id="userPhone{{ $user->id }}"
-                                    class="form-control" value="{{ $user->phone }}">
-                            </div>
-                            <div class="form-group">
-                                <label for="userRole{{ $user->id }}">Rol</label>
-                                <select name="role" id="userRole{{ $user->id }}" class="form-control" required>
-                                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Yönetici
-                                    </option>
-                                    <option value="seller" {{ $user->role === 'seller' ? 'selected' : '' }}>Satıcı
-                                    </option>
-                                    <option value="buyer" {{ $user->role === 'buyer' ? 'selected' : '' }}>Alıcı
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="userStatus{{ $user->id }}">Durum</label>
-                                <select name="status" id="userStatus{{ $user->id }}" class="form-control" required>
-                                    <option value="pending" {{ $user->status === 'pending' ? 'selected' : '' }}>
-                                        Beklemede</option>
-                                    <option value="approved" {{ $user->status === 'approved' ? 'selected' : '' }}>
-                                        Onaylandı</option>
-                                    <option value="rejected" {{ $user->status === 'rejected' ? 'selected' : '' }}>
-                                        Reddedildi</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
-                            <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="dw dw-save mr-2"></i>Değişiklikleri Kaydet
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     @endforeach
-
     <!-- End Edit Modal -->
 
+<style>
+/* Modal Geliştirmeleri */
+.modal-xl {
+    max-width: 1000px;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.form-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid #007bff;
+}
+
+.form-control-lg {
+    height: calc(2.5rem + 2px);
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+}
+
+.border-2 {
+    border-width: 2px !important;
+    transition: all 0.3s ease;
+}
+
+.border-2:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+.input-group-text {
+    font-weight: 600;
+    border-width: 2px;
+    border-left: 0;
+}
+
+.font-weight-semibold {
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 10px;
+}
+
+/* Badge ve Button Geliştirmeleri */
+.badge-light {
+    background-color: rgba(255,255,255,0.9) !important;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-lg:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Form Section Headers */
+.form-section h6 {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+/* Modal Shadow */
+.modal-content {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    .form-section {
+        padding: 15px;
+    }
+    
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+</style>
 
 
 @endsection

@@ -9,18 +9,18 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="title">
-                        <h4>Dashboard Overview</h4>
+                        <h4>Kontrol Paneli Genel Bakış</h4>
                     </div>
                     <nav aria-label="breadcrumb" role="navigation">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Anasayfa</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Kontrol Paneli</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="col-md-6 text-right">
                     <div class="welcome-text">
-                        <h6 class="mb-0">Welcome back, <span class="text-primary">{{ Auth::user()->name }}</span>!</h6>
+                        <h6 class="mb-0">Hoşgeldiniz, <span class="text-primary">{{ Auth::user()->name }}</span>!</h6>
                         <small class="text-muted">{{ now()->format('l, F j, Y') }}</small>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $userCount }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Total Users</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Toplam Kullanıcılar</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-primary" role="progressbar" style="width: 100%;"></div>
                                 </div>
@@ -58,7 +58,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $adminCount }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Administrators</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Yöneticiler</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-danger" role="progressbar" 
                                         style="width: {{ $userCount > 0 ? ($adminCount / $userCount * 100) : 0 }}%;"></div>
@@ -81,7 +81,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $sellerCount }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Active Sellers</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Aktif Satıcılar</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-info" role="progressbar" 
                                         style="width: {{ $userCount > 0 ? ($sellerCount / $userCount * 100) : 0 }}%;"></div>
@@ -104,7 +104,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $buyerCount }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Happy Clients</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Mutlu Müşteriler</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-success" role="progressbar" 
                                         style="width: {{ $userCount > 0 ? ($buyerCount / $userCount * 100) : 0 }}%;"></div>
@@ -127,7 +127,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $productCount }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Total Products</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Toplam Ürünler</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-warning" role="progressbar" style="width: 100%;"></div>
                                 </div>
@@ -149,7 +149,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $orderCount }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Total Orders</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Toplam Siparişler</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-teal" role="progressbar" style="width: 100%;"></div>
                                 </div>
@@ -171,7 +171,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $totalCategories }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Categories</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Kategoriler</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-purple" role="progressbar" style="width: 100%;"></div>
                                 </div>
@@ -193,7 +193,7 @@
                         <div class="d-flex flex-wrap align-items-center">
                             <div class="widget-data">
                                 <div class="weight-700 font-30 text-dark counter">{{ $totalSubcategories }}</div>
-                                <div class="font-14 text-secondary weight-500 mt-2">Subcategories</div>
+                                <div class="font-14 text-secondary weight-500 mt-2">Alt Kategoriler</div>
                                 <div class="progress mt-3 mb-1" style="height: 5px;">
                                     <div class="progress-bar bg-gradient-pink" role="progressbar" style="width: 100%;"></div>
                                 </div>
@@ -214,9 +214,9 @@
             <div class="col-lg-12 mb-30">
                 <div class="card-box pd-30">
                     <div class="d-flex justify-content-between align-items-center mb-30">
-                        <h4 class="text-blue h4 mb-0">Category Requests Overview</h4>
+                        <h4 class="text-blue h4 mb-0">Kategori İstekleri Genel Bakış</h4>
                         <a href="{{ url('/admin/category-requests') }}" class="btn btn-sm btn-primary">
-                            View All <i class="icon-copy dw dw-right-arrow1"></i>
+                            Tümünü Gör <i class="icon-copy dw dw-right-arrow1"></i>
                         </a>
                     </div>
                     
@@ -229,7 +229,7 @@
                                 </div>
                                 <div class="stat-content">
                                     <h3 class="mb-0">{{ $pendingRequests }}</h3>
-                                    <span>Pending</span>
+                                    <span>Beklemede</span>
                                 </div>
                             </div>
                         </div>
@@ -240,7 +240,7 @@
                                 </div>
                                 <div class="stat-content">
                                     <h3 class="mb-0">{{ $approvedRequests }}</h3>
-                                    <span>Approved</span>
+                                    <span>Onaylandı</span>
                                 </div>
                             </div>
                         </div>
@@ -251,7 +251,7 @@
                                 </div>
                                 <div class="stat-content">
                                     <h3 class="mb-0">{{ $rejectedRequests }}</h3>
-                                    <span>Rejected</span>
+                                    <span>Reddedildi</span>
                                 </div>
                             </div>
                         </div>
@@ -262,7 +262,7 @@
                                 </div>
                                 <div class="stat-content">
                                     <h3 class="mb-0">{{ $totalRequests }}</h3>
-                                    <span>Total</span>
+                                    <span>Toplam</span>
                                 </div>
                             </div>
                         </div>
@@ -275,21 +275,21 @@
         <div class="card-box mb-30">
             <div class="pd-20 d-flex justify-content-between align-items-center">
                 <div>
-                    <h4 class="text-blue h4 mb-0">Categories Management</h4>
-                    <p class="text-muted mb-0">Overview of all categories and their subcategories</p>
+                    <h4 class="text-blue h4 mb-0">Kategoriler Yönetimi</h4>
+                    <p class="text-muted mb-0">Tüm kategorilerin ve alt kategorilerin genel bakışı</p>
                 </div>
                 <a href="{{ route('admin.categories') }}" class="btn btn-primary">
-                    <i class="icon-copy dw dw-edit2"></i> Manage Categories
+                    <i class="icon-copy dw dw-edit2"></i> Kategorileri Yönet
                 </a>
             </div>
             <div class="pb-20">
                 <table class="data-table table stripe hover nowrap">
                     <thead>
                         <tr>
-                            <th class="table-plus">Category</th>
-                            <th>Subcategories</th>
-                            <th>Total Items</th>
-                            <th class="datatable-nosort">Actions</th>
+                            <th class="table-plus">Kategori</th>
+                            <th>Alt Kategoriler</th>
+                            <th>Toplam Ürünler</th>
+                            <th class="datatable-nosort">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -305,14 +305,14 @@
                                 </td>
                                 <td>
                                     @if ($category->children->isEmpty())
-                                        <span class="badge badge-light">No Subcategories</span>
+                                        <span class="badge badge-light">Alt Kategoriler Yok</span>
                                     @else
                                         <div class="subcategory-list">
                                             @foreach ($category->children->take(3) as $child)
                                                 <span class="badge badge-info">{{ $child->name }}</span>
                                             @endforeach
                                             @if($category->children->count() > 3)
-                                                <span class="badge badge-secondary">+{{ $category->children->count() - 3 }} more</span>
+                                                <span class="badge badge-secondary">+{{ $category->children->count() - 3 }} daha fazla</span>
                                             @endif
                                         </div>
                                     @endif
@@ -327,10 +327,10 @@
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                                             <a class="dropdown-item" href="{{ route('admin.categories') }}">
-                                                <i class="dw dw-eye"></i> View Details
+                                                <i class="dw dw-eye"></i> Detayları Gör
                                             </a>
                                             <a class="dropdown-item" href="{{ route('admin.categories') }}">
-                                                <i class="dw dw-edit2"></i> Edit
+                                                <i class="dw dw-edit2"></i> Düzenle
                                             </a>
                                         </div>
                                     </div>

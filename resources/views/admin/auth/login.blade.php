@@ -54,7 +54,7 @@
                             <div class="row">
                                 <div class="col-sm-12">
                                     <div class="input-group mb-0">
-                                        <button class="btn btn-primary btn-lg btn-block" type="submit">Sign In</button>
+                                        <button class="btn btn-primary btn-lg btn-block" type="submit">Giriş Yap</button>
                                     </div>
                                 </div>
                             </div>

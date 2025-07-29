@@ -9,26 +9,26 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="title">
-                            <h4>Category Requests</h4>
+                            <h4>Kategori İstekleri</h4>
                         </div>
                     </div>
                     <div class="col-md-6 col-sm-12 text-right">
-                        <button class="btn btn-primary" data-toggle="modal" data-target="#addCategoryRequestModal">Request New
-                            Category</button>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#addCategoryRequestModal">Yeni
+                            Kategori İstek</button>
                     </div>
                 </div>
             </div>
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">My Category Requests</h4>
+                    <h4 class="text-blue h4">Kategori İsteklerim</h4>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
-                                <th>Category Name</th>
-                                <th>Status</th>
-                                <th>Requested At</th>
+                                <th>Kategori Adı</th>
+                                <th>Durum</th>
+                                <th>İstek Tarihi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -57,20 +57,20 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="addCategoryRequestModalLabel">Request New Category</h4>
+                    <h4 class="modal-title" id="addCategoryRequestModalLabel">Yeni Kategori İstek</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
                 <form action="{{ route('seller.category.requests.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="categoryName">Category Name</label>
+                            <label for="categoryName">Kategori Adı</label>
                             <input type="text" name="name" id="categoryName" class="form-control" required>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit Request</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                        <button type="submit" class="btn btn-primary">İstek Gönder</button>
                     </div>
                 </form>
             </div>

@@ -12,51 +12,51 @@
                 <li class="{{ request()->routeIs('seller.dashboard') ? 'active' : '' }}">
                     <a href="{{ route('seller.dashboard') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-house"></span>
-                        <span class="mtext">Dasssssshboard</span>
+                        <span class="mtext">Anasayfa</span>
                     </a>
                 </li> 
                 <li class="{{ request()->routeIs('seller.products*') ? 'active' : '' }}">
                     <a href="{{ route('seller.products') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-box-seam"></span>
-                        <span class="mtext">Products</span>
+                        <span class="mtext">Ürünler</span>
                     </a>
                 </li>
                 <li class="{{ request()->routeIs('seller.orders*') ? 'active' : '' }}">
                     <a href="{{ route('seller.orders') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-cart"></span>
-                        <span class="mtext">Orders</span>
+                        <span class="mtext">Siparişler</span>
                     </a>
                 </li>
                   <li class="{{ request()->routeIs('seller.cart-items') ? 'active' : '' }}">
                     <a href="{{ route('seller.cart-items') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-cart-plus"></span>
-                        <span class="mtext">Cart Items</span>
+                        <span class="mtext">Sepet Ürünleri</span>
                     </a>
                 </li>
                 <li class="{{ request()->routeIs('seller.wishlist-items') ? 'active' : '' }}">
                     <a href="{{ route('seller.wishlist-items') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-heart"></span>
-                        <span class="mtext">Wishlist Items</span>
+                        <span class="mtext">İstek Listesi</span>
                     </a>
                 </li>
                 <li class="{{ request()->routeIs('seller.coupons.*') ? 'active' : '' }}">
                     <a href="{{ route('seller.coupons.index') }}" class="dropdown-toggle no-arrow">
                         <span class="micon bi bi-tag"></span>
-                        <span class="mtext">Coupons</span>
+                        <span class="mtext">Kuponlar</span>
                     </a>
                 </li>
                 <!-- Account Settings -->
                 <li class="dropdown {{ request()->routeIs('seller.profile') || request()->routeIs('seller.password.change') ? 'active show' : '' }}">
                     <a href="javascript:;" class="dropdown-toggle">
                         <span class="micon bi bi-gear"></span>
-                        <span class="mtext">Account Settings</span>
+                        <span class="mtext">Hesap Ayarları</span>
                     </a>
                     <ul class="submenu" style="{{ request()->routeIs('seller.profile') || request()->routeIs('seller.password.change') ? 'display: block;' : '' }}">
                         <li class="{{ request()->routeIs('seller.profile') ? 'active' : '' }}">
-                            <a href="{{ route('seller.profile') }}">Profile</a>
+                            <a href="{{ route('seller.profile') }}">Profil</a>
                         </li>
                         <li class="{{ request()->routeIs('seller.password.change') ? 'active' : '' }}">
-                            <a href="{{ route('seller.password.change') }}">Change Password</a>
+                            <a href="{{ route('seller.password.change') }}">Şifre Değiştir</a>
                         </li>
                     </ul>
                 </li>

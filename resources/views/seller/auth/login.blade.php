@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Seller Login</title>
+    <title>Satıcı Giriş</title>
     <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="{{ asset('/admin/vendors/styles/core.css') }}" />
     <link rel="stylesheet" type="text/css" href="{{ asset('/admin/vendors/styles/icon-font.min.css') }}" />
@@ -27,7 +27,7 @@
                 <div class="col-md-6 col-lg-5">
                     <div class="login-box bg-white box-shadow border-radius-10">
                         <div class="login-title">
-                            <h2 class="text-center text-primary">Seller Login</h2>
+                            <h2 class="text-center text-primary">Satıcı Giriş</h2>
                         </div>
                         @if(session('success'))
                         <div class="alert alert-success">
@@ -63,7 +63,7 @@
                             <div class="row">
                                 <div class="col-sm-12">
                                     <div class="input-group mb-0">
-                                        <button class="btn btn-primary btn-lg btn-block" type="submit">Sign In</button>
+                                        <button class="btn btn-primary btn-lg btn-block" type="submit">Giriş Yap</button>
                                     </div>
                                 </div>
                             </div>

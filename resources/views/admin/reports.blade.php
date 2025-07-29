@@ -2,14 +2,14 @@
 
 @section('content')
     <div>
-        <h1>Reports</h1>
-        <p>Total Revenue: {{ $totalRevenue }}</p>
+        <h1>Raporlar</h1>
+        <p>Toplam Gelir: {{ $totalRevenue }}</p>
         <table>
             <tr>
-                <th>Order ID</th>
-                <th>User</th>
-                <th>Product</th>
-                <th>Total Price</th>
+                <th>Sipariş ID</th>
+                <th>Kullanıcı</th>
+                <th>Ürün</th>
+                <th>Toplam Fiyat</th>
             </tr>
             @foreach ($orders as $order)
                 <tr>

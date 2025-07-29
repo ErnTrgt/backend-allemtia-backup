@@ -7,18 +7,18 @@
         <div class="min-height-200px">
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">Subcategory Requests</h4>
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#addRequestModal">Request New
-                        Subcategory</button>
+                    <h4 class="text-blue h4">Alt Kategori İstekleri</h4>
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#addRequestModal">Yeni Alt Kategori
+                        İstek</button>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
-                                <th>Category</th>
-                                <th>Subcategory Name</th>
-                                <th>Status</th>
-                                <th>Requested At</th>
+                                <th>Kategori</th>
+                                <th>Alt Kategori Adı</th>
+                                <th>Durum</th>
+                                <th>İstek Tarihi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,7 +36,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No subcategory requests found.</td>
+                                    <td colspan="4" class="text-center">Alt Kategori İstekleri bulunamadı.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -52,16 +52,16 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="addRequestModalLabel">Request New Subcategory</h4>
+                    <h4 class="modal-title" id="addRequestModalLabel">Yeni Alt Kategori İstek</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
                 <form action="{{ route('seller.storeSubcategoryRequest') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="category">Category</label>
+                            <label for="category">Kategori</label>
                             <select name="category_id" id="category" class="form-control" required>
-                                <option value="">Select Category</option>
+                                <option value="">Kategori Seçin</option>
                                 @foreach ($categoryTree as $item)
                                     @php
                                         $prefix = str_repeat('-- ', $item['level']);
@@ -71,14 +71,14 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="subcategory_name">Subcategory Name</label>
+                            <label for="subcategory_name">Alt Kategori Adı</label>
                             <input type="text" name="subcategory_name" id="subcategory_name" class="form-control"
                                 required>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit Request</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                        <button type="submit" class="btn btn-primary">İstek Gönder</button>
                     </div>
                 </form>
             </div>

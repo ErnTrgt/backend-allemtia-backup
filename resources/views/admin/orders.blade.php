@@ -199,97 +199,145 @@
                                 <div class="modal fade" id="editOrderModal{{ $order->id }}" tabindex="-1"
                                     role="dialog" aria-labelledby="editOrderModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-lg modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h4 class="modal-title">Sipariş Güncelle - {{ $order->order_number }}</h4>
-                                                <button type="button" class="close" data-dismiss="modal"
-                                                    aria-hidden="true">×</button>
+                                        <div class="modal-content border-0 shadow-lg">
+                                            <div class="modal-header bg-gradient-primary text-white border-0">
+                                                <h4 class="modal-title font-weight-bold">
+                                                    <i class="dw dw-edit2 mr-2"></i>Sipariş Güncelle: <span class="badge badge-light text-primary">{{ $order->order_number }}</span>
+                                                </h4>
+                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
                                             </div>
                                             <form action="{{ route('admin.orders') }}" method="POST">
                                                 @csrf
                                                 <input type="hidden" name="order_id" value="{{ $order->id }}">
                                                 <input type="hidden" name="action" value="update_status">
-                                                <div class="modal-body">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="orderStatus{{ $order->id }}">Sipariş Durumu</label>
-                                                                <select name="status" id="orderStatus{{ $order->id }}" class="form-control" required>
-                                                                    <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Beklemede</option>
-                                                                    <option value="waiting_payment" {{ $order->status == 'waiting_payment' ? 'selected' : '' }}>Ödeme Bekleniyor</option>
-                                                                    <option value="paid" {{ $order->status == 'paid' ? 'selected' : '' }}>Ödendi</option>
-                                                                    <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>Hazırlanıyor</option>
-                                                                    <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Kargoda</option>
-                                                                    <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Teslim Edildi</option>
-                                                                    <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>İptal Edildi</option>
-                                                                </select>
+                                                <div class="modal-body p-4">
+                                                    <!-- Sipariş Durumu -->
+                                                    <div class="form-section mb-4">
+                                                        <h6 class="text-primary font-weight-bold mb-3">
+                                                            <i class="dw dw-settings mr-2"></i>Sipariş Durumu Güncelleme
+                                                        </h6>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="orderStatus{{ $order->id }}" class="font-weight-semibold text-dark">
+                                                                        <i class="dw dw-tag mr-1 text-info"></i>Sipariş Durumu
+                                                                    </label>
+                                                                    <select name="status" id="orderStatus{{ $order->id }}" class="form-control form-control-lg border-2" required>
+                                                                        <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>⏳ Beklemede</option>
+                                                                        <option value="waiting_payment" {{ $order->status == 'waiting_payment' ? 'selected' : '' }}>💰 Ödeme Bekleniyor</option>
+                                                                        <option value="paid" {{ $order->status == 'paid' ? 'selected' : '' }}>✅ Ödendi</option>
+                                                                        <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>🔄 Hazırlanıyor</option>
+                                                                        <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>🚚 Kargoda</option>
+                                                                        <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>📦 Teslim Edildi</option>
+                                                                        <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>❌ İptal Edildi</option>
+                                                                    </select>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="trackingNumber{{ $order->id }}">Takip Numarası</label>
-                                                                <input type="text" name="tracking_number" id="trackingNumber{{ $order->id }}"
-                                                                    class="form-control" value="{{ $order->tracking_number ?? '' }}"
-                                                                    placeholder="Takip numarasını girin">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group">
+                                                                    <label for="trackingNumber{{ $order->id }}" class="font-weight-semibold text-dark">
+                                                                        <i class="dw dw-delivery-truck mr-1 text-warning"></i>Kargo Takip Numarası
+                                                                    </label>
+                                                                    <input type="text" name="tracking_number" id="trackingNumber{{ $order->id }}"
+                                                                        class="form-control form-control-lg border-2" value="{{ $order->tracking_number ?? '' }}"
+                                                                        placeholder="Takip numarasını girin">
+                                                                    <small class="text-muted">
+                                                                        <i class="dw dw-info mr-1"></i>
+                                                                        Kargo takip numarası müşteriyle paylaşılacaktır
+                                                                    </small>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     
-                                                    <div class="form-group">
-                                                        <label for="statusNote{{ $order->id }}">Durum Güncelleme Notu</label>
-                                                        <textarea name="status_note" id="statusNote{{ $order->id }}" class="form-control" rows="3"
-                                                            placeholder="Bu durum güncellmesi hakkında bir not ekleyin (isteğe bağlı)..."></textarea>
+                                                    <!-- Notlar ve İptal Bilgileri -->
+                                                    <div class="form-section mb-4">
+                                                        <h6 class="text-success font-weight-bold mb-3">
+                                                            <i class="dw dw-notepad mr-2"></i>Notlar ve İptal Bilgileri
+                                                        </h6>
+                                                        <div class="form-group">
+                                                            <label for="statusNote{{ $order->id }}" class="font-weight-semibold text-dark">
+                                                                <i class="dw dw-edit mr-1 text-success"></i>Durum Güncelleme Notu
+                                                            </label>
+                                                            <textarea name="status_note" id="statusNote{{ $order->id }}" class="form-control form-control-lg border-2" rows="3"
+                                                                placeholder="Bu durum güncellmesi hakkında bir not ekleyin (isteğe bağlı)..."></textarea>
+                                                        </div>
+
+                                                        <!-- İptal Nedeni (sadece iptal seçildiğinde göster) -->
+                                                        <div class="form-group" id="cancelReasonGroup{{ $order->id }}" style="{{ $order->status == 'cancelled' ? 'display: block;' : 'display: none;' }}">
+                                                            <label for="cancelReason{{ $order->id }}" class="font-weight-semibold text-dark">
+                                                                <i class="dw dw-cancel mr-1 text-danger"></i>İptal Nedeni
+                                                            </label>
+                                                            <textarea name="cancel_reason" id="cancelReason{{ $order->id }}" class="form-control form-control-lg border-2" rows="2"
+                                                                placeholder="İptal nedenini belirtin...">{{ $order->cancellation_reason ?? '' }}</textarea>
+                                                            <small class="text-muted">
+                                                                <i class="dw dw-info mr-1"></i>
+                                                                İptal nedeni müşteriyle paylaşılacaktır
+                                                            </small>
+                                                        </div>
                                                     </div>
 
-                                                    <!-- Cancel Reason (sadece iptal seçildiğinde göster) -->
-                                                    <div class="form-group" id="cancelReasonGroup{{ $order->id }}" style="{{ $order->status == 'cancelled' ? 'display: block;' : 'display: none;' }}">
-                                                        <label for="cancelReason{{ $order->id }}">İptal Nedeni</label>
-                                                        <textarea name="cancel_reason" id="cancelReason{{ $order->id }}" class="form-control" rows="2"
-                                                            placeholder="İptal nedenini girin...">{{ $order->cancellation_reason ?? '' }}</textarea>
-                                                    </div>
-
-                                                    <!-- Order Details -->
-                                                    <div class="mt-4">
-                                                        <h6 class="text-blue">Sipariş Bilgileri</h6>
+                                                    <!-- Sipariş Özet Bilgileri -->
+                                                    <div class="form-section">
+                                                        <h6 class="text-info font-weight-bold mb-3">
+                                                            <i class="dw dw-shopping-cart mr-2"></i>Sipariş Özet Bilgileri
+                                                        </h6>
                                                         <div class="row">
                                                             <div class="col-md-4">
-                                                                <p><strong>Müşteri:</strong> {{ $order->customer_name }}</p>
-                                                                <p><strong>Telefon:</strong> {{ $order->customer_phone }}</p>
+                                                                <div class="info-box mb-3">
+                                                                    <label class="font-weight-semibold text-dark d-block mb-1">
+                                                                        <i class="dw dw-user mr-1 text-primary"></i>Müşteri Bilgileri
+                                                                    </label>
+                                                                    <p class="mb-1"><strong>{{ $order->customer_name }}</strong></p>
+                                                                    <p class="mb-1 text-muted">{{ $order->customer_email }}</p>
+                                                                    <p class="mb-0 text-muted">{{ $order->customer_phone }}</p>
+                                                                </div>
                                                             </div>
                                                             <div class="col-md-4">
-                                                                <p><strong>E-posta:</strong> {{ $order->customer_email }}</p>
-                                                                <p><strong>Ödeme:</strong> 
-                                                                    @switch($order->payment_method)
-                                                                        @case('eft') EFT/Havale @break
-                                                                        @case('cash_on_delivery') Kapıda Nakit @break
-                                                                        @default {{ ucfirst($order->payment_method) }}
-                                                                    @endswitch
-                                                                </p>
+                                                                <div class="info-box mb-3">
+                                                                    <label class="font-weight-semibold text-dark d-block mb-1">
+                                                                        <i class="dw dw-credit-card mr-1 text-info"></i>Ödeme Bilgileri
+                                                                    </label>
+                                                                    <p class="mb-1">
+                                                                        @switch($order->payment_method)
+                                                                            @case('eft') EFT/Havale @break
+                                                                            @case('cash_on_delivery') Kapıda Nakit @break
+                                                                            @default {{ ucfirst($order->payment_method) }}
+                                                                        @endswitch
+                                                                    </p>
+                                                                    <p class="mb-0 text-muted">Sipariş Tarihi: {{ $order->created_at->format('d M Y H:i') }}</p>
+                                                                </div>
                                                             </div>
                                                             <div class="col-md-4">
-                                                                @if($hasCancelledItems)
-                                                                <p>
-                                                                    <strong>Toplam:</strong> 
-                                                                    <del class="text-muted">₺{{ number_format($order->total, 2) }}</del>
-                                                                    <span class="text-success">₺{{ number_format($currentTotal, 2) }}</span>
-                                                                </p>
-                                                                <p>
-                                                                    <strong>İptal Edilen:</strong> 
-                                                                    <span class="text-danger">₺{{ number_format($cancelledTotal, 2) }}</span>
-                                                                </p>
-                                                                @else
-                                                                <p><strong>Toplam:</strong> ₺{{ number_format($order->total, 2) }}</p>
-                                                                @endif
-                                                                <p><strong>Tarih:</strong> {{ $order->created_at->format('d M Y H:i') }}</p>
+                                                                <div class="info-box mb-3">
+                                                                    @if($hasCancelledItems)
+                                                                    <label class="font-weight-semibold text-dark d-block mb-1">
+                                                                        <i class="dw dw-money mr-1 text-success"></i>Tutar Bilgileri
+                                                                    </label>
+                                                                    <p class="mb-1">
+                                                                        <del class="text-muted">₺{{ number_format($order->total, 2) }}</del>
+                                                                        <span class="text-success font-weight-bold">₺{{ number_format($currentTotal, 2) }}</span>
+                                                                    </p>
+                                                                    <p class="mb-0 text-danger">İptal: ₺{{ number_format($cancelledTotal, 2) }}</p>
+                                                                    @else
+                                                                    <label class="font-weight-semibold text-dark d-block mb-1">
+                                                                        <i class="dw dw-money mr-1 text-success"></i>Toplam Tutar
+                                                                    </label>
+                                                                    <p class="mb-0 font-weight-bold text-success h5">₺{{ number_format($order->total, 2) }}</p>
+                                                                    @endif
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Kapat</button>
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Sipariş Güncelle
+                                                <div class="modal-footer bg-light border-0 justify-content-between">
+                                                    <button type="button" class="btn btn-light btn-lg px-4" data-dismiss="modal">
+                                                        <i class="dw dw-cancel mr-2"></i>İptal
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary btn-lg px-4">
+                                                        <i class="dw dw-save mr-2"></i>Değişiklikleri Kaydet
                                                     </button>
                                                 </div>
                                             </form>
@@ -309,14 +357,18 @@
         // Status değiştiğinde cancel reason göster/gizle
         document.addEventListener('DOMContentLoaded', function() {
             @foreach ($orders as $order)
-                document.getElementById('orderStatus{{ $order->id }}').addEventListener('change', function() {
-                    const cancelGroup = document.getElementById('cancelReasonGroup{{ $order->id }}');
-                    if (this.value === 'cancelled') {
-                        cancelGroup.style.display = 'block';
-                    } else {
-                        cancelGroup.style.display = 'none';
-                    }
-                });
+                const orderStatus{{ $order->id }} = document.getElementById('orderStatus{{ $order->id }}');
+                const cancelReasonGroup{{ $order->id }} = document.getElementById('cancelReasonGroup{{ $order->id }}');
+                
+                if (orderStatus{{ $order->id }} && cancelReasonGroup{{ $order->id }}) {
+                    orderStatus{{ $order->id }}.addEventListener('change', function() {
+                        if (this.value === 'cancelled') {
+                            cancelReasonGroup{{ $order->id }}.style.display = 'block';
+                        } else {
+                            cancelReasonGroup{{ $order->id }}.style.display = 'none';
+                        }
+                    });
+                }
             @endforeach
         });
 
@@ -399,3 +451,123 @@
         }
     </script>
 @endsection
+
+<style>
+/* Modal Geliştirmeleri */
+.modal-xl {
+    max-width: 1000px;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.form-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid #007bff;
+}
+
+.form-control-lg {
+    height: calc(2.5rem + 2px);
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+}
+
+.border-2 {
+    border-width: 2px !important;
+    transition: all 0.3s ease;
+}
+
+.border-2:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+.input-group-text {
+    font-weight: 600;
+    border-width: 2px;
+    border-left: 0;
+}
+
+.font-weight-semibold {
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 10px;
+}
+
+/* Badge ve Button Geliştirmeleri */
+.badge-light {
+    background-color: rgba(255,255,255,0.9) !important;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-lg:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Form Section Headers */
+.form-section h6 {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+/* Modal Shadow */
+.modal-content {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+/* Info Box Styling */
+.info-box {
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+
+.info-box p {
+    margin-bottom: 0.5rem;
+}
+
+.info-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    .form-section {
+        padding: 15px;
+    }
+    
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .info-box {
+        padding: 12px;
+    }
+}
+</style>

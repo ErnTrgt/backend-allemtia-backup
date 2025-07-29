@@ -13,13 +13,13 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-md-6 col-sm-12">
                         <div class="title">
-                            <h4 class="mb-2">My Orders</h4>
-                            <p class="text-muted mb-0">Manage orders containing your products</p>
+                            <h4 class="mb-2">Siparişlerim</h4>
+                            <p class="text-muted mb-0">Ürünlerinize ait siparişleri yönetin</p>
                         </div>
                         <nav aria-label="breadcrumb" role="navigation" class="mt-2">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('seller.dashboard') }}">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Orders</li>
+                                <li class="breadcrumb-item"><a href="{{ route('seller.dashboard') }}">Anasayfa</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Siparişler</li>
                             </ol>
                         </nav>
                     </div>
@@ -28,27 +28,27 @@
                             <!-- Filter Dropdown -->
                             <div class="dropdown d-inline-block mr-2">
                                 <a class="btn btn-outline-primary dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                    <i class="dw dw-filter mr-1"></i>Filter Status
+                                    <i class="dw dw-filter mr-1"></i>Durum Filtre
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right">
                                     <a class="dropdown-item {{ !request('status') ? 'active' : '' }}" href="{{ route('seller.orders') }}">
-                                        <i class="dw dw-list mr-2"></i>All Orders
+                                        <i class="dw dw-list mr-2"></i>Tüm Siparişler
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item {{ request('status') == 'pending' ? 'active' : '' }}" href="{{ route('seller.orders', ['status' => 'pending']) }}">
-                                        <span class="badge badge-warning mr-2">●</span>Pending
+                                        <span class="badge badge-warning mr-2">●</span>Beklemede
                                     </a>
                                     <a class="dropdown-item {{ request('status') == 'paid' ? 'active' : '' }}" href="{{ route('seller.orders', ['status' => 'paid']) }}">
-                                        <span class="badge badge-success mr-2">●</span>Paid
+                                        <span class="badge badge-success mr-2">●</span>Ödendi
                                     </a>
                                     <a class="dropdown-item {{ request('status') == 'processing' ? 'active' : '' }}" href="{{ route('seller.orders', ['status' => 'processing']) }}">
-                                        <span class="badge badge-primary mr-2">●</span>Processing
+                                        <span class="badge badge-primary mr-2">●</span>İşleniyor
                                     </a>
                                     <a class="dropdown-item {{ request('status') == 'shipped' ? 'active' : '' }}" href="{{ route('seller.orders', ['status' => 'shipped']) }}">
-                                        <span class="badge badge-info mr-2">●</span>Shipped
+                                        <span class="badge badge-info mr-2">●</span>Kargolandı
                                     </a>
                                     <a class="dropdown-item {{ request('status') == 'delivered' ? 'active' : '' }}" href="{{ route('seller.orders', ['status' => 'delivered']) }}">
-                                        <span class="badge badge-success mr-2">●</span>Delivered
+                                        <span class="badge badge-success mr-2">●</span>Teslim Edildi
                                     </a>
                                 </div>
                             </div>
@@ -66,10 +66,10 @@
                 <div class="pd-20 border-bottom">
                     <div class="row align-items-center">
                         <div class="col-md-6">
-                            <h5 class="text-blue mb-0">Orders List</h5>
+                            <h5 class="text-blue mb-0">Siparişler Listesi</h5>
                         </div>
                         <div class="col-md-6 text-right">
-                            <small class="text-muted">{{ $orders->count() }} orders found</small>
+                            <small class="text-muted">{{ $orders->count() }} sipariş bulundu</small>
                         </div>
                     </div>
                 </div>
@@ -79,13 +79,13 @@
                             <thead class="bg-light">
                                 <tr>
                                     <th class="border-0">#</th>
-                                    <th class="border-0">Order</th>
-                                    <th class="border-0">Customer</th>
-                                    <th class="border-0">Products</th>
-                                    <th class="border-0">Earnings</th>
-                                    <th class="border-0">Status</th>
-                                    <th class="border-0">Date</th>
-                                    <th class="border-0 text-center">Actions</th>
+                                    <th class="border-0">Sipariş</th>
+                                    <th class="border-0">Müşteri</th>
+                                    <th class="border-0">Ürünler</th>
+                                    <th class="border-0">Kazanç</th>
+                                    <th class="border-0">Durum</th>
+                                    <th class="border-0">Tarih</th>
+                                    <th class="border-0 text-center">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -143,7 +143,7 @@
                                                     </div>
                                                 @endforeach
                                                 @if($sellerItems->count() > 2)
-                                                    <small class="text-muted">+{{ $sellerItems->count() - 2 }} more</small>
+                                                    <small class="text-muted">+{{ $sellerItems->count() - 2 }} daha fazla</small>
                                                 @endif
                                             </div>
                                         </td>
@@ -195,8 +195,8 @@
                                         <td colspan="8" class="text-center py-5">
                                             <div class="empty-state">
                                                 <i class="dw dw-shopping-cart1 text-muted mb-3" style="font-size: 48px;"></i>
-                                                <h5 class="text-muted">No orders found</h5>
-                                                <p class="text-muted">You haven't received any orders yet.</p>
+                                                <h5 class="text-muted">Sipariş bulunamadı</h5>
+                                                <p class="text-muted">Henüz sipariş almadınız.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -308,7 +308,7 @@
                             <!-- Earnings & Actions -->
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="earnings-mobile">
-                                    <small class="text-muted">My Earnings</small>
+                                    <small class="text-muted">Kazançlarım</small>
                                     @if($cancelledItems->count() > 0)
                                         <div>
                                             <del class="text-muted">₺{{ number_format($sellerTotal, 2) }}</del>
@@ -320,11 +320,11 @@
                                 </div>
                                 <div class="mobile-actions">
                                     <button class="btn btn-sm btn-outline-primary mr-1" data-toggle="modal" data-target="#viewOrderModal{{ $order->id }}">
-                                        <i class="dw dw-eye mr-1"></i>View
+                                        <i class="dw dw-eye mr-1"></i>Görüntüle
                                     </button>
                                     @if(in_array($order->status, ['paid', 'processing']))
                                     <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#updateStatusModal{{ $order->id }}">
-                                        <i class="dw dw-edit2 mr-1"></i>Update
+                                        <i class="dw dw-edit2 mr-1"></i>Güncelle
                                     </button>
                                     @endif
                                 </div>
@@ -335,8 +335,8 @@
                 @empty
                     <div class="card-box text-center py-5">
                         <i class="dw dw-shopping-cart1 text-muted mb-3" style="font-size: 64px;"></i>
-                        <h5 class="text-muted">No orders found</h5>
-                        <p class="text-muted">You haven't received any orders yet.</p>
+                        <h5 class="text-muted">Sipariş bulunamadı</h5>
+                        <p class="text-muted">Henüz sipariş almadınız.</p>
                     </div>
                 @endforelse
             </div>
@@ -355,7 +355,7 @@
                         <div class="modal-content">
                             <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title">
-                                    <i class="dw dw-eye mr-2"></i>Order #{{ $order->order_number }}
+                                    <i class="dw dw-eye mr-2"></i>Sipariş #{{ $order->order_number }}
                                 </h5>
                                 <button type="button" class="close text-white" data-dismiss="modal">
                                     <span>&times;</span>
@@ -367,10 +367,10 @@
                                     <div class="col-md-6">
                                         <div class="info-card">
                                             <h6 class="text-primary mb-3">
-                                                <i class="dw dw-user1 mr-2"></i>Customer Information
+                                                <i class="dw dw-user1 mr-2"></i>Müşteri Bilgileri
                                             </h6>
                                             <div class="info-item">
-                                                <span class="info-label">Name:</span>
+                                                <span class="info-label">Adı:</span>
                                                 <span class="info-value">{{ $order->customer_name }}</span>
                                             </div>
                                             <div class="info-item">
@@ -378,7 +378,7 @@
                                                 <span class="info-value">{{ $order->customer_email }}</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">Phone:</span>
+                                                <span class="info-label">Telefon:</span>
                                                 <span class="info-value">{{ $order->customer_phone }}</span>
                                             </div>
                                         </div>
@@ -386,24 +386,24 @@
                                     <div class="col-md-6">
                                         <div class="info-card">
                                             <h6 class="text-primary mb-3">
-                                                <i class="dw dw-calendar1 mr-2"></i>Order Information
+                                                <i class="dw dw-calendar1 mr-2"></i>Sipariş Bilgileri
                                             </h6>
                                             <div class="info-item">
-                                                <span class="info-label">Date:</span>
+                                                <span class="info-label">Tarih:</span>
                                                 <span class="info-value">{{ $order->created_at->format('d M Y H:i') }}</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">Payment:</span>
+                                                <span class="info-label">Ödeme:</span>
                                                 <span class="info-value">
                                                     @switch($order->payment_method)
-                                                        @case('eft') EFT/Bank Transfer @break
-                                                        @case('cash_on_delivery') Cash on Delivery @break
+                                                        @case('eft') EFT/Banka Transferi @break
+                                                        @case('cash_on_delivery') Nakit Ödeme @break
                                                         @default {{ ucfirst($order->payment_method) }}
                                                     @endswitch
                                                 </span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="info-label">Status:</span>
+                                                <span class="info-label">Durum:</span>
                                                 <span class="status-badge status-{{ $order->status }}">
                                                     {{ ucfirst($order->status) }}
                                                 </span>
@@ -415,18 +415,18 @@
                                 <!-- Products Table -->
                                 <div class="products-section">
                                     <h6 class="text-primary mb-3">
-                                        <i class="dw dw-box mr-2"></i>My Products in This Order
+                                        <i class="dw dw-box mr-2"></i>Bu Siparişteki Ürünler
                                     </h6>
                                     <div class="table-responsive">
                                         <table class="table table-striped">
                                             <thead class="bg-light">
                                                 <tr>
-                                                    <th>Product</th>
-                                                    <th>Size</th>
-                                                    <th>Price</th>
-                                                    <th>Qty</th>
-                                                    <th>Total</th>
-                                                    <th>Status</th>
+                                                    <th>Ürün</th>
+                                                    <th>Beden</th>
+                                                    <th>Fiyat</th>
+                                                    <th>Miktar</th>
+                                                    <th>Toplam</th>
+                                                    <th>Durum</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -514,7 +514,7 @@
                                             </tbody>
                                             <tfoot class="bg-light">
                                                 <tr>
-                                                    <td colspan="4" class="text-right"><strong>My Total Earnings:</strong></td>
+                                                    <td colspan="4" class="text-right"><strong>Kazançlarım:</strong></td>
                                                     <td><strong class="text-success h6">₺{{ number_format($sellerTotal, 2) }}</strong></td>
                                                 </tr>
                                                 @php
@@ -538,9 +538,9 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
                                 <button type="button" class="btn btn-primary" onclick="printOrderItems({{ $order->id }})">
-                                    <i class="dw dw-print mr-1"></i>Print Items
+                                    <i class="dw dw-print mr-1"></i>İndir
                                 </button>
                             </div>
                         </div>
@@ -554,7 +554,7 @@
                         <div class="modal-content">
                             <div class="modal-header bg-success text-white">
                                 <h5 class="modal-title">
-                                    <i class="dw dw-edit2 mr-2"></i>Update Order Status
+                                    <i class="dw dw-edit2 mr-2"></i>Sipariş Durumunu Güncelle
                                 </h5>
                                 <button type="button" class="close text-white" data-dismiss="modal">
                                     <span>&times;</span>
@@ -566,35 +566,35 @@
                                 <div class="modal-body">
                                     <div class="alert alert-info">
                                         <i class="dw dw-info mr-2"></i>
-                                        <strong>Order #{{ $order->order_number }}</strong> - Update status for your products
+                                        <strong>Sipariş #{{ $order->order_number }}</strong> - Sipariş durumunu güncelleyin
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="sellerStatus{{ $order->id }}">New Status</label>
+                                        <label for="sellerStatus{{ $order->id }}">Yeni Durum</label>
                                         <select name="status" id="sellerStatus{{ $order->id }}" class="form-control form-control-lg" required>
                                             <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>
-                                                🔄 Processing - Preparing your products
+                                                🔄 İşleniyor - Ürünleriniz hazırlanıyor
                                             </option>
                                             <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>
-                                                🚚 Shipped - Products are on the way
+                                                🚚 Kargolandı - Ürünler yolda
                                             </option>
                                             <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>
-                                                ✅ Delivered - Products have been delivered
+                                                ✅ Teslim Edildi - Ürünler teslim edildi
                                             </option>
                                         </select>
-                                        <small class="text-muted mt-2">You can only move orders forward in the process.</small>
+                                        <small class="text-muted mt-2">Sadece siparişi ileri taşıyabilirsiniz.</small>
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="sellerNote{{ $order->id }}">Update Note (Optional)</label>
+                                        <label for="sellerNote{{ $order->id }}">Not (İsteğe bağlı)</label>
                                         <textarea name="seller_note" id="sellerNote{{ $order->id }}" class="form-control" rows="3"
-                                            placeholder="Add a note about this status update for the customer..."></textarea>
+                                            placeholder="Bu durum güncellemesine ilişkin bir not ekleyin..."></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">İptal</button>
                                     <button type="submit" class="btn btn-success">
-                                        <i class="dw dw-check mr-1"></i>Update Status
+                                        <i class="dw dw-check mr-1"></i>Durumu Güncelle
                                     </button>
                                 </div>
                             </form>

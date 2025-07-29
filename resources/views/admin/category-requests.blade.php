@@ -9,24 +9,24 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="title">
-                            <h4>Category Requests</h4>
+                            <h4>Kategori İstekleri</h4>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card-box mb-30">
                 <div class="pd-20">
-                    <h4 class="text-blue h4">All Category Requests</h4>
+                    <h4 class="text-blue h4">Tüm Kategori İstekleri</h4>
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
                         <thead>
                             <tr>
-                                <th>Category Name</th>
-                                <th>Seller</th>
-                                <th>Status</th>
-                                <th>Requested At</th>
-                                <th>Actions</th>
+                                <th>Kategori Adı</th>
+                                <th>Satıcı</th>
+                                <th>Durum</th>
+                                <th>İstek Tarihi</th>
+                                <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,13 +48,13 @@
                                             @method('PUT')
                                             <select name="status" class="form-control">
                                                 <option value="pending"
-                                                    {{ $request->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                                    {{ $request->status === 'pending' ? 'selected' : '' }}>Beklemede</option>
                                                 <option value="approved"
-                                                    {{ $request->status === 'approved' ? 'selected' : '' }}>Approve</option>
+                                                    {{ $request->status === 'approved' ? 'selected' : '' }}>Onaylandı</option>
                                                 <option value="rejected"
-                                                    {{ $request->status === 'rejected' ? 'selected' : '' }}>Reject</option>
+                                                    {{ $request->status === 'rejected' ? 'selected' : '' }}>Reddedildi</option>
                                             </select>
-                                            <button type="submit" class="btn btn-primary mt-2">Update</button>
+                                            <button type="submit" class="btn btn-primary mt-2">Güncelle</button>
                                         </form>
                                     </td>
                                 </tr>
