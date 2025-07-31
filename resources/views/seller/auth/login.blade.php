@@ -8,7 +8,7 @@
     <title>Satıcı Girişi | ALLEMTIA</title>
     
     <!-- Preload critical images -->
-    <link rel="preload" href="{{ asset('allemtiaLogo270x62.png') }}" as="image" type="image/png">
+    <link rel="preload" href="{{ asset('admin/src/images/emtialogo.png') }}" as="image" type="image/png">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('admin/src/images/favicon-32x32.png') }}">
@@ -316,7 +316,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 24px 48px;
+            padding: 36px 60px;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.12) 0%, 
                 rgba(255, 255, 255, 0.08) 50%,
@@ -346,9 +346,9 @@
         }
 
         .logo-img {
-            height: 50px;
+            height: 100px;
             width: auto;
-            max-width: 200px;
+            max-width: 400px;
             filter: brightness(0) invert(1);
             position: relative;
             z-index: 1;
@@ -1335,7 +1335,7 @@
                 <!-- Logo -->
                 <div class="logo-wrapper" data-aos="fade-up" data-aos-delay="100">
                     <div class="logo-glass">
-                        <img src="{{ asset('allemtiaLogo270x62.png') }}" alt="ALLEMTIA" class="logo-img">
+                        <img src="{{ asset('admin/src/images/emtialogo.png') }}" alt="ALLEMTIA" class="logo-img">
                     </div>
                 </div>
 
