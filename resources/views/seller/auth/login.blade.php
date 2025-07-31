@@ -3,29 +3,43 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="ALLEMTIA Partner Portal - Türkiye'nin lider B2B metal ticareti ve e-ticaret platformu">
+    <meta name="description" content="ALLEMTIA Satıcı Girişi - Türkiye'nin lider B2B metal ticareti ve e-ticaret platformu">
     <meta name="theme-color" content="#A90000">
-    <title>Partner Portal | ALLEMTIA</title>
+    <title>Satıcı Girişi | ALLEMTIA</title>
+    
+    <!-- Preload critical images -->
+    <link rel="preload" href="{{ asset('allemtiaLogo270x62.png') }}" as="image" type="image/png">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('admin/src/images/favicon-32x32.png') }}">
     
-    <!-- DM Sans Font -->
+    <!-- Performance Optimizations: DNS Prefetch & Preconnect -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    
+    <!-- DM Sans Font - Optimized with specific weights -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Preload critical font -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet"></noscript>
     
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Bootstrap 5 CSS - Async Load -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></noscript>
     
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Bootstrap Icons - Async Load -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"></noscript>
     
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- AOS Animation - Defer load -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" media="print" onload="this.media='all'">
+    
+    <!-- Swiper CSS - Defer load -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" media="print" onload="this.media='all'" />
     
     <!-- Custom CSS -->
     <style>
@@ -71,9 +85,12 @@
         body {
             font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f0f0f 100%);
-            min-height: 100vh;
+            height: 100vh;
+            margin: 0;
             overflow: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Ultra Modern Multi-Layer Background */
@@ -84,14 +101,18 @@
             background: linear-gradient(125deg, #000428 0%, #001845 25%, #002366 50%, #004e92 100%);
         }
 
-        /* Additional glass layers */
+        /* Performance optimized glass layers with GPU acceleration */
         .glass-layer-1 {
             position: absolute;
             inset: 0;
             background: radial-gradient(circle at 20% 30%, rgba(169, 0, 0, 0.15) 0%, transparent 50%),
                         radial-gradient(circle at 80% 70%, rgba(0, 81, 187, 0.12) 0%, transparent 50%);
             backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             animation: glassFloat1 15s ease-in-out infinite;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         .glass-layer-2 {
@@ -100,21 +121,25 @@
             background: radial-gradient(circle at 60% 20%, rgba(193, 18, 31, 0.1) 0%, transparent 60%),
                         radial-gradient(circle at 30% 80%, rgba(63, 161, 221, 0.08) 0%, transparent 55%);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             animation: glassFloat2 18s ease-in-out infinite reverse;
+            will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         @keyframes glassFloat1 {
-            0%, 100% { transform: translateX(0) translateY(0) scale(1); opacity: 0.6; }
-            33% { transform: translateX(-20px) translateY(-15px) scale(1.05); opacity: 0.8; }
-            66% { transform: translateX(15px) translateY(10px) scale(0.95); opacity: 0.7; }
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.6; }
+            33% { transform: translate3d(-20px, -15px, 0) scale(1.05); opacity: 0.8; }
+            66% { transform: translate3d(15px, 10px, 0) scale(0.95); opacity: 0.7; }
         }
 
         @keyframes glassFloat2 {
-            0%, 100% { transform: translateX(0) translateY(0) scale(1.02); opacity: 0.5; }
-            50% { transform: translateX(25px) translateY(-20px) scale(0.98); opacity: 0.9; }
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1.02); opacity: 0.5; }
+            50% { transform: translate3d(25px, -20px, 0) scale(0.98); opacity: 0.9; }
         }
 
-        /* Animated Gradient Mesh */
+        /* Optimized Animated Gradient Mesh with GPU acceleration */
         .gradient-mesh {
             position: absolute;
             width: 200%;
@@ -134,18 +159,22 @@
             filter: blur(100px);
             opacity: 0.3;
             animation: rotate 20s linear infinite;
+            will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from { transform: rotate(0deg) translateZ(0); }
+            to { transform: rotate(360deg) translateZ(0); }
         }
 
-        /* Floating Particles */
+        /* Optimized Floating Particles */
         .particles {
             position: absolute;
             inset: 0;
             overflow: hidden;
+            will-change: transform;
         }
 
         .particle {
@@ -155,11 +184,13 @@
             background: rgba(255, 255, 255, 0.8);
             border-radius: 50%;
             animation: float-up 10s linear infinite;
+            will-change: transform, opacity;
+            contain: layout style paint;
         }
 
         @keyframes float-up {
             from {
-                transform: translateY(100vh) rotate(0deg);
+                transform: translate3d(0, 100vh, 0) rotate(0deg);
                 opacity: 0;
             }
             10% {
@@ -169,7 +200,7 @@
                 opacity: 1;
             }
             to {
-                transform: translateY(-100vh) rotate(720deg);
+                transform: translate3d(0, -100vh, 0) rotate(720deg);
                 opacity: 0;
             }
         }
@@ -183,20 +214,24 @@
                 linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
             background-size: 100px 100px;
             mask-image: radial-gradient(ellipse at center, transparent 0%, black 100%);
+            -webkit-mask-image: radial-gradient(ellipse at center, transparent 0%, black 100%);
+            pointer-events: none;
         }
 
-        /* Main Container */
+        /* Main Container with performance optimization */
         .login-container {
-            min-height: 100vh;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             z-index: 1;
-            padding: 20px;
+            padding: 30px 20px;
+            contain: layout;
+            min-height: 0; /* Important for flex children */
         }
 
-        /* Ultimate Premium Glass Card Container */
+        /* Ultimate Premium Glass Card Container - Optimized */
         .glass-card {
             width: 100%;
             max-width: 1200px;
@@ -212,10 +247,14 @@
                 inset 0 2px 20px 0 rgba(255, 255, 255, 0.05);
             overflow: hidden;
             display: flex;
-            min-height: 750px;
+            height: fit-content;
+            max-height: calc(100vh - 60px);
+            min-height: 600px;
             position: relative;
             transform-style: preserve-3d;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+            contain: layout style;
         }
 
         .glass-card::before {
@@ -235,24 +274,7 @@
             z-index: 1;
         }
 
-        .glass-card::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, 
-                rgba(169, 0, 0, 0.4) 0%,
-                rgba(63, 161, 221, 0.4) 25%,
-                rgba(0, 81, 187, 0.4) 50%,
-                rgba(193, 18, 31, 0.4) 75%,
-                rgba(169, 0, 0, 0.4) 100%);
-            border-radius: 37px;
-            z-index: -1;
-            animation: premiumBorderGlow 10s ease-in-out infinite;
-            filter: blur(2px);
-        }
+        
 
         @keyframes premiumBorderGlow {
             0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
@@ -263,7 +285,7 @@
         /* Ultra Premium Left Panel - Multi-Layer Glass */
         .info-panel {
             flex: 1;
-            padding: 60px;
+            padding: 50px;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.04) 0%, 
                 rgba(255, 255, 255, 0.02) 50%,
@@ -274,56 +296,13 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            min-height: 0;
         }
 
-        .info-panel::before {
-            content: '';
-            position: absolute;
-            top: -60%;
-            left: -60%;
-            width: 220%;
-            height: 220%;
-            background: radial-gradient(circle at 30% 50%, rgba(169, 0, 0, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 30%, rgba(0, 81, 187, 0.12) 0%, transparent 60%);
-            animation: premiumPulse 8s ease-in-out infinite;
-        }
 
-        .info-panel::after {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            pointer-events: none;
-            z-index: 1;
-        }
 
-        @keyframes premiumPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
-            33% { transform: scale(1.2) rotate(120deg); opacity: 0.8; }
-            66% { transform: scale(0.9) rotate(240deg); opacity: 0.6; }
-        }
 
-        .info-panel::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 50%, rgba(169, 0, 0, 0.1) 0%, transparent 50%);
-            animation: pulse 4s ease-in-out infinite;
-        }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
 
         /* Ultra Premium Logo Container */
         .logo-wrapper {
@@ -368,9 +347,12 @@
 
         .logo-img {
             height: 50px;
+            width: auto;
+            max-width: 200px;
             filter: brightness(0) invert(1);
             position: relative;
             z-index: 1;
+            object-fit: contain;
         }
 
         /* Glass Typography */
@@ -541,7 +523,7 @@
         /* Ultra Premium Right Panel - Enhanced Glass Form */
         .form-panel {
             flex: 0 0 480px;
-            padding: 60px;
+            padding: 50px;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.98) 0%, 
                 rgba(255, 255, 255, 0.95) 50%,
@@ -551,6 +533,40 @@
             justify-content: center;
             position: relative;
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            contain: layout style;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Form Content Container */
+        .form-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+        }
+        
+        /* Custom scrollbar for form panel */
+        .form-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .form-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+        }
+        
+        .form-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        
+        .form-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.25);
         }
 
         .form-panel::before {
@@ -716,6 +732,8 @@
             border: none;
             outline: none;
             z-index: 1;
+            /* Prevent auto-zoom on iOS */
+            touch-action: manipulation;
         }
 
         .glass-input-icon {
@@ -850,6 +868,10 @@
                 0 8px 25px rgba(169, 0, 0, 0.3),
                 0 4px 15px rgba(0, 0, 0, 0.1),
                 inset 0 2px 10px rgba(255, 255, 255, 0.2);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            will-change: transform;
+            contain: layout style paint;
         }
 
         .glass-submit-btn::before {
@@ -870,30 +892,12 @@
             left: 100%;
         }
 
-        .glass-submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .glass-submit-btn:hover::before {
-            width: 600px;
-            height: 600px;
-        }
-
         .glass-submit-btn:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 
-                0 15px 40px rgba(169, 0, 0, 0.5),
-                0 8px 25px rgba(0, 0, 0, 0.15),
-                inset 0 3px 15px rgba(255, 255, 255, 0.3);
+            /* Sadece parlama efekti, transform ve shadow değişimi yok */
+            background: linear-gradient(135deg, 
+                var(--primary-red) 0%, 
+                var(--secondary-red) 50%, 
+                var(--primary-red) 100%);
         }
 
         .glass-submit-btn:active {
@@ -936,35 +940,84 @@
             letter-spacing: 1px;
         }
 
-        /* Alternative Login */
-        .alt-login-wrapper {
+        /* SSL Security Badges */
+        .ssl-badges-wrapper {
             display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
+            justify-content: center;
+            gap: 20px;
+            margin: 32px 0;
+            padding: 24px;
+            background: linear-gradient(135deg, 
+                rgba(240, 248, 255, 0.4) 0%, 
+                rgba(240, 248, 255, 0.2) 50%,
+                rgba(240, 248, 255, 0.4) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 81, 187, 0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .alt-login-btn {
-            flex: 1;
-            height: 48px;
-            background: var(--gray-50);
-            border: 2px solid var(--gray-200);
-            border-radius: 12px;
+        .ssl-badges-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 81, 187, 0.05), 
+                transparent);
+            animation: sslShimmer 8s infinite;
+        }
+
+        @keyframes sslShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .ssl-badge {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gray-700);
-            cursor: pointer;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 81, 187, 0.1);
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.04),
+                0 1px 4px rgba(0, 0, 0, 0.02);
+            position: relative;
             transition: var(--transition-base);
         }
 
-        .alt-login-btn:hover {
-            background: white;
-            border-color: var(--gray-300);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .ssl-badge:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 20px rgba(0, 81, 187, 0.15),
+                0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 81, 187, 0.2);
+        }
+
+        .ssl-badge i {
+            font-size: 24px;
+            color: var(--primary-blue);
+            transition: var(--transition-base);
+        }
+
+        .ssl-badge:hover i {
+            color: var(--secondary-blue);
+            transform: scale(1.1);
+        }
+
+        .ssl-badge span {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            text-align: center;
+            white-space: nowrap;
         }
 
         /* Register Link */
@@ -1057,26 +1110,53 @@
             display: flex;
             justify-content: center;
             gap: 24px;
+            z-index: 2; /* Ensure badges are above other elements */
         }
+        
 
-        .trust-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--gray-600);
+
+        /* Performance: Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
-
-        .trust-badge i {
-            font-size: 16px;
-            color: var(--success);
+        
+        /* Mobile Performance Optimizations */
+        @media (max-width: 768px) {
+            .particles {
+                display: none; /* Disable particles on mobile */
+            }
+            
+            .glass-layer-1,
+            .glass-layer-2 {
+                animation: none; /* Disable animations on mobile */
+                opacity: 0.5;
+            }
+            
+            .gradient-mesh {
+                animation: none;
+                transform: rotate(45deg);
+            }
+            
+            .glass-card {
+                max-width: calc(100vw - 30px);
+                min-height: 480px;
+            }
+            
+            .form-panel {
+                padding: 35px 25px;
+            }
         }
-
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
             .glass-card {
                 flex-direction: column;
-                max-width: 600px;
+                max-width: 500px;
+                min-height: 550px;
             }
             
             .info-panel {
@@ -1086,25 +1166,64 @@
             .form-panel {
                 flex: 1;
                 border-radius: 30px;
+                padding: 40px;
+            }
+            
+            /* SSL Badges Tablet - Gizle */
+            .ssl-badges-wrapper {
+                display: none;
+            }
+        }
+        
+        /* Height-based responsive */
+        @media (max-height: 700px) {
+            .glass-card {
+                min-height: 450px;
+            }
+            
+            .form-header {
+                margin-bottom: 25px;
+            }
+            
+            .glass-input-group {
+                margin-bottom: 18px;
+            }
+            
+            .glass-checkbox-wrapper {
+                margin-bottom: 20px;
+            }
+            
+            .glass-divider {
+                margin: 20px 0;
             }
         }
 
         @media (max-width: 576px) {
+            .login-container {
+                padding: 20px 15px;
+            }
+            
+            .glass-card {
+                min-height: 500px;
+                max-height: calc(100vh - 40px);
+            }
+            
             .form-panel {
-                padding: 40px 24px;
+                padding: 30px 20px;
             }
             
             .form-title {
-                font-size: 28px;
+                font-size: 26px;
             }
             
-            .trust-badges {
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-                left: 24px;
-                right: 24px;
-                bottom: 24px;
+            .glass-input {
+                height: 48px;
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            /* SSL Badges Mobile - Gizle */
+            .ssl-badges-wrapper {
+                display: none;
             }
         }
 
@@ -1179,6 +1298,26 @@
 </head>
 
 <body>
+    <!-- Inline critical CSS for instant rendering -->
+    <style>
+        /* Loading state */
+        .preload * {
+            -webkit-transition: none !important;
+            -moz-transition: none !important;
+            -ms-transition: none !important;
+            -o-transition: none !important;
+            transition: none !important;
+        }
+    </style>
+    <script>
+        // Add preload class to prevent FOUC
+        document.body.classList.add('preload');
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.body.classList.remove('preload');
+            }, 100);
+        });
+    </script>
     <!-- Ultra Premium Multi-Layer Background Container -->
     <div class="background-container">
         <div class="gradient-mesh"></div>
@@ -1196,13 +1335,13 @@
                 <!-- Logo -->
                 <div class="logo-wrapper" data-aos="fade-up" data-aos-delay="100">
                     <div class="logo-glass">
-                        <img src="{{ asset('admin/src/images/emtialogo.png') }}" alt="ALLEMTIA" class="logo-img">
+                        <img src="{{ asset('allemtiaLogo270x62.png') }}" alt="ALLEMTIA" class="logo-img">
                     </div>
                 </div>
 
                 <!-- Title -->
                 <h1 class="glass-title" data-aos="fade-up" data-aos-delay="200">
-                    Partner Portal
+                    Satıcı Girişi
                 </h1>
                 <p class="glass-subtitle" data-aos="fade-up" data-aos-delay="300">
                     Türkiye'nin en büyük B2B e-ticaret ekosisteminde yerinizi alın
@@ -1270,14 +1409,16 @@
 
             <!-- Right Panel - Login Form -->
             <div class="form-panel">
-                <!-- Form Header -->
-                <div class="form-header" data-aos="fade-up">
-                    <div class="form-logo">
-                        <i class="bi bi-person-circle"></i>
+                <!-- Form Content Container -->
+                <div class="form-content">
+                    <!-- Form Header -->
+                    <div class="form-header" data-aos="fade-up">
+                        <div class="form-logo">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h2 class="form-title">Hoş Geldiniz</h2>
+                        <p class="form-subtitle">Hesabınıza giriş yapın</p>
                     </div>
-                    <h2 class="form-title">Hoş Geldiniz</h2>
-                    <p class="form-subtitle">Hesabınıza giriş yapın</p>
-                </div>
 
                 <!-- Alerts -->
                 @if(session('success'))
@@ -1319,6 +1460,7 @@
                                 required 
                                 autocomplete="email"
                                 autofocus
+                                inputmode="email"
                             >
                         </div>
                     </div>
@@ -1352,7 +1494,7 @@
                             </span>
                             <span class="glass-checkbox-label">Beni hatırla</span>
                         </label>
-                        <a href="#" class="forgot-link">Şifremi unuttum</a>
+                        <a href="https://allemtia.com/contact" target="_blank" rel="noopener noreferrer" class="forgot-link">Şifremi unuttum</a>
                     </div>
 
                     <!-- Submit Button -->
@@ -1362,21 +1504,20 @@
                     </button>
                 </form>
 
-                <!-- Divider -->
-                <div class="glass-divider" data-aos="fade-up" data-aos-delay="200">
-                    <span>veya</span>
-                </div>
-
-                <!-- Alternative Login -->
-                <div class="alt-login-wrapper" data-aos="fade-up" data-aos-delay="300">
-                    <button class="alt-login-btn">
-                        <i class="bi bi-google"></i>
-                        Google
-                    </button>
-                    <button class="alt-login-btn">
-                        <i class="bi bi-microsoft"></i>
-                        Microsoft
-                    </button>
+                <!-- SSL Security Badges -->
+                <div class="ssl-badges-wrapper" data-aos="fade-up" data-aos-delay="200">
+                    <div class="ssl-badge">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>256-bit SSL</span>
+                    </div>
+                    <div class="ssl-badge">
+                        <i class="bi bi-patch-check-fill"></i>
+                        <span>PCI DSS</span>
+                    </div>
+                    <div class="ssl-badge">
+                        <i class="bi bi-lock-fill"></i>
+                        <span>Güvenli Bağlantı</span>
+                    </div>
                 </div>
 
                 <!-- Register Link -->
@@ -1386,21 +1527,6 @@
                         Hemen başvurun
                         <i class="bi bi-arrow-right"></i>
                     </a>
-                </div>
-
-                <!-- Trust Badges -->
-                <div class="trust-badges">
-                    <div class="trust-badge">
-                        <i class="bi bi-shield-check"></i>
-                        <span>SSL Güvenli</span>
-                    </div>
-                    <div class="trust-badge">
-                        <i class="bi bi-patch-check"></i>
-                        <span>ISO 27001</span>
-                    </div>
-                    <div class="trust-badge">
-                        <i class="bi bi-award"></i>
-                        <span>PCI DSS</span>
                     </div>
                 </div>
             </div>
@@ -1420,35 +1546,67 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Defer Non-Critical Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 800,
-            once: true,
-            easing: 'ease-out-cubic'
+        // Performance monitoring
+        if ('performance' in window) {
+            window.addEventListener('load', function() {
+                const perfData = window.performance.timing;
+                const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+                console.log('Page Load Time:', pageLoadTime + 'ms');
+            });
+        }
+        
+        // Initialize AOS with lazy loading
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    once: true,
+                    easing: 'ease-out-cubic',
+                    disable: window.innerWidth < 768 // Disable on mobile
+                });
+            }
         });
 
-        // Initialize Swiper
-        var swiper = new Swiper(".testimonialSwiper", {
-            spaceBetween: 30,
-            centeredSlides: true,
-            autoplay: {
-                delay: 5000,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true,
-            },
+        // Initialize Swiper with lazy loading
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swiper !== 'undefined') {
+                var swiper = new Swiper(".testimonialSwiper", {
+                    spaceBetween: 30,
+                    centeredSlides: true,
+                    autoplay: {
+                        delay: 5000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true
+                    },
+                    loop: true,
+                    speed: 600,
+                    pagination: {
+                        el: ".swiper-pagination",
+                        clickable: true,
+                    },
+                    // Performance optimization
+                    preloadImages: false,
+                    lazy: true,
+                    watchSlidesProgress: true,
+                    watchSlidesVisibility: true
+                });
+            }
         });
 
-        // Generate Particles
+        // Optimized Particle Generation
         function generateParticles() {
             const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
+            const isMobile = window.innerWidth <= 768;
+            const particleCount = isMobile ? 0 : 30; // Reduced from 50, disabled on mobile
+            
+            if (particleCount === 0) return;
+            
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
@@ -1456,10 +1614,18 @@
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.animationDelay = Math.random() * 10 + 's';
                 particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                particlesContainer.appendChild(particle);
+                fragment.appendChild(particle);
             }
+            
+            particlesContainer.appendChild(fragment);
         }
-        generateParticles();
+        
+        // Use requestAnimationFrame for smooth rendering
+        if ('requestAnimationFrame' in window) {
+            requestAnimationFrame(generateParticles);
+        } else {
+            generateParticles();
+        }
 
         // Password Toggle
         function togglePassword() {
@@ -1475,22 +1641,31 @@
             }
         }
 
-        // Form Submission
+        // Optimized Form Submission
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const submitBtn = document.getElementById('submitBtn');
             const btnText = submitBtn.querySelector('span');
             const btnIcon = submitBtn.querySelector('i');
             const loadingOverlay = document.getElementById('loadingOverlay');
             
+            // Prevent double submission
+            if (submitBtn.classList.contains('loading')) {
+                e.preventDefault();
+                return;
+            }
+            
             // Show loading state
             submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
             btnText.textContent = 'Giriş yapılıyor';
             btnIcon.className = 'spinner';
             
-            // Show premium loading overlay
-            setTimeout(() => {
-                loadingOverlay.classList.add('active');
-            }, 300);
+            // Show premium loading overlay with RAF
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    loadingOverlay.classList.add('active');
+                }, 300);
+            });
         });
 
         // This is now handled above in the enhanced version
@@ -1572,32 +1747,46 @@
         `;
         document.head.appendChild(style);
 
-        // Enhanced glass parallax effect on mouse move
-        document.addEventListener('mousemove', function(e) {
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
+        // Debounce function for performance
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Optimized parallax effect with debouncing and RAF
+        const handleMouseMove = debounce((e) => {
+            if (window.innerWidth <= 768) return; // Skip on mobile
             
-            // Move glass layers
-            const glassLayer1 = document.querySelector('.glass-layer-1');
-            const glassLayer2 = document.querySelector('.glass-layer-2');
-            
-            if (glassLayer1) {
-                glassLayer1.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
-            }
-            if (glassLayer2) {
-                glassLayer2.style.transform = `translate(${x * -8}px, ${y * -8}px)`;
-            }
-            
-            // Enhanced particle movement
-            const particles = document.querySelectorAll('.particle');
-            particles.forEach((particle, index) => {
-                const speed = (index + 1) * 0.3;
-                const xPos = x * speed * 8;
-                const yPos = y * speed * 8;
+            requestAnimationFrame(() => {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
                 
-                particle.style.transform = `translate(${xPos}px, ${yPos}px) scale(${1 + x * 0.2})`;
+                // Move glass layers
+                const glassLayer1 = document.querySelector('.glass-layer-1');
+                const glassLayer2 = document.querySelector('.glass-layer-2');
+                
+                if (glassLayer1) {
+                    glassLayer1.style.transform = `translate3d(${x * 10}px, ${y * 10}px, 0)`;
+                }
+                if (glassLayer2) {
+                    glassLayer2.style.transform = `translate3d(${x * -8}px, ${y * -8}px, 0)`;
+                }
+                
+                // Skip particle movement for better performance
             });
-        });
+        }, 16); // ~60fps
+        
+        // Only add mousemove listener on desktop
+        if (window.innerWidth > 768) {
+            document.addEventListener('mousemove', handleMouseMove, { passive: true });
+        }
 
         // Enhanced input field glass effects
         const glassInputs = document.querySelectorAll('.glass-input');
