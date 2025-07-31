@@ -48,9 +48,25 @@ class AdminController extends Controller
 
         // Store sayısı - eğer Store modeli yoksa seller sayısını kullan
         $totalStores = Store::count() ?: $sellerCount;
+        
+        // Additional data for modern dashboard
+        $recentOrders = Order::with('items')->latest()->take(5)->get();
+        $topSellers = User::where('role', 'seller')
+            ->withCount('products')
+            ->orderBy('products_count', 'desc')
+            ->take(5)
+            ->get();
+        
+        // Calculate today's revenue
+        $todayRevenue = Order::whereDate('created_at', today())
+            ->where('status', '!=', 'cancelled')
+            ->sum('total');
+            
+        // Calculate total revenue
+        $totalRevenue = Order::where('status', '!=', 'cancelled')->sum('total');
 
-        // Görünüme değişkeni aktar
-        return view('admin.dashboard', compact(
+        // Görünüme değişkeni aktar - Use modern dashboard
+        return view('admin.dashboard-modern', compact(
             'userCount',
             'adminCount',
             'sellerCount',
@@ -64,7 +80,11 @@ class AdminController extends Controller
             'totalCategories',
             'totalSubcategories',
             'categoriesWithSubcategories',
-            'totalStores'
+            'totalStores',
+            'recentOrders',
+            'topSellers',
+            'todayRevenue',
+            'totalRevenue'
         ));
     }
 
@@ -74,7 +94,7 @@ class AdminController extends Controller
         $role = $request->input('role'); // ?role=seller gibi bir parametre alır
         $users = $role ? User::where('role', $role)->get() : User::all();
 
-        return view('admin.users', compact('users', 'role'));
+        return view('admin.users-modern', compact('users', 'role'));
     }
 
     // AdminController.php - orders metodu güncellenmiş hali
@@ -136,12 +156,12 @@ class AdminController extends Controller
             });
         }
 
-        $orders = $query->latest()->get();
+        $orders = $query->with(['items.product.images', 'user'])->latest()->get();
 
         // Tüm satıcıları al
         $sellers = User::where('role', 'seller')->get();
 
-        return view('admin.orders', compact('orders', 'sellers'));
+        return view('admin.orders-modern', compact('orders', 'sellers'));
     }
 
     // AdminController.php - showOrder metodu
@@ -155,7 +175,7 @@ class AdminController extends Controller
         // Debug için
         // \Log::info('Order items:', $order->items->toArray());
 
-        return view('admin.order-details', compact('order'));
+        return view('admin.order-details-modern', compact('order'));
     }
 
     //tüm ürünleri listeleme
@@ -168,10 +188,20 @@ class AdminController extends Controller
             $query->where('user_id', $sellerId); // Belirli satıcının ürünleri filtrelenir
         }
 
-        $products = $query->with(['images', 'user'])->latest()->get();
+        $products = $query->with(['images', 'user', 'category', 'store'])->latest()->get();
         $sellers = User::where('role', 'seller')->get(); // Tüm satıcıları al
+        $categories = Category::all(); // Tüm kategorileri al
+        $stores = Store::all(); // Tüm mağazaları al
+        
+        // İstatistikleri hesapla
+        $stats = [
+            'total' => $products->count(),
+            'active' => $products->where('status', 'active')->count(),
+            'pending' => $products->where('status', 'pending')->count(),
+            'out_of_stock' => $products->where('stock', 0)->count(),
+        ];
 
-        return view('admin.products', compact('products', 'sellers', 'sellerId'));
+        return view('admin.products-modern', compact('products', 'sellers', 'sellerId', 'categories', 'stores', 'stats'));
     }
 
     //Belirli bir satıcının ürünlerini listeleme
@@ -211,7 +241,7 @@ class AdminController extends Controller
                 ]);
             }
 
-            return view('admin.stores', compact('stores'));
+            return view('admin.stores-modern', compact('stores'));
         }
         // Stores tablosu yoksa direkt seller'ları kullan
         else {
@@ -230,7 +260,7 @@ class AdminController extends Controller
                 ], 'total_amount')
                 ->get();
 
-            return view('admin.stores', [
+            return view('admin.stores-modern', [
                 'stores' => $stores,
                 'usingSellers' => true
             ]);
@@ -283,7 +313,7 @@ class AdminController extends Controller
             $query->where('user_id', $store->id);
         })->latest()->take(10)->get();
 
-        return view('admin.store-details', compact('store', 'stats', 'recentOrders'));
+        return view('admin.store-details-modern', compact('store', 'stats', 'recentOrders'));
     }
 
     // Mağaza durumunu değiştir
@@ -494,6 +524,33 @@ class AdminController extends Controller
         $product->save();
         return redirect()->route('admin.products')->with('success', 'Product status updated successfully.');
     }
+    
+    public function storeProduct(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'store_id' => 'required|exists:stores,id',
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0|lt:price',
+            'stock' => 'required|integer|min:0',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
+        
+        $data = $request->all();
+        $data['user_id'] = $request->store_id; // Store'un user_id'si
+        $data['status'] = 'pending';
+        
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $data['image'] = $path;
+        }
+        
+        Product::create($data);
+        
+        return redirect()->route('admin.products')->with('success', 'Ürün başarıyla eklendi.');
+    }
 
     public function delete($id)
     {
@@ -633,9 +690,40 @@ class AdminController extends Controller
 
     public function categories()
     {
-        $categories = Category::whereNull('parent_id')->with(['children.children'])->get();
+        $categories = Category::whereNull('parent_id')
+            ->with(['children.children'])
+            ->withCount('products')
+            ->get();
         $allCategories = Category::all(); // Alt kategori eklerken kullanmak için tüm kategoriler
-        return view('admin.categories', compact('categories', 'allCategories'));
+        $totalCategories = Category::count();
+        $totalSubcategories = Category::whereNotNull('parent_id')->count();
+        
+        // İstatistikler için ek veriler
+        $categoryRequests = CategoryRequest::with('seller')->latest()->get();
+        $pendingRequests = $categoryRequests->where('status', 'pending')->count();
+        
+        // En çok ürün olan kategori
+        $topCategory = Category::withCount('products')
+            ->orderBy('products_count', 'desc')
+            ->first();
+            
+        // Boş kategoriler
+        $emptyCategories = Category::doesntHave('products')->count();
+        
+        // Son eklenen kategori
+        $latestCategory = Category::latest()->first();
+        
+        return view('admin.categories-modern', compact(
+            'categories', 
+            'allCategories', 
+            'totalCategories', 
+            'totalSubcategories',
+            'categoryRequests',
+            'pendingRequests',
+            'topCategory',
+            'emptyCategories',
+            'latestCategory'
+        ));
     }
 
     public function storeCategory(Request $request)
@@ -1074,6 +1162,24 @@ class AdminController extends Controller
         }
     }
 
+    // Sipariş iptal etme
+    public function cancelOrder(Request $request, $orderId)
+    {
+        try {
+            $order = Order::findOrFail($orderId);
+            
+            $order->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $request->input('reason', 'Admin tarafından iptal edildi'),
+                'cancelled_at' => now()
+            ]);
+            
+            return redirect()->back()->with('success', 'Sipariş başarıyla iptal edildi.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Sipariş iptal edilirken bir hata oluştu.');
+        }
+    }
+    
     // Order item iptal etme metodu
     public function cancelOrderItem(Request $request, $orderId, $itemId)
     {

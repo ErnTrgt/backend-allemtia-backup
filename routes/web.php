@@ -56,16 +56,18 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/orders/{id}', [AdminController::class, 'showOrder'])->name('admin.orders.show');
     Route::post('/admin/orders/{order}/items/{item}/cancel', [AdminController::class, 'cancelOrderItem'])->name('admin.orders.cancel_item');
     Route::get('/admin/products', [AdminController::class, 'productList'])->name('admin.products');
+    Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
     Route::get('/admin/product/{id}', [AdminController::class, 'details'])->name('admin.product.details');
     Route::put('/admin/product/{id}', [AdminController::class, 'update'])->name('admin.product.update');
     Route::put('/admin/product/{id}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.product.toggleStatus');
     Route::delete('/admin/product/{id}', [AdminController::class, 'delete'])->name('admin.product.delete');
-    Route::put('/orders/{order}/cancel', [AdminController::class, 'cancelOrder'])->name('admin.orders.cancel');
+    Route::get('/admin/products/export', [AdminController::class, 'exportProducts'])->name('admin.products.export');
+    Route::put('/admin/orders/{order}/cancel', [AdminController::class, 'cancelOrder'])->name('admin.orders.cancel');
     Route::get('/admin/orders/{order}/invoice', [AdminController::class, 'invoice'])->name('admin.orders.invoice');
 
     //Route::get('/orders/{order}/invoice', [AdminController::class, 'invoice'])->name('admin.orders.invoice');
     Route::delete('/orders/{order}', [AdminController::class, 'destroy'])->name('admin.orders.delete');
-    Route::put('/orders/{order}/status', [AdminController::class, 'updateStatus'])->name('admin.orders.updateStatus');
+    Route::put('/admin/orders/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
     Route::put('/admin/orders/update', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.update');
     Route::get('/admin/orders/{order}/seller/{seller}/invoice', [AdminController::class, 'sellerInvoice'])->name('admin.orders.seller.invoice');
 
@@ -82,8 +84,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/subcategory-requests', [AdminController::class, 'subcategoryRequests'])->name('admin.subcategory.requests');
     Route::put('/admin/subcategory-requests/{id}', [AdminController::class, 'updateSubcategoryRequestStatus'])->name('admin.updateSubcategoryRequestStatus');
     Route::get('/admin/categories', [AdminController::class, 'categories'])->name('admin.categories');
-    Route::post('/admin/categories', [AdminController::class, 'storeCategory'])->name('admin.storeCategory');
-    Route::post('/admin/subcategories', [AdminController::class, 'storeSubcategory'])->name('admin.storeSubcategory');
+    Route::post('/admin/categories', [AdminController::class, 'storeCategory'])->name('admin.categories.store');
+    Route::post('/admin/subcategories', [AdminController::class, 'storeSubcategory'])->name('admin.subcategories.store');
     Route::put('/admin/categories/{id}', [AdminController::class, 'updateCategory'])->name('admin.updateCategory');
     Route::delete('/admin/categories/{id}', [AdminController::class, 'deleteCategory'])->name('admin.deleteCategory');
 

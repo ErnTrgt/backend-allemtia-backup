@@ -16,11 +16,15 @@ class Product extends Model
         'name',
         'description',
         'price',
+        'discount_price',
+        'discount_percentage',
         'stock',
-        'status', // Aktif veya Pasif
+        'status', // active, pending, inactive
         'category_id',
         'user_id', // Ürün sahibi
         'image', // Ürün resmi
+        'sku',
+        'is_featured',
     ];
 
     // Ürün ile satıcı arasındaki ilişki
@@ -40,10 +44,18 @@ class Product extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    // Mağaza ilişkisi
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'user_id', 'user_id');
+    }
+    
     public function images()
     {
         return $this->hasMany(ProductImage::class);
     }
+    
     public function coupons()
     {
         return $this->belongsToMany(Coupon::class);
