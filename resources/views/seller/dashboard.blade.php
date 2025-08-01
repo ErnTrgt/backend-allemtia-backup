@@ -20,15 +20,33 @@
             </nav>
         </div>
         <div class="welcome-box">
-            <div class="welcome-text">Hoş geldiniz, <span class="user-name">{{ Auth::user()->name }}</span>!</div>
-            <div class="date-text">{{ now()->locale('tr')->isoFormat('dddd, D MMMM YYYY') }}</div>
+            <div class="welcome-text">
+                <i class="bi bi-hand-wave welcome-icon"></i>
+                Hoş geldiniz, <span class="user-name">{{ Auth::user()->name }}</span>!
+            </div>
+            <div class="date-text" data-date="{{ now()->timezone('Europe/Istanbul')->format('Y-m-d') }}">
+                <i class="bi bi-calendar3 date-icon"></i>
+                <span class="date-full">{{ now()->timezone('Europe/Istanbul')->locale('tr')->isoFormat('dddd, D MMMM YYYY') }}</span>
+                <span class="date-time">
+                    <i class="bi bi-clock time-icon"></i>
+                    {{ now()->timezone('Europe/Istanbul')->format('H:i') }}
+                </span>
+            </div>
         </div>
     </div>
 
     <!-- Stat Cards Row -->
-    <div class="row mb-4">
+    <div class="stat-cards-container">
+        <div class="stat-cards-header">
+            <h5 class="stat-cards-title">Genel İstatistikler</h5>
+            <button class="btn-refresh-stats" onclick="refreshStatCards()" title="İstatistikleri Yenile">
+                <i class="bi bi-arrow-clockwise refresh-icon"></i>
+                <span class="refresh-text">Yenile</span>
+            </button>
+        </div>
+        <div class="row mb-4" id="statCardsRow">
         <!-- Products Card -->
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
             <a href="{{ route('seller.products') }}" class="stat-card products">
                 <div class="stat-content">
                     <div class="stat-info">
@@ -46,7 +64,7 @@
         </div>
 
         <!-- Orders Card -->
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
             <a href="{{ route('seller.orders') }}" class="stat-card orders">
                 <div class="stat-content">
                     <div class="stat-info">
@@ -64,7 +82,7 @@
         </div>
 
         <!-- Active Orders Card -->
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
             <a href="{{ route('seller.orders', ['status' => 'processing']) }}" class="stat-card active-orders">
                 <div class="stat-content">
                     <div class="stat-info">
@@ -82,7 +100,7 @@
         </div>
 
         <!-- Coupons Card -->
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
             <a href="{{ route('seller.coupons.index') }}" class="stat-card coupons">
                 <div class="stat-content">
                     <div class="stat-info">
@@ -99,61 +117,82 @@
             </a>
         </div>
     </div>
+    </div>
 
     <!-- Revenue Stats Row -->
     <div class="row">
         <!-- Total Revenue -->
-        <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
             <div class="revenue-card">
-                <div class="revenue-info">
-                    <h3>Toplam Gelir</h3>
-                    <div class="amount">{{ number_format($salesStats['totalRevenue'] ?? 0, 2) }} ₺</div>
-                </div>
-                <div class="revenue-icon" style="color: #10B981;">
-                    <i class="bi bi-cash-stack"></i>
+                <div class="revenue-content">
+                    <div class="revenue-header">
+                        <div class="revenue-info">
+                            <h3>Toplam Gelir</h3>
+                            <div class="amount">{{ number_format($salesStats['totalRevenue'] ?? 0, 2) }} ₺</div>
+                        </div>
+                        <div class="revenue-icon" style="color: #10B981;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Cancelled Revenue -->
-        <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
             <div class="revenue-card">
-                <div class="revenue-info">
-                    <h3>İptal Edilen</h3>
-                    <div class="amount">{{ number_format($salesStats['cancelledRevenue'] ?? 0, 2) }} ₺</div>
-                </div>
-                <div class="revenue-icon" style="color: #EF4444;">
-                    <i class="bi bi-x-circle"></i>
+                <div class="revenue-content">
+                    <div class="revenue-header">
+                        <div class="revenue-info">
+                            <h3>İptal Edilen</h3>
+                            <div class="amount">{{ number_format($salesStats['cancelledRevenue'] ?? 0, 2) }} ₺</div>
+                        </div>
+                        <div class="revenue-icon" style="color: #EF4444;">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Average Order -->
-        <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
             <div class="revenue-card">
-                <div class="revenue-info">
-                    <h3>Ortalama Sipariş</h3>
-                    <div class="amount">{{ number_format($salesStats['avgOrderValue'] ?? 0, 2) }} ₺</div>
-                </div>
-                <div class="revenue-icon" style="color: #3B82F6;">
-                    <i class="bi bi-graph-up"></i>
+                <div class="revenue-content">
+                    <div class="revenue-header">
+                        <div class="revenue-info">
+                            <h3>Ortalama Sipariş</h3>
+                            <div class="amount">{{ number_format($salesStats['avgOrderValue'] ?? 0, 2) }} ₺</div>
+                        </div>
+                        <div class="revenue-icon" style="color: #3B82F6;">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- This Month -->
-        <div class="col-xl-3 col-lg-6 col-md-6">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
             <div class="revenue-card">
-                <div class="revenue-info">
-                    <h3>Bu Ay</h3>
-                    <div class="amount">{{ number_format($salesStats['thisMonthRevenue'] ?? 0, 2) }} ₺</div>
-                    <div class="growth {{ ($salesStats['monthlyGrowth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
-                        <i class="bi bi-arrow-{{ ($salesStats['monthlyGrowth'] ?? 0) >= 0 ? 'up' : 'down' }}-short"></i>
-                        {{ abs($salesStats['monthlyGrowth'] ?? 0) }}%
+                <div class="revenue-content">
+                    <div class="revenue-header">
+                        <div class="revenue-info">
+                            <div class="revenue-title-row">
+                                <h3>Bu Ay</h3>
+                                @if(isset($salesStats['monthlyGrowth']))
+                                    <span class="growth-badge {{ $salesStats['monthlyGrowth'] >= 0 ? 'positive' : 'negative' }}">
+                                        <i class="bi bi-arrow-{{ $salesStats['monthlyGrowth'] >= 0 ? 'up' : 'down' }}-short"></i>
+                                        {{ abs($salesStats['monthlyGrowth']) }}%
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="amount">{{ number_format($salesStats['thisMonthRevenue'] ?? 0, 2) }} ₺</div>
+                        </div>
+                        <div class="revenue-icon" style="color: #8B5CF6;">
+                            <i class="bi bi-calendar-month"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="revenue-icon" style="color: #8B5CF6;">
-                    <i class="bi bi-calendar-month"></i>
                 </div>
             </div>
         </div>
@@ -162,10 +201,11 @@
     <!-- Product Lists Row -->
     <div class="row">
         <!-- Best Selling Products -->
-        <div class="col-xl-6 col-lg-6">
+        <div class="col-xl-6 col-lg-6 col-12 mb-4">
             <div class="product-list-card">
                 <div class="product-list-header">
                     <h3 class="product-list-title">
+                        <i class="bi bi-trophy-fill text-warning"></i>
                         En Çok Satılan Ürünler
                         <span class="product-list-subtitle">(İlk 3)</span>
                     </h3>
@@ -175,7 +215,13 @@
                         @foreach($salesStats['bestSellingProducts'] as $index => $product)
                             <div class="product-item">
                                 <div class="product-rank rank-{{ $index + 1 }}">
-                                    #{{ $index + 1 }}
+                                    @if($index == 0)
+                                        <i class="bi bi-trophy-fill"></i>
+                                    @elseif($index == 1)
+                                        <i class="bi bi-award-fill"></i>
+                                    @else
+                                        <i class="bi bi-star-fill"></i>
+                                    @endif
                                 </div>
                                 @if($product->product && $product->product->images->isNotEmpty())
                                     <div class="product-image">
@@ -184,18 +230,24 @@
                                     </div>
                                 @else
                                     <div class="product-placeholder">
-                                        <i class="bi bi-box text-muted"></i>
+                                        <i class="bi bi-box"></i>
                                     </div>
                                 @endif
                                 <div class="product-details">
                                     <h6 class="product-name">{{ $product->product->name ?? 'Ürün Bulunamadı' }}</h6>
+                                    <div class="product-meta">
+                                        <span class="product-category">{{ $product->product->category->name ?? 'Kategori Yok' }}</span>
+                                        <span class="product-stock {{ $product->product->stock < 10 ? 'low-stock' : '' }}">
+                                            Stok: {{ $product->product->stock ?? 0 }}
+                                        </span>
+                                    </div>
                                     <div class="product-stats">
                                         <div class="product-stat">
                                             <i class="bi bi-bag-check"></i>
-                                            <strong>{{ $product->total_quantity }}</strong> adet
+                                            <strong>{{ $product->total_quantity }}</strong> adet satıldı
                                         </div>
-                                        <div class="product-stat text-success">
-                                            <i class="bi bi-cash"></i>
+                                        <div class="product-stat revenue">
+                                            <i class="bi bi-cash-coin"></i>
                                             <strong>{{ number_format($product->total_revenue, 2) }} ₺</strong>
                                         </div>
                                     </div>
@@ -213,10 +265,11 @@
         </div>
 
         <!-- Least Selling Products -->
-        <div class="col-xl-6 col-lg-6">
+        <div class="col-xl-6 col-lg-6 col-12 mb-4">
             <div class="product-list-card">
                 <div class="product-list-header">
                     <h3 class="product-list-title">
+                        <i class="bi bi-graph-down text-danger"></i>
                         En Az Satılan Ürünler
                         <span class="product-list-subtitle">(İlk 3)</span>
                     </h3>
@@ -416,6 +469,55 @@
                         @endforelse
                     </tbody>
                 </table>
+                
+                <!-- Mobile Orders View -->
+                <div class="mobile-orders">
+                    @forelse($recentOrders ?? [] as $order)
+                        <div class="mobile-order-card">
+                            <div class="mobile-order-header">
+                                <div class="mobile-order-info">
+                                    <div class="mobile-order-number">#{{ $order->order_number }}</div>
+                                    <div class="mobile-order-customer">{{ $order->customer_name }}</div>
+                                </div>
+                                <span class="order-status status-{{ $order->status }}">
+                                    @switch($order->status)
+                                        @case('pending')
+                                            Beklemede
+                                            @break
+                                        @case('processing')
+                                            Hazırlanıyor
+                                            @break
+                                        @case('shipped')
+                                            Kargoda
+                                            @break
+                                        @case('delivered')
+                                            Teslim Edildi
+                                            @break
+                                        @case('cancelled')
+                                            İptal Edildi
+                                            @break
+                                        @default
+                                            {{ $order->status }}
+                                    @endswitch
+                                </span>
+                            </div>
+                            <div class="mobile-order-details">
+                                <div class="mobile-order-amount">{{ number_format($order->total, 2) }} ₺</div>
+                                <div class="mobile-order-date">{{ $order->created_at->format('d.m.Y H:i') }}</div>
+                            </div>
+                            <div class="mobile-order-footer">
+                                <a href="{{ route('seller.orders', ['id' => $order->id]) }}" class="btn-detail">
+                                    <i class="bi bi-eye"></i> Detay Görüntüle
+                                </a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty-state">
+                            <i class="bi bi-basket"></i>
+                            <p>Henüz sipariş bulunmuyor</p>
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
@@ -530,6 +632,74 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
 <script>
+// Refresh Stat Cards Function
+function refreshStatCards() {
+    const button = document.querySelector('.btn-refresh-stats');
+    const statCardsRow = document.getElementById('statCardsRow');
+    
+    // Add loading state
+    button.classList.add('loading');
+    button.disabled = true;
+    
+    // Show skeleton loaders
+    const originalContent = statCardsRow.innerHTML;
+    statCardsRow.innerHTML = `
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
+            <div class="stat-card-skeleton">
+                <div class="skeleton-content">
+                    <div class="skeleton-info">
+                        <div class="skeleton-number"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-progress"></div>
+                    </div>
+                    <div class="skeleton-icon"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
+            <div class="stat-card-skeleton">
+                <div class="skeleton-content">
+                    <div class="skeleton-info">
+                        <div class="skeleton-number"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-progress"></div>
+                    </div>
+                    <div class="skeleton-icon"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
+            <div class="stat-card-skeleton">
+                <div class="skeleton-content">
+                    <div class="skeleton-info">
+                        <div class="skeleton-number"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-progress"></div>
+                    </div>
+                    <div class="skeleton-icon"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12 mb-3">
+            <div class="stat-card-skeleton">
+                <div class="skeleton-content">
+                    <div class="skeleton-info">
+                        <div class="skeleton-number"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-progress"></div>
+                    </div>
+                    <div class="skeleton-icon"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Reload page to get fresh data from controller
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Get data from controller
     const salesData = {
@@ -657,6 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const chart = new ApexCharts(document.querySelector("#sales-chart"), options);
     chart.render();
+    
 
     // Filter buttons
     document.getElementById('weekly-sales').addEventListener('click', function() {
