@@ -809,7 +809,7 @@ class AdminController extends Controller
     /* ABOUT KISMI */
     public function aboutList()
     {
-        $sections = AboutSection::all();
+        $sections = AboutSection::paginate(10);
         return view('admin.about.index', compact('sections'));
     }
 
@@ -895,7 +895,7 @@ class AdminController extends Controller
     //FAQ
     public function faqList()
     {
-        $faqs = Faq::all();
+        $faqs = Faq::paginate(10);
         return view('admin.faq.index', compact('faqs'));
     }
 
@@ -944,7 +944,7 @@ class AdminController extends Controller
     //  SLIDER
     public function sliderList()
     {
-        $sliders = Slider::all();
+        $sliders = Slider::paginate(10);
         return view('admin.slider.index', compact('sliders'));
     }
 
@@ -1014,7 +1014,7 @@ class AdminController extends Controller
     public function index()
     {
         $products = Product::all();
-        $coupons = Coupon::with('products')->get();
+        $coupons = Coupon::with('products')->paginate(10);
         return view('admin.coupons.index', compact('coupons', 'products'));
     }
 
@@ -1289,7 +1289,8 @@ class AdminController extends Controller
                 ->make(true);
         }
 
-        return view('admin.blogs.index');
+        $blogs = Blog::latest()->get();
+        return view('admin.blogs.index', compact('blogs'));
     }
 
     /**

@@ -1,6 +1,7 @@
 @extends('layouts.admin-modern')
 
 @section('title', 'Ürünler')
+@section('header-title', 'Ürünler')
 
 @section('content')
 <div class="products-container">
@@ -11,12 +12,6 @@
             ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
             ['label' => 'Ürünler']
         ]">
-        <x-slot name="actions">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                <i class="bi bi-plus-circle me-2"></i>
-                Yeni Ürün
-            </button>
-        </x-slot>
     </x-admin.page-header>
     
     <!-- Stats Cards -->
@@ -119,10 +114,10 @@
                                 @endif
                             </div>
                             <div class="product-overlay">
-                                <button class="btn-overlay" onclick="viewProduct({{ $product->id }})" title="Görüntüle">
+                                <button class="btn-overlay" data-bs-toggle="modal" data-bs-target="#viewProductModal{{ $product->id }}" title="Görüntüle">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn-overlay" onclick="editProduct({{ $product->id }})" title="Düzenle">
+                                <button class="btn-overlay" data-bs-toggle="modal" data-bs-target="#editProductModal{{ $product->id }}" title="Düzenle">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn-overlay" onclick="deleteProduct({{ $product->id }})" title="Sil">
@@ -233,10 +228,10 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-action" onclick="viewProduct({{ $product->id }})" title="Görüntüle">
+                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#viewProductModal{{ $product->id }}" title="Görüntüle">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn-action" onclick="editProduct({{ $product->id }})" title="Düzenle">
+                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#editProductModal{{ $product->id }}" title="Düzenle">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn-action text-danger" onclick="deleteProduct({{ $product->id }})" title="Sil">
@@ -252,73 +247,354 @@
     </x-admin.glass-card>
 </div>
 
-<!-- Add Product Modal -->
-<div class="modal fade" id="addProductModal" tabindex="-1">
+<!-- View Product Modals -->
+@foreach($products as $product)
+<div class="modal fade" id="viewProductModal{{ $product->id }}" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Yeni Ürün Ekle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-box-seam-fill me-2"></i>
+                    Ürün Detayları
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
-            <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+                <!-- Ürün Görselleri -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-images"></i>
+                        Ürün Görselleri
+                    </h6>
+                    <div class="product-images-container">
+                        @if($product->image || ($product->images && count($product->images) > 0))
+                            @if($product->image)
+                                <div class="main-image">
+                                    <img src="{{ $product->image }}" alt="{{ $product->name }}" class="img-fluid">
+                                </div>
+                            @endif
+                            
+                            @if($product->images && count($product->images) > 0)
+                                <div class="image-gallery">
+                                    @foreach($product->images as $image)
+                                        <div class="gallery-item">
+                                            <img src="{{ $image->url ?? $image }}" alt="{{ $product->name }}" class="img-fluid">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        @else
+                            <div class="no-image-placeholder">
+                                <i class="bi bi-image"></i>
+                                <p>Bu ürün için görsel bulunmuyor</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Ürün Bilgileri -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-box-seam"></i>
+                        Temel Bilgiler
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="form-label">Ürün Adı</label>
+                                <div class="form-control-static">{{ $product->name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">SKU</label>
+                                <div class="form-control-static">{{ $product->sku ?? '-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Kategori</label>
+                                <div class="form-control-static">{{ $product->category->name ?? 'Kategori Yok' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Mağaza</label>
+                                <div class="form-control-static">{{ $product->store->name ?? 'Mağaza Yok' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fiyat ve Stok -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-currency-dollar"></i>
+                        Fiyat ve Stok Bilgileri
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Normal Fiyat</label>
+                                <div class="form-control-static">₺{{ number_format($product->price, 2, ',', '.') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">İndirimli Fiyat</label>
+                                <div class="form-control-static">
+                                    @if($product->discount_price)
+                                        ₺{{ number_format($product->discount_price, 2, ',', '.') }}
+                                        <span class="badge bg-danger ms-2">-{{ $product->discount_percentage }}%</span>
+                                    @else
+                                        -
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Stok Durumu</label>
+                                <div class="form-control-static">
+                                    <span class="stock-badge {{ $product->stock > 10 ? 'in-stock' : ($product->stock > 0 ? 'low-stock' : 'out-of-stock') }}">
+                                        {{ $product->stock }} adet
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ek Bilgiler -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-info-circle"></i>
+                        Ek Bilgiler
+                    </h6>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label">Açıklama</label>
+                                <div class="form-control-static">{{ $product->description ?? 'Açıklama bulunmuyor' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Durum</label>
+                                <div class="form-control-static">
+                                    <span class="status-badge {{ $product->status }}">
+                                        @if($product->status == 'active')
+                                            <i class="bi bi-check-circle me-1"></i>Aktif
+                                        @elseif($product->status == 'pending')
+                                            <i class="bi bi-clock me-1"></i>Onay Bekliyor
+                                        @else
+                                            <i class="bi bi-x-circle me-1"></i>Pasif
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Eklenme Tarihi</label>
+                                <div class="form-control-static">{{ $product->created_at->format('d.m.Y H:i') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if($product->is_featured)
+                <div class="info-message">
+                    <i class="bi bi-star-fill"></i>
+                    <div class="info-message-content">
+                        <div class="info-message-title">Öne Çıkan Ürün</div>
+                        <div class="info-message-text">
+                            Bu ürün öne çıkan ürünler arasında gösterilmektedir.
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
+
+<!-- Edit Product Modals -->
+@foreach($products as $product)
+<div class="modal fade" id="editProductModal{{ $product->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil me-2"></i>
+                    Ürün Düzenle: <span class="badge bg-light text-dark">{{ $product->name }}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+            </div>
+            <form action="{{ route('admin.product.update', $product->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                @method('PUT')
+                <input type="hidden" name="deleted_images" id="deletedImages{{ $product->id }}" value="">
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Ürün Adı</label>
-                            <input type="text" class="form-control" name="name" required>
+                    <!-- Temel Bilgiler -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-box-seam"></i>
+                            Temel Bilgiler
+                        </h6>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Ürün Adı</label>
+                                    <input type="text" class="form-control" name="name" value="{{ $product->name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Kategori</label>
+                                    <select class="form-control" name="category_id" required>
+                                        @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ $product->category_id == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Kategori</label>
-                            <select class="form-select" name="category_id" required>
-                                <option value="">Kategori Seçin</option>
-                                @foreach($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
+                    </div>
+
+                    <!-- Fiyat ve Stok Bilgileri -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-currency-dollar"></i>
+                            Fiyat ve Stok Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Fiyat</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="price" 
+                                               value="{{ $product->price }}" step="0.01" required>
+                                        <span class="input-group-text">₺</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Stok Adedi</label>
+                                    <input type="number" class="form-control" name="stock" 
+                                           value="{{ $product->stock }}" required min="0">
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Mağaza</label>
-                            <select class="form-select" name="store_id" required>
-                                <option value="">Mağaza Seçin</option>
-                                @foreach($stores as $store)
-                                <option value="{{ $store->id }}">{{ $store->name }}</option>
-                                @endforeach
-                            </select>
+                    </div>
+
+                    <!-- Detay Bilgileri -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-card-text"></i>
+                            Detay Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Ürün Açıklaması</label>
+                                    <textarea class="form-control" name="description" rows="3">{{ $product->description }}</textarea>
+                                    <small class="text-muted">İsteğe bağlı</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Mevcut Görseller</label>
+                                    <div class="current-images-container">
+                                        @if($product->image)
+                                            <div class="current-image-item" data-image-type="main">
+                                                <img src="{{ $product->image }}" alt="Ana görsel">
+                                                <div class="image-overlay">
+                                                    <span class="image-badge">Ana Görsel</span>
+                                                    <button type="button" class="btn-remove-image" onclick="removeImage(this, '{{ $product->id }}', 'main')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        
+                                        @if($product->images && count($product->images) > 0)
+                                            @foreach($product->images as $index => $image)
+                                                <div class="current-image-item" data-image-id="{{ $image->id ?? $index }}">
+                                                    <img src="{{ $image->url ?? $image }}" alt="Ek görsel">
+                                                    <div class="image-overlay">
+                                                        <button type="button" class="btn-remove-image" onclick="removeImage(this, '{{ $product->id }}', '{{ $image->id ?? $index }}')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                        
+                                        @if(!$product->image && (!$product->images || count($product->images) == 0))
+                                            <div class="no-images-text">
+                                                <i class="bi bi-image"></i>
+                                                <p>Henüz görsel eklenmemiş</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Yeni Ana Görsel</label>
+                                    <input type="file" class="form-control" name="image" accept="image/*" id="mainImageInput{{ $product->id }}">
+                                    <small class="text-muted">Ana ürün görseli (isteğe bağlı)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ek Görseller</label>
+                                    <input type="file" class="form-control" name="images[]" accept="image/*" multiple id="additionalImagesInput{{ $product->id }}">
+                                    <small class="text-muted">Birden fazla görsel seçebilirsiniz</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Durum</label>
+                                    <select class="form-control" name="status" required>
+                                        <option value="1" {{ $product->status == 1 || $product->status == 'active' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="0" {{ $product->status == 0 || $product->status == 'pending' || $product->status == 'inactive' ? 'selected' : '' }}>Pasif</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Fiyat</label>
-                            <input type="number" class="form-control" name="price" step="0.01" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">İndirimli Fiyat</label>
-                            <input type="number" class="form-control" name="discount_price" step="0.01">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Stok</label>
-                            <input type="number" class="form-control" name="stock" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Açıklama</label>
-                            <textarea class="form-control" name="description" rows="3"></textarea>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Ürün Görseli</label>
-                            <input type="file" class="form-control" name="image" accept="image/*">
+                    </div>
+
+                    <div class="info-message">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="info-message-content">
+                            <div class="info-message-title">Güncelleme Bilgisi</div>
+                            <div class="info-message-text">
+                                Ürün bilgileri güncellendikten sonra değişiklikler anında yayına alınacaktır.
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-2"></i>
-                        Ürün Ekle
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Değişiklikleri Kaydet
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endforeach
 
 <style>
 /* Products Page Styles */
@@ -728,6 +1004,533 @@
     color: #EF4444;
 }
 
+/* Modal Styles - Coupons Design System */
+.modal-content {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, rgba(169, 0, 0, 0.05) 0%, rgba(193, 18, 31, 0.05) 100%);
+    border-bottom: 1px solid rgba(169, 0, 0, 0.1);
+    padding: var(--spacing-xl);
+    position: relative;
+}
+
+.modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(169, 0, 0, 0.3), transparent);
+}
+
+.modal-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+}
+
+.modal-title i {
+    color: var(--primary-red);
+}
+
+.modal-title .badge {
+    margin-left: var(--spacing-sm);
+    font-size: var(--text-sm);
+    font-weight: normal;
+}
+
+.btn-close {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-sm);
+    opacity: 0.7;
+    transition: all var(--transition-base) var(--ease-in-out);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--gray-600);
+}
+
+.btn-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: var(--spacing-xl);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Modal Scrollbar */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-sm);
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(169, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(169, 0, 0, 0.3);
+}
+
+.modal-footer {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.04) 100%);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    gap: var(--spacing-md);
+}
+
+/* Form Sections */
+.form-section {
+    background: rgba(240, 248, 255, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.form-section:last-of-type {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-section-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.form-section-title i {
+    color: var(--primary-red);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    display: block;
+    font-weight: var(--font-medium);
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--text-sm);
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    transition: all var(--transition-base) var(--ease-in-out);
+    font-family: inherit;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    background: white;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(169, 0, 0, 0.1);
+}
+
+.form-control::placeholder {
+    color: var(--gray-400);
+}
+
+select.form-control {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-sm) center;
+    background-size: 16px 12px;
+    padding-right: var(--spacing-2xl);
+}
+
+/* Input Group */
+.input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group-text {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: linear-gradient(135deg, rgba(169, 0, 0, 0.05) 0%, rgba(193, 18, 31, 0.05) 100%);
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-left: none;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+}
+
+.input-group .form-control {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    border-right: none;
+}
+
+/* Info Message */
+.info-message {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-lg);
+}
+
+.info-message i {
+    color: var(--info);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.info-message-content {
+    flex: 1;
+}
+
+.info-message-title {
+    font-weight: var(--font-semibold);
+    color: var(--gray-800);
+    margin-bottom: 2px;
+}
+
+.info-message-text {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+}
+
+/* Form Control Static */
+.form-control-static {
+    padding: var(--spacing-sm) 0;
+    font-size: 14px;
+    color: var(--gray-900);
+    font-weight: 500;
+}
+
+/* Product Images Container */
+.product-images-container {
+    margin-top: var(--spacing-md);
+}
+
+.main-image {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--gray-100);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-image img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.gallery-item {
+    position: relative;
+    padding-top: 100%;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--gray-100);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.gallery-item:hover {
+    border-color: var(--primary-red);
+    transform: scale(1.05);
+}
+
+.gallery-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* No Image Placeholder */
+.no-image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-3xl) var(--spacing-xl);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--gray-300);
+    color: var(--gray-400);
+    text-align: center;
+}
+
+.no-image-placeholder i {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+}
+
+.no-image-placeholder p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+/* Current Images Container */
+.current-images-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.current-image-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--gray-100);
+    border: 2px solid var(--gray-200);
+    transition: all 0.3s ease;
+}
+
+.current-image-item:hover {
+    border-color: var(--primary-red);
+    transform: scale(1.02);
+}
+
+.current-image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.current-image-item .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.7) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: var(--spacing-sm);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.current-image-item:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-badge {
+    background: var(--primary-red);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.btn-remove-image {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-remove-image:hover {
+    background: #DC2626;
+    transform: scale(1.1);
+}
+
+.no-images-text {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--gray-400);
+}
+
+.no-images-text i {
+    font-size: 36px;
+    margin-bottom: var(--spacing-sm);
+    display: block;
+}
+
+.no-images-text p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+/* Image Preview for File Input */
+.image-preview-container {
+    display: none;
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--gray-200);
+}
+
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Responsive Image Gallery */
+@media (max-width: 768px) {
+    .image-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+    
+    .main-image {
+        max-height: 300px;
+    }
+    
+    .current-images-container {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+}
+
+/* Modal Buttons */
+.modal .btn {
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-medium);
+    transition: all var(--transition-base) var(--ease-in-out);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--text-sm);
+}
+
+.modal .btn-secondary {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.08) 100%);
+    color: var(--gray-700);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal .btn-secondary:hover {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal .btn-primary {
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--secondary-red) 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(169, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(169, 0, 0, 0.35);
+}
+
+.modal .btn-primary:hover::before {
+    left: 100%;
+}
+
+/* Modal Animation */
+.modal.fade .modal-dialog {
+    transform: scale(0.8) translateY(-100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+/* Modal Backdrop Enhancement */
+.modal-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .product-card {
@@ -862,14 +1665,6 @@ document.getElementById('selectAll')?.addEventListener('change', function() {
 });
 
 // Product Actions
-function viewProduct(id) {
-    window.location.href = `/admin/products/${id}`;
-}
-
-function editProduct(id) {
-    window.location.href = `/admin/products/${id}/edit`;
-}
-
 function deleteProduct(id) {
     if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
         fetch(`/admin/products/${id}`, {
@@ -895,6 +1690,106 @@ function exportToExcel() {
 // Print Table
 function printTable() {
     window.print();
+}
+
+// Image Gallery Click Handler
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle gallery item clicks
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const clickedImg = this.querySelector('img');
+            const mainImageContainer = this.closest('.product-images-container').querySelector('.main-image img');
+            
+            if (mainImageContainer && clickedImg) {
+                // Swap images with animation
+                mainImageContainer.style.opacity = '0';
+                setTimeout(() => {
+                    mainImageContainer.src = clickedImg.src;
+                    mainImageContainer.style.opacity = '1';
+                }, 300);
+            }
+        });
+    });
+    
+    // Add transition to main images
+    document.querySelectorAll('.main-image img').forEach(img => {
+        img.style.transition = 'opacity 0.3s ease';
+    });
+    
+    // Preview new images on file select
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                // Create preview container if needed
+                let previewContainer = this.parentElement.querySelector('.image-preview-container');
+                if (!previewContainer) {
+                    previewContainer = document.createElement('div');
+                    previewContainer.className = 'image-preview-container';
+                    previewContainer.innerHTML = '<p class="text-muted mb-2">Yüklenecek görseller:</p><div class="image-preview-grid"></div>';
+                    this.parentElement.appendChild(previewContainer);
+                }
+                
+                const previewGrid = previewContainer.querySelector('.image-preview-grid');
+                previewGrid.innerHTML = '';
+                previewContainer.style.display = 'block';
+                
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const previewItem = document.createElement('div');
+                            previewItem.className = 'preview-item';
+                            previewItem.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                            previewGrid.appendChild(previewItem);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    });
+});
+
+// Remove Image Function
+function removeImage(button, productId, imageType) {
+    if (!confirm('Bu görseli silmek istediğinizden emin misiniz?')) {
+        return;
+    }
+    
+    const imageItem = button.closest('.current-image-item');
+    
+    // Add loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+    
+    // Track deleted images
+    const deletedImagesInput = document.getElementById(`deletedImages${productId}`);
+    let deletedImages = deletedImagesInput.value ? deletedImagesInput.value.split(',') : [];
+    deletedImages.push(imageType);
+    deletedImagesInput.value = deletedImages.join(',');
+    
+    // Visual removal with animation
+    imageItem.style.opacity = '0';
+    imageItem.style.transform = 'scale(0.8)';
+    
+    setTimeout(() => {
+        imageItem.remove();
+        
+        // Check if no images left
+        const container = document.querySelector(`#editProductModal${productId} .current-images-container`);
+        if (container && container.querySelectorAll('.current-image-item').length === 0) {
+            container.innerHTML = `
+                <div class="no-images-text">
+                    <i class="bi bi-image"></i>
+                    <p>Henüz görsel eklenmemiş</p>
+                </div>
+            `;
+        }
+    }, 300);
+    
+    // Note: In a real implementation, you would also make an AJAX request to delete the image immediately
+    // This would provide better UX and ensure the image is deleted even if the form is not submitted
 }
 </script>
 @endpush

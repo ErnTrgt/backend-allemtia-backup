@@ -8,6 +8,16 @@
 @endpush
 
 @section('content')
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Satış Raporları</h1>
+    <div class="breadcrumb">
+        <a href="{{ route('admin.dashboard') }}">Ana Sayfa</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>Raporlar</span>
+    </div>
+</div>
+
 <!-- Report Stats -->
 <div class="report-stats">
     <!-- Total Revenue Card -->
@@ -76,18 +86,18 @@
         </button>
     </div>
     
-    <form id="reportFilters" method="GET" action="#">
+    <form id="reportFilters" method="GET" action="{{ route('admin.reports') }}">
         <div class="filter-grid">
             <div class="filter-group">
                 <label class="filter-label">Başlangıç Tarihi</label>
                 <input type="date" name="start_date" class="filter-control" 
-                       value="{{ now()->subMonth()->format('Y-m-d') }}">
+                       value="{{ request('start_date', now()->subMonth()->format('Y-m-d')) }}">
             </div>
             
             <div class="filter-group">
                 <label class="filter-label">Bitiş Tarihi</label>
                 <input type="date" name="end_date" class="filter-control" 
-                       value="{{ now()->format('Y-m-d') }}">
+                       value="{{ request('end_date', now()->format('Y-m-d')) }}">
             </div>
             
             <div class="filter-group">
@@ -470,6 +480,7 @@ function exportReport() {
 // Reset filters
 function resetFilters() {
     document.getElementById('reportFilters').reset();
+    document.getElementById('reportFilters').submit();
 }
 
 // Close modal on outside click

@@ -116,7 +116,6 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     // Store Management Routes
-    Route::get('/stores', [AdminController::class, 'storeList'])->name('admin.stores');
     Route::get('/store/{id}', [AdminController::class, 'showStore'])->name('admin.store.show');
     Route::post('/store/{id}/toggle', [AdminController::class, 'toggleStoreStatus'])->name('admin.store.toggle');
     Route::put('/store/{id}', [AdminController::class, 'updateStore'])->name('admin.store.update');

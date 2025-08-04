@@ -1,6 +1,7 @@
 @extends('layouts.admin-modern')
 
 @section('title', 'Kullanıcılar')
+@section('header-title', 'Kullanıcılar')
 
 @section('content')
 <div class="users-container">
@@ -99,18 +100,6 @@
                         <i class="bi bi-search"></i>
                         <input type="text" class="table-search" placeholder="Kullanıcı ara..." id="userSearch">
                     </div>
-                    
-                    <div class="dropdown">
-                        <button class="btn-icon" data-bs-toggle="dropdown">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Excel İndir</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i>Yazdır</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Ayarlar</a></li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
@@ -179,10 +168,10 @@
                         <td>{{ $user->created_at->format('d.m.Y') }}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-action" onclick="viewUser({{ $user->id }})" title="Görüntüle">
+                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#viewUserModal{{ $user->id }}" title="Görüntüle">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn-action" onclick="editUser({{ $user->id }})" title="Düzenle">
+                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}" title="Düzenle">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn-action text-danger" onclick="deleteUser({{ $user->id }})" title="Sil">
@@ -203,47 +192,106 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Yeni Kullanıcı Ekle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Yeni Kullanıcı Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
             <form action="{{ route('admin.users.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Ad Soyad</label>
-                            <input type="text" class="form-control" name="name" required>
+                    <!-- Kişisel Bilgiler -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-person-circle"></i>
+                            Kişisel Bilgiler
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ad Soyad</label>
+                                    <input type="text" class="form-control" name="name" required 
+                                           placeholder="Örn: Ahmet Yılmaz">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">E-posta</label>
+                                    <input type="email" class="form-control" name="email" required 
+                                           placeholder="ornek@email.com">
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">E-posta</label>
-                            <input type="email" class="form-control" name="email" required>
+                    </div>
+
+                    <!-- İletişim ve Rol -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-telephone"></i>
+                            İletişim ve Rol Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Telefon</label>
+                                    <input type="text" class="form-control" name="phone" 
+                                           placeholder="0555 123 45 67">
+                                    <small class="text-muted">İsteğe bağlı</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Kullanıcı Rolü</label>
+                                    <select class="form-control" name="role" required>
+                                        <option value="buyer" selected>Alıcı</option>
+                                        <option value="seller">Satıcı</option>
+                                        <option value="admin">Yönetici</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Telefon</label>
-                            <input type="text" class="form-control" name="phone">
+                    </div>
+
+                    <!-- Güvenlik -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-shield-lock"></i>
+                            Güvenlik Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Şifre</label>
+                                    <input type="password" class="form-control" name="password" required 
+                                           placeholder="••••••••">
+                                    <small class="text-muted">En az 8 karakter</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Şifre Tekrar</label>
+                                    <input type="password" class="form-control" name="password_confirmation" required 
+                                           placeholder="••••••••">
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Rol</label>
-                            <select class="form-select" name="role" required>
-                                <option value="buyer">Alıcı</option>
-                                <option value="seller">Satıcı</option>
-                                <option value="admin">Yönetici</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Şifre</label>
-                            <input type="password" class="form-control" name="password" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Şifre Tekrar</label>
-                            <input type="password" class="form-control" name="password_confirmation" required>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="info-message-content">
+                            <div class="info-message-title">Bilgi</div>
+                            <div class="info-message-text">
+                                Kullanıcı oluşturulduktan sonra e-posta adresine giriş bilgileri otomatik olarak gönderilecektir.
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-2"></i>
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
+                        <i class="bi bi-check-lg me-1"></i>
                         Kullanıcı Ekle
                     </button>
                 </div>
@@ -251,6 +299,226 @@
         </div>
     </div>
 </div>
+
+<!-- View User Modals -->
+@foreach($users as $user)
+<div class="modal fade" id="viewUserModal{{ $user->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-fill me-2"></i>
+                    Kullanıcı Detayları
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Kullanıcı Bilgileri -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-person-circle"></i>
+                        Kişisel Bilgiler
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Ad Soyad</label>
+                                <div class="form-control-static">{{ $user->name }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">E-posta</label>
+                                <div class="form-control-static">{{ $user->email }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İletişim ve Rol -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-telephone"></i>
+                        İletişim ve Rol Bilgileri
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Telefon</label>
+                                <div class="form-control-static">{{ $user->phone ?? '-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Kullanıcı Rolü</label>
+                                <div class="form-control-static">
+                                    <span class="role-badge {{ $user->role }}">
+                                        @if($user->role == 'admin')
+                                            <i class="bi bi-shield-fill me-1"></i>
+                                        @elseif($user->role == 'seller')
+                                            <i class="bi bi-shop me-1"></i>
+                                        @else
+                                            <i class="bi bi-bag me-1"></i>
+                                        @endif
+                                        {{ ucfirst($user->role) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Durum</label>
+                                <div class="form-control-static">
+                                    @if($user->status == 'approved')
+                                        <span class="badge bg-success">Aktif</span>
+                                    @else
+                                        <span class="badge bg-warning">Beklemede</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ek Bilgiler -->
+                <div class="form-section">
+                    <h6 class="form-section-title">
+                        <i class="bi bi-calendar3"></i>
+                        Kayıt Bilgileri
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Kayıt Tarihi</label>
+                                <div class="form-control-static">{{ $user->created_at->format('d.m.Y H:i') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Son Güncelleme</label>
+                                <div class="form-control-static">{{ $user->updated_at->format('d.m.Y H:i') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if($user->role == 'seller')
+                <div class="info-message">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div class="info-message-content">
+                        <div class="info-message-title">Satıcı Bilgisi</div>
+                        <div class="info-message-text">
+                            Bu kullanıcı bir satıcıdır. Ürün, sipariş ve mağaza bilgilerine erişebilir.
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
+
+<!-- Edit User Modals -->
+@foreach($users as $user)
+<div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil me-2"></i>
+                    Kullanıcı Düzenle: <span class="badge bg-light text-dark">{{ $user->name }}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+            </div>
+            <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <!-- Kişisel Bilgiler -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-person-circle"></i>
+                            Kişisel Bilgiler
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ad Soyad</label>
+                                    <input type="text" class="form-control" name="name" value="{{ $user->name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">E-posta</label>
+                                    <input type="email" class="form-control" name="email" value="{{ $user->email }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- İletişim ve Rol -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-telephone"></i>
+                            İletişim ve Rol Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Telefon</label>
+                                    <input type="text" class="form-control" name="phone" value="{{ $user->phone }}" 
+                                           placeholder="0555 123 45 67">
+                                    <small class="text-muted">İsteğe bağlı</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Kullanıcı Rolü</label>
+                                    <select class="form-control" name="role" required>
+                                        <option value="buyer" {{ $user->role == 'buyer' ? 'selected' : '' }}>Alıcı</option>
+                                        <option value="seller" {{ $user->role == 'seller' ? 'selected' : '' }}>Satıcı</option>
+                                        <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Yönetici</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Hesap Durumu</label>
+                                    <select class="form-control" name="status" required>
+                                        <option value="approved" {{ $user->status == 'approved' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="pending" {{ $user->status == 'pending' ? 'selected' : '' }}>Beklemede</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="info-message-content">
+                            <div class="info-message-title">Güncelleme Bilgisi</div>
+                            <div class="info-message-text">
+                                Kullanıcı bilgileri güncellendikten sonra kullanıcıya bilgilendirme e-postası gönderilecektir.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 <style>
 /* Users Page Styles */
@@ -636,58 +904,314 @@ input:checked + .slider:before {
     border-color: var(--gray-300);
 }
 
-/* Modal Styles */
+/* Modal Styles - Coupons Design System */
 .modal-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
 }
 
 .modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(169, 0, 0, 0.05) 0%, rgba(193, 18, 31, 0.05) 100%);
+    border-bottom: 1px solid rgba(169, 0, 0, 0.1);
+    padding: var(--spacing-xl);
+    position: relative;
+}
+
+.modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(169, 0, 0, 0.3), transparent);
 }
 
 .modal-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+}
+
+.modal-title i {
+    color: var(--primary-red);
+}
+
+.modal-title .badge {
+    margin-left: var(--spacing-sm);
+    font-size: var(--text-sm);
+    font-weight: normal;
+}
+
+.btn-close {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-sm);
+    opacity: 0.7;
+    transition: all var(--transition-base) var(--ease-in-out);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 20px;
-    font-weight: 600;
-    color: var(--gray-900);
+    line-height: 1;
+    color: var(--gray-600);
+}
+
+.btn-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+    transform: rotate(90deg);
 }
 
 .modal-body {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Modal Scrollbar */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-sm);
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(169, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(169, 0, 0, 0.3);
 }
 
 .modal-footer {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.04) 100%);
     border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    gap: var(--spacing-md);
+}
+
+/* Form Sections */
+.form-section {
+    background: rgba(240, 248, 255, 0.3);
+    border-radius: var(--radius-md);
     padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.form-section:last-of-type {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-section-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.form-section-title i {
+    color: var(--primary-red);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: var(--spacing-lg);
 }
 
 .form-label {
-    font-size: 14px;
-    font-weight: 500;
+    display: block;
+    font-weight: var(--font-medium);
     color: var(--gray-700);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--text-sm);
 }
 
 .form-control,
 .form-select {
+    width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--white);
-    border: 1px solid var(--gray-300);
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(0, 0, 0, 0.08);
     border-radius: var(--radius-sm);
-    font-size: 14px;
-    transition: all 0.2s ease;
+    font-size: var(--text-sm);
+    transition: all var(--transition-base) var(--ease-in-out);
+    font-family: inherit;
 }
 
 .form-control:focus,
 .form-select:focus {
     outline: none;
+    background: white;
     border-color: var(--primary-red);
-    box-shadow: 0 0 0 3px rgba(169, 0, 0, 0.1);
+    box-shadow: 0 0 0 4px rgba(169, 0, 0, 0.1);
+}
+
+.form-control::placeholder {
+    color: var(--gray-400);
+}
+
+select.form-control {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-sm) center;
+    background-size: 16px 12px;
+    padding-right: var(--spacing-2xl);
+}
+
+/* Info Message */
+.info-message {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-lg);
+}
+
+.info-message i {
+    color: var(--info);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.info-message-content {
+    flex: 1;
+}
+
+.info-message-title {
+    font-weight: var(--font-semibold);
+    color: var(--gray-800);
+    margin-bottom: 2px;
+}
+
+.info-message-text {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+}
+
+/* Form Control Static */
+.form-control-static {
+    padding: var(--spacing-sm) 0;
+    font-size: 14px;
+    color: var(--gray-900);
+    font-weight: 500;
+}
+
+/* Modal Buttons */
+.modal .btn {
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-medium);
+    transition: all var(--transition-base) var(--ease-in-out);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--text-sm);
+}
+
+.modal .btn-secondary {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.08) 100%);
+    color: var(--gray-700);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal .btn-secondary:hover {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal .btn-primary {
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--secondary-red) 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(169, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(169, 0, 0, 0.35);
+}
+
+.modal .btn-primary:hover::before {
+    left: 100%;
+}
+
+/* Modal Animation */
+.modal.fade .modal-dialog {
+    transform: scale(0.8) translateY(-100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+/* Modal Backdrop Enhancement */
+.modal-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* Responsive Modal */
+@media (max-width: 767px) {
+    .modal-dialog {
+        margin: var(--spacing-md);
+    }
+    
+    .modal-body {
+        padding: var(--spacing-lg);
+    }
+    
+    .modal .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .modal-footer button {
+        width: 100%;
+    }
 }
 
 /* Responsive */
@@ -804,18 +1328,6 @@ document.querySelectorAll('.status-toggle').forEach(toggle => {
         });
     });
 });
-
-// View User
-function viewUser(id) {
-    // Implement view user logic
-    window.location.href = `/admin/users/${id}`;
-}
-
-// Edit User
-function editUser(id) {
-    // Implement edit user logic
-    window.location.href = `/admin/users/${id}/edit`;
-}
 
 // Delete User
 function deleteUser(id) {

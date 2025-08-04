@@ -1,6 +1,7 @@
 @extends('layouts.admin-modern')
 
 @section('title', 'Sipariş Detayı')
+@section('header-title', 'Sipariş Detayı #' . $order->order_number)
 
 @section('content')
 <div class="order-details-container">
@@ -224,44 +225,131 @@
 
 <!-- Update Status Modal -->
 <div class="modal fade" id="updateStatusModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Sipariş Durumunu Güncelle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, rgba(169, 0, 0, 0.05) 0%, rgba(193, 18, 31, 0.05) 100%); border-bottom: 1px solid rgba(169, 0, 0, 0.1); padding: 24px; position: relative;">
+                <h5 class="modal-title" style="font-size: 20px; font-weight: 600; color: #1f2937; display: flex; align-items: center;">
+                    <i class="bi bi-pencil me-2" style="color: #A90000;"></i>
+                    Sipariş Güncelle: <span class="badge bg-light text-dark" style="margin-left: 8px; font-size: 14px; font-weight: normal;">#{{ $order->order_number }}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; opacity: 0.7; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; color: #4b5563;">×</button>
             </div>
-            <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST">
+            <form action="{{ route('admin.orders.update') }}" method="POST">
                 @csrf
                 @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Yeni Durum</label>
-                        <select class="form-select" name="status" id="orderStatus" required>
-                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Bekliyor</option>
-                            <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>İşleniyor</option>
-                            <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Kargoda</option>
-                            <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Teslim Edildi</option>
-                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>İptal</option>
-                        </select>
+                <input type="hidden" name="order_id" value="{{ $order->id }}">
+                <div class="modal-body" style="padding: 24px;">
+                    <!-- Sipariş Durumu -->
+                    <div class="form-section" style="background: rgba(240, 248, 255, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(0, 0, 0, 0.05);">
+                        <h6 class="form-section-title" style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-box-seam" style="color: #A90000;"></i>
+                            Sipariş Durumu
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">Durum</label>
+                                    <select name="status" class="form-control" id="orderStatus" required style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.8); border: 2px solid rgba(0, 0, 0, 0.08); border-radius: 8px; font-size: 14px;">
+                                        <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Beklemede</option>
+                                        <option value="waiting_payment" {{ $order->status == 'waiting_payment' ? 'selected' : '' }}>Ödeme Bekleniyor</option>
+                                        <option value="paid" {{ $order->status == 'paid' ? 'selected' : '' }}>Ödendi</option>
+                                        <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>Hazırlanıyor</option>
+                                        <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Kargoda</option>
+                                        <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Teslim Edildi</option>
+                                        <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>İptal Edildi</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">Kargo Takip No</label>
+                                    <input type="text" name="tracking_number" class="form-control" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.8); border: 2px solid rgba(0, 0, 0, 0.08); border-radius: 8px; font-size: 14px;" 
+                                           value="{{ $order->tracking_number ?? '' }}" 
+                                           placeholder="Takip numarasını girin">
+                                    <small class="text-muted">İsteğe bağlı</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3" id="trackingNumberDiv" style="{{ $order->status == 'shipped' ? '' : 'display: none;' }}">
-                        <label class="form-label">Kargo Takip No</label>
-                        <input type="text" class="form-control" name="tracking_number" value="{{ $order->tracking_number }}">
+                    
+                    <!-- Notlar -->
+                    <div class="form-section" style="background: rgba(240, 248, 255, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(0, 0, 0, 0.05);">
+                        <h6 class="form-section-title" style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-chat-left-text" style="color: #A90000;"></i>
+                            Notlar
+                        </h6>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">Durum Notu</label>
+                                    <textarea name="status_note" class="form-control" rows="3" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.8); border: 2px solid rgba(0, 0, 0, 0.08); border-radius: 8px; font-size: 14px; resize: vertical;" 
+                                              placeholder="Bu durum güncellemesi hakkında not ekleyin...">{{ $order->status_note }}</textarea>
+                                    <small class="text-muted">Bu not sipariş geçmişinde görünecektir</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Cancel Reason (shown only when cancelled is selected) -->
+                            <div class="col-12" id="cancelReasonDiv" style="{{ $order->status == 'cancelled' ? '' : 'display: none;' }}">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">İptal Nedeni</label>
+                                    <textarea name="cancel_reason" class="form-control" rows="2" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.8); border: 2px solid rgba(0, 0, 0, 0.08); border-radius: 8px; font-size: 14px; resize: vertical;" 
+                                              placeholder="İptal nedenini belirtin...">{{ $order->cancellation_reason ?? '' }}</textarea>
+                                    <small class="text-muted">İptal nedeni müşteriyle paylaşılacaktır</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Not (Opsiyonel)</label>
-                        <textarea class="form-control" name="status_note" rows="3">{{ $order->status_note }}</textarea>
+                    
+                    <!-- Sipariş Özeti -->
+                    <div class="form-section" style="background: rgba(240, 248, 255, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(0, 0, 0, 0.05);">
+                        <h6 class="form-section-title" style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="bi bi-receipt" style="color: #A90000;"></i>
+                            Sipariş Özeti
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">Müşteri</label>
+                                    <div class="form-control-static" style="padding: 8px 0; font-size: 14px; color: #111827; line-height: 1.5;">
+                                        <strong>{{ $order->customer_name }}</strong><br>
+                                        <small class="text-muted">{{ $order->customer_email }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">Ödeme Yöntemi</label>
+                                    <div class="form-control-static" style="padding: 8px 0; font-size: 14px; color: #111827; line-height: 1.5;">
+                                        <strong>{{ $order->payment_method ?? 'Belirtilmemiş' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label class="form-label" style="display: block; font-weight: 500; color: #374151; margin-bottom: 4px; font-size: 14px;">Toplam Tutar</label>
+                                    <div class="form-control-static" style="padding: 8px 0; font-size: 14px; color: #111827; line-height: 1.5;">
+                                        <strong class="text-primary" style="font-size: 18px; color: #A90000;">₺{{ number_format($order->total, 2, ',', '.') }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3" id="cancelReasonDiv" style="{{ $order->status == 'cancelled' ? '' : 'display: none;' }}">
-                        <label class="form-label">İptal Nedeni</label>
-                        <textarea class="form-control" name="cancel_reason" rows="3">{{ $order->cancellation_reason }}</textarea>
+                    
+                    <div class="info-message" style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; margin-top: 20px;">
+                        <i class="bi bi-info-circle-fill" style="color: #3B82F6; font-size: 20px; flex-shrink: 0;"></i>
+                        <div class="info-message-content" style="flex: 1;">
+                            <div class="info-message-title" style="font-weight: 600; color: #1f2937; margin-bottom: 2px;">Durum Güncelleme</div>
+                            <div class="info-message-text" style="color: #4b5563; font-size: 14px;">
+                                Sipariş durumu güncellendiğinde müşteriye otomatik bildirim gönderilecektir.
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-2"></i>
-                        Güncelle
+                <div class="modal-footer" style="background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.04) 100%); border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 20px 24px; gap: 16px;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="padding: 8px 24px; border-radius: 8px; font-weight: 500; background: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.08) 100%); color: #374151; border: 1px solid rgba(0, 0, 0, 0.1); display: inline-flex; align-items: center; gap: 4px; font-size: 14px;">İptal</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 24px; border-radius: 8px; font-weight: 500; background: linear-gradient(135deg, #A90000 0%, #C1121F 100%); color: white; border: none; box-shadow: 0 4px 16px rgba(169, 0, 0, 0.25); display: inline-flex; align-items: center; gap: 4px; font-size: 14px;">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Değişiklikleri Kaydet
                     </button>
                 </div>
             </form>
@@ -521,5 +609,66 @@ function updateOrderStatus(orderId) {
     
     modal.show();
 }
+
+// Form submit with AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('#updateStatusModal form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Güncelleniyor...';
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
+                    modal.hide();
+                    
+                    // Show toast or alert
+                    if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
+                        AdminPanel.showToast('Sipariş durumu başarıyla güncellendi', 'success');
+                    } else {
+                        alert('Sipariş durumu başarıyla güncellendi');
+                    }
+                    
+                    // Reload page after 1.5 seconds
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Bir hata oluştu');
+                }
+            })
+            .catch(error => {
+                // Show error message
+                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
+                    AdminPanel.showToast(error.message || 'Bir hata oluştu', 'error');
+                } else {
+                    alert(error.message || 'Bir hata oluştu');
+                }
+                
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+        });
+    }
+});
 </script>
 @endpush

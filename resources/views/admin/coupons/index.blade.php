@@ -1,703 +1,627 @@
-{{-- resources/views/admin/coupons/index.blade.php --}}
-@extends('layouts.layout')
+@extends('layouts.admin')
 
-@section('title', 'Kupon Yönetimi')
+@section('title', 'Kuponlar')
+@section('header-title', 'Kupon Yönetimi')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('admin/css/coupons.css') }}">
+@endpush
 
 @section('content')
-<div class="pd-ltr-20 xs-pd-20-10">
-    <div class="min-height-200px">
-
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="row">
-                <div class="col-md-6 col-sm-12">
-                    <div class="title">
-                        <h4>Kupon Yönetimi</h4>
-                    </div>
-                    <nav aria-label="breadcrumb" role="navigation">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="{{ route('admin.dashboard') }}">Ana Sayfa</a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">Kuponlar</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div class="col-md-6 col-sm-12 text-right">
-                    <button class="btn btn-success" data-toggle="modal" data-target="#addCouponModal">
-                        + Yeni Kupon Ekle
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- End Page Header -->
-
-        <!-- Coupon List Card -->
-        <div class="card-box mb-30">
-            <div class="pd-20">
-                <h4 class="text-blue h4">Kupon Listesi</h4>
-            </div>
-            <div class="pb-20">
-                <table class="data-table table stripe hover nowrap dt-responsive" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Kod</th>
-                            <th>Tür</th>
-                            <th>Değer</th>
-                            <th>Min. Sipariş</th>
-                            <th>Kullanım (Kullanılan/Limit)</th>
-                            <th>Bitiş Tarihi</th>
-                            <th>Durum</th>
-                            <th class="datatable-nosort">İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($coupons as $coupon)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $coupon->code }}</td>
-                            <td>
-                                @if($coupon->type === 'fixed')
-                                    Sabit
-                                @elseif($coupon->type === 'percent')
-                                    Yüzde
-                                @elseif($coupon->type === 'free_shipping')
-                                    Ücretsiz Kargo
-                                @else
-                                    {{ ucfirst($coupon->type) }}
-                                @endif
-                            </td>
-                            <td>
-                                @if($coupon->type === 'percent')
-                                    {{ $coupon->value }}%
-                                @elseif($coupon->type === 'fixed')
-                                    ₺{{ number_format($coupon->value,2) }}
-                                @else
-                                    Ücretsiz Kargo
-                                @endif
-                            </td>
-                            <td>
-                                @if($coupon->min_order_amount !== null)
-                                    ₺{{ number_format($coupon->min_order_amount,2) }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td>
-                                {{ $coupon->used_count }}
-                                @if($coupon->usage_limit)
-                                    / {{ $coupon->usage_limit }}
-                                @endif
-                            </td>
-                            <td>
-                                @if($coupon->expires_at)
-                                    {{ $coupon->expires_at->format('d.m.Y') }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge {{ $coupon->active ? 'badge-success' : 'badge-danger' }}">
-                                    {{ $coupon->active ? 'Aktif' : 'Pasif' }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="dropdown">
-                                    <a class="btn btn-link font-24 p-0 line-height-1 no-arrow dropdown-toggle"
-                                       href="#" role="button" data-toggle="dropdown">
-                                        <i class="dw dw-more"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-                                        <!-- Edit -->
-                                        <a class="dropdown-item" data-toggle="modal"
-                                           data-target="#editCouponModal{{ $coupon->id }}" href="#">
-                                            <i class="dw dw-edit2"></i> Düzenle
-                                        </a>
-                                        <!-- Toggle Active/Inactive -->
-                                        <a class="dropdown-item" href="#"
-                                           onclick="event.preventDefault(); document.getElementById('toggle-coupon-{{ $coupon->id }}').submit();">
-                                            <i class="dw {{ $coupon->active ? 'dw-ban' : 'dw-check' }}"></i>
-                                            {{ $coupon->active ? 'Pasifleştir' : 'Aktifleştir' }}
-                                        </a>
-                                        <form id="toggle-coupon-{{ $coupon->id }}"
-                                              action="{{ route('admin.coupons.toggle', $coupon->id) }}"
-                                              method="POST" style="display: none;">
-                                            @csrf
-                                            @method('PUT')
-                                        </form>
-                                        <!-- Delete -->
-                                        <a class="dropdown-item text-danger" href="#"
-                                           onclick="event.preventDefault(); document.getElementById('delete-coupon-{{ $coupon->id }}').submit();">
-                                            <i class="dw dw-delete-3"></i> Sil
-                                        </a>
-                                        <form id="delete-coupon-{{ $coupon->id }}"
-                                              action="{{ route('admin.coupons.destroy', $coupon->id) }}"
-                                              method="POST" style="display: none;">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Edit Coupon Modal -->
-                        <div class="modal fade" id="editCouponModal{{ $coupon->id }}" tabindex="-1"
-                             role="dialog" aria-labelledby="editCouponModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-xl modal-dialog-centered">
-                                <div class="modal-content border-0 shadow-lg">
-                                    <div class="modal-header bg-gradient-primary text-white border-0">
-                                        <h4 class="modal-title font-weight-bold">
-                                            <i class="dw dw-coupon mr-2"></i>Kupon Düzenle: <span class="badge badge-light text-primary">{{ $coupon->code }}</span>
-                                        </h4>
-                                        <button type="button" class="close text-white" data-dismiss="modal" aria-hidden="true">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <form action="{{ route('admin.coupons.update', $coupon->id) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <div class="modal-body p-4">
-                                            <!-- Temel Bilgiler -->
-                                            <div class="form-section mb-4">
-                                                <h6 class="text-primary font-weight-bold mb-3">
-                                                    <i class="dw dw-settings mr-2"></i>Temel Bilgiler
-                                                </h6>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-key mr-1 text-info"></i>Kupon Kodu
-                                                            </label>
-                                                            <input type="text" name="code" class="form-control form-control-lg border-2"
-                                                                   value="{{ $coupon->code }}" required placeholder="Örn: INDIRIM2024">
-                                                            <small class="text-muted">Büyük/küçük harf duyarlı değil</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-tag mr-1 text-warning"></i>İndirim Türü
-                                                            </label>
-                                                            <select name="type" class="form-control form-control-lg border-2" required>
-                                                                <option value="fixed" {{ $coupon->type=='fixed'?'selected':'' }}>
-                                                                    💰 Sabit Tutar (₺)
-                                                                </option>
-                                                                <option value="percent" {{ $coupon->type=='percent'?'selected':'' }}>
-                                                                    📊 Yüzde İndirim (%)
-                                                                </option>
-                                                                <option value="free_shipping" {{ $coupon->type=='free_shipping'?'selected':'' }}>
-                                                                    🚚 Ücretsiz Kargo
-                                                                </option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- İndirim Değeri ve Koşullar -->
-                                            <div class="form-section mb-4">
-                                                <h6 class="text-success font-weight-bold mb-3">
-                                                    <i class="dw dw-money-2 mr-2"></i>İndirim Değeri ve Koşullar
-                                                </h6>
-                                                <div class="row">
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-discount mr-1 text-success"></i>İndirim Değeri
-                                                            </label>
-                                                            <div class="input-group">
-                                                                <input type="number" step="0.01" min="0" name="value"
-                                                                       class="form-control form-control-lg border-2" 
-                                                                       value="{{ $coupon->value }}" required placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text bg-light">
-                                                                        <span class="coupon-currency">₺</span>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-shopping-basket mr-1 text-orange"></i>Min. Sipariş Tutarı
-                                                            </label>
-                                                            <div class="input-group">
-                                                                <input type="number" step="0.01" min="0" name="min_order_amount"
-                                                                       class="form-control form-control-lg border-2" 
-                                                                       value="{{ $coupon->min_order_amount }}" placeholder="0.00">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text bg-light">₺</span>
-                                                                </div>
-                                                            </div>
-                                                            <small class="text-muted">Boş bırakılırsa sınır yok</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-counter mr-1 text-danger"></i>Kullanım Limiti
-                                                            </label>
-                                                            <input type="number" min="1" name="usage_limit"
-                                                                   class="form-control form-control-lg border-2" 
-                                                                   value="{{ $coupon->usage_limit }}" placeholder="Sınırsız">
-                                                            <small class="text-muted">Boş bırakılırsa sınırsız</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Tarih ve Durum -->
-                                            <div class="form-section mb-4">
-                                                <h6 class="text-warning font-weight-bold mb-3">
-                                                    <i class="dw dw-calendar mr-2"></i>Geçerlilik ve Durum
-                                                </h6>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-time mr-1 text-danger"></i>Son Kullanım Tarihi
-                                                            </label>
-                                                            <input type="date" name="expires_at" class="form-control form-control-lg border-2"
-                                                                   value="{{ $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '' }}">
-                                                            <small class="text-muted">Boş bırakılırsa süresiz</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label class="font-weight-semibold text-dark">
-                                                                <i class="dw dw-power mr-1"></i>Kupon Durumu
-                                                            </label>
-                                                            <select name="active" class="form-control form-control-lg border-2" required>
-                                                                <option value="1" {{ $coupon->active ? 'selected' : '' }}>
-                                                                    ✅ Aktif
-                                                                </option>
-                                                                <option value="0" {{ !$coupon->active ? 'selected' : '' }}>
-                                                                    ❌ Pasif
-                                                                </option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Ürün Seçimi -->
-                                            <div class="form-section">
-                                                <h6 class="text-info font-weight-bold mb-3">
-                                                    <i class="dw dw-box mr-2"></i>Geçerli Ürünler
-                                                </h6>
-                                                <div class="form-group">
-                                                    <label class="font-weight-semibold text-dark">
-                                                        <i class="dw dw-list mr-1 text-primary"></i>Ürün Seçimi
-                                                        <small class="text-muted ml-2">(Ctrl tuşu ile çoklu seçim yapabilirsiniz)</small>
-                                                    </label>
-                                                    <select name="product_ids[]" class="form-control border-2" multiple style="min-height: 150px;">
-                                                        @php
-                                                            $sel = $coupon->products->pluck('id')->toArray();
-                                                        @endphp
-                                                        @foreach($products as $p)
-                                                            <option value="{{ $p->id }}"
-                                                                {{ in_array($p->id, $sel) ? 'selected' : '' }}
-                                                                class="p-2">
-                                                                {{ $p->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                    <small class="text-muted">
-                                                        <i class="dw dw-info mr-1"></i>
-                                                        Hiç ürün seçilmezse kupon tüm ürünler için geçerli olur
-                                                    </small>
-                                                </div>
-                                            </div>
-
-                                            <!-- Mevcut Kullanım Bilgisi -->
-                                            <div class="alert alert-info border-0 mt-3">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="dw dw-info text-info mr-2" style="font-size: 18px;"></i>
-                                                    <div>
-                                                        <strong>Kullanım Bilgisi:</strong> 
-                                                        Bu kupon şu ana kadar <span class="badge badge-primary">{{ $coupon->used_count }}</span> kez kullanıldı
-                                                        @if($coupon->usage_limit)
-                                                            (Limit: {{ $coupon->usage_limit }})
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer bg-light border-0 justify-content-between">
-                                            <button type="button" class="btn btn-light btn-lg px-4" data-dismiss="modal">
-                                                <i class="dw dw-cancel mr-2"></i>İptal
-                                            </button>
-                                            <button type="submit" class="btn btn-primary btn-lg px-4">
-                                                <i class="dw dw-save mr-2"></i>Değişiklikleri Kaydet
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End Edit Coupon Modal -->
-
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <!-- End Coupon List Card -->
-
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Kupon Yönetimi</h1>
+    <div class="breadcrumb">
+        <a href="{{ route('admin.dashboard') }}">Ana Sayfa</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>Kuponlar</span>
     </div>
 </div>
 
+<!-- Page Actions -->
+<div class="page-actions">
+    <div class="page-actions-left">
+        <!-- Search -->
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Kupon kodu ara..." id="couponSearch">
+        </div>
+    </div>
+    
+    <!-- Add New Coupon -->
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCouponModal" 
+            style="background: var(--primary-red); border-color: var(--primary-red);">
+        <i class="bi bi-plus-circle"></i>
+        Yeni Kupon
+    </button>
+</div>
+
+<!-- Coupon Stats -->
+<div class="coupon-stats">
+    <!-- Total Coupons -->
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="bi bi-ticket-perforated"></i>
+        </div>
+        <div class="stat-value">{{ $coupons->count() }}</div>
+        <div class="stat-label">Toplam Kupon</div>
+    </div>
+    
+    <!-- Active Coupons -->
+    <div class="stat-card active">
+        <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ $coupons->where('active', true)->count() }}</div>
+        <div class="stat-label">Aktif Kupon</div>
+    </div>
+    
+    <!-- Used Count -->
+    <div class="stat-card used">
+        <div class="stat-icon">
+            <i class="bi bi-bag-check"></i>
+        </div>
+        <div class="stat-value">{{ $coupons->sum('used_count') }}</div>
+        <div class="stat-label">Toplam Kullanım</div>
+    </div>
+    
+    <!-- Expired Coupons -->
+    <div class="stat-card expired">
+        <div class="stat-icon">
+            <i class="bi bi-calendar-x"></i>
+        </div>
+        <div class="stat-value">{{ $coupons->filter(function($c) { return $c->expires_at && $c->expires_at->isPast(); })->count() }}</div>
+        <div class="stat-label">Süresi Dolan</div>
+    </div>
+</div>
+
+<!-- Coupons Table -->
+<div class="coupons-table-card">
+    <div class="table-header">
+        <h3 class="table-title">Kupon Listesi</h3>
+    </div>
+    
+    <div class="table-wrapper">
+        <table class="coupons-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Kod</th>
+                    <th>Tür</th>
+                    <th>Değer</th>
+                    <th>Min. Tutar</th>
+                    <th>Kullanım</th>
+                    <th>Son Kullanım</th>
+                    <th>Durum</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($coupons as $coupon)
+                    <tr data-coupon="{{ strtolower($coupon->code) }}">
+                        <td>{{ $loop->iteration }}</td>
+                        <td>
+                            <span class="coupon-code">{{ $coupon->code }}</span>
+                            <button class="action-btn copy ms-2" onclick="copyCouponCode('{{ $coupon->code }}')" title="Kopyala">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </td>
+                        <td>
+                            @if($coupon->type === 'fixed')
+                                <span class="type-badge fixed">
+                                    <i class="bi bi-currency-dollar"></i>
+                                    Sabit Tutar
+                                </span>
+                            @elseif($coupon->type === 'percent')
+                                <span class="type-badge percent">
+                                    <i class="bi bi-percent"></i>
+                                    Yüzde
+                                </span>
+                            @else
+                                <span class="type-badge shipping">
+                                    <i class="bi bi-truck"></i>
+                                    Ücretsiz Kargo
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($coupon->type === 'percent')
+                                %{{ $coupon->value }}
+                            @elseif($coupon->type === 'fixed')
+                                ₺{{ number_format($coupon->value, 2, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>
+                            @if($coupon->min_order_amount)
+                                ₺{{ number_format($coupon->min_order_amount, 2, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>
+                            <div class="usage-progress">
+                                @if($coupon->usage_limit)
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ ($coupon->used_count / $coupon->usage_limit) * 100 }}%"></div>
+                                    </div>
+                                    <span class="usage-text">{{ $coupon->used_count }}/{{ $coupon->usage_limit }}</span>
+                                @else
+                                    <span class="usage-text">{{ $coupon->used_count }} kullanım</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td>
+                            @if($coupon->expires_at)
+                                @if($coupon->expires_at->isPast())
+                                    <span class="text-danger">
+                                        <i class="bi bi-exclamation-circle"></i>
+                                        {{ $coupon->expires_at->format('d.m.Y') }}
+                                    </span>
+                                @else
+                                    {{ $coupon->expires_at->format('d.m.Y') }}
+                                @endif
+                            @else
+                                <span class="text-muted">Süresiz</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($coupon->expires_at && $coupon->expires_at->isPast())
+                                <span class="status-badge expired">
+                                    <i class="bi bi-x-circle"></i>
+                                    Süresi Doldu
+                                </span>
+                            @elseif($coupon->active)
+                                <span class="status-badge active">
+                                    <i class="bi bi-check-circle"></i>
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="status-badge inactive">
+                                    <i class="bi bi-pause-circle"></i>
+                                    Pasif
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editCouponModal{{ $coupon->id }}" title="Düzenle">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form action="{{ route('admin.coupons.toggle', $coupon->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="action-btn {{ $coupon->active ? 'deactivate' : 'activate' }}" 
+                                            title="{{ $coupon->active ? 'Pasifleştir' : 'Aktifleştir' }}">
+                                        <i class="bi bi-{{ $coupon->active ? 'pause' : 'play' }}"></i>
+                                    </button>
+                                </form>
+                                <form action="{{ route('admin.coupons.destroy', $coupon->id) }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Bu kuponu silmek istediğinizden emin misiniz?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-btn delete" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <i class="bi bi-ticket-perforated empty-icon"></i>
+                                <h3 class="empty-title">Henüz Kupon Yok</h3>
+                                <p class="empty-text">İlk kuponunuzu oluşturmak için yukarıdaki butonu kullanın.</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    
+    @if($coupons->hasPages())
+        <div class="pagination-wrapper">
+            {{ $coupons->links('components.admin-pagination') }}
+        </div>
+    @endif
+</div>
+
 <!-- Add Coupon Modal -->
-<div class="modal fade" id="addCouponModal" tabindex="-1" role="dialog"
-     aria-labelledby="addCouponModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-gradient-success text-white border-0">
-                <h4 class="modal-title font-weight-bold">
-                    <i class="dw dw-add mr-2"></i>Yeni Kupon Oluştur
-                </h4>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-hidden="true">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<div class="modal fade" id="addCouponModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Yeni Kupon Oluştur
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
             <form action="{{ route('admin.coupons.store') }}" method="POST">
                 @csrf
-                <div class="modal-body p-4">
-                    <!-- Temel Bilgiler -->
-                    <div class="form-section mb-4">
-                        <h6 class="text-primary font-weight-bold mb-3">
-                            <i class="dw dw-settings mr-2"></i>Temel Bilgiler
+                <div class="modal-body">
+                    <!-- Basic Info -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-info-circle"></i>
+                            Temel Bilgiler
                         </h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-key mr-1 text-info"></i>Kupon Kodu
-                                    </label>
-                                    <input type="text" name="code" class="form-control form-control-lg border-2" 
-                                           required placeholder="Örn: INDIRIM2024">
-                                    <small class="text-muted">Büyük/küçük harf duyarlı değil</small>
+                                    <label class="form-label">Kupon Kodu</label>
+                                    <input type="text" name="code" class="form-control" required 
+                                           placeholder="Örn: INDIRIM2025" style="text-transform: uppercase;">
+                                    <small class="text-muted">Büyük/küçük harf duyarlı değildir</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-tag mr-1 text-warning"></i>İndirim Türü
-                                    </label>
-                                    <select name="type" class="form-control form-control-lg border-2" required>
-                                        <option value="fixed">💰 Sabit Tutar (₺)</option>
-                                        <option value="percent">📊 Yüzde İndirim (%)</option>
-                                        <option value="free_shipping">🚚 Ücretsiz Kargo</option>
+                                    <label class="form-label">İndirim Türü</label>
+                                    <select name="type" class="form-control" required onchange="updateValueField(this)">
+                                        <option value="fixed">Sabit Tutar (₺)</option>
+                                        <option value="percent">Yüzde İndirim (%)</option>
+                                        <option value="free_shipping">Ücretsiz Kargo</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- İndirim Değeri ve Koşullar -->
-                    <div class="form-section mb-4">
-                        <h6 class="text-success font-weight-bold mb-3">
-                            <i class="dw dw-money-2 mr-2"></i>İndirim Değeri ve Koşullar
+                    
+                    <!-- Discount Value -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-tag"></i>
+                            İndirim Değeri ve Koşullar
                         </h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-discount mr-1 text-success"></i>İndirim Değeri
-                                    </label>
+                                    <label class="form-label">İndirim Değeri</label>
                                     <div class="input-group">
                                         <input type="number" step="0.01" min="0" name="value" 
-                                               class="form-control form-control-lg border-2" required placeholder="0.00">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text bg-light">
-                                                <span class="coupon-currency">₺</span>
-                                            </span>
-                                        </div>
+                                               class="form-control" required placeholder="0.00" id="valueInput">
+                                        <span class="input-group-text" id="valueSymbol">₺</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-shopping-basket mr-1 text-orange"></i>Min. Sipariş Tutarı
-                                    </label>
+                                    <label class="form-label">Min. Sipariş Tutarı</label>
                                     <div class="input-group">
                                         <input type="number" step="0.01" min="0" name="min_order_amount" 
-                                               class="form-control form-control-lg border-2" placeholder="0.00">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text bg-light">₺</span>
-                                        </div>
+                                               class="form-control" placeholder="0.00">
+                                        <span class="input-group-text">₺</span>
                                     </div>
                                     <small class="text-muted">Boş bırakılırsa sınır yok</small>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-counter mr-1 text-danger"></i>Kullanım Limiti
-                                    </label>
+                                    <label class="form-label">Kullanım Limiti</label>
                                     <input type="number" min="1" name="usage_limit" 
-                                           class="form-control form-control-lg border-2" placeholder="Sınırsız">
+                                           class="form-control" placeholder="Sınırsız">
                                     <small class="text-muted">Boş bırakılırsa sınırsız</small>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Tarih ve Durum -->
-                    <div class="form-section mb-4">
-                        <h6 class="text-warning font-weight-bold mb-3">
-                            <i class="dw dw-calendar mr-2"></i>Geçerlilik ve Durum
+                    
+                    <!-- Validity -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-calendar"></i>
+                            Geçerlilik Süresi
                         </h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-time mr-1 text-danger"></i>Son Kullanım Tarihi
-                                    </label>
-                                    <input type="date" name="expires_at" class="form-control form-control-lg border-2">
+                                    <label class="form-label">Son Kullanım Tarihi</label>
+                                    <input type="date" name="expires_at" class="form-control">
                                     <small class="text-muted">Boş bırakılırsa süresiz</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="font-weight-semibold text-dark">
-                                        <i class="dw dw-power mr-1"></i>Kupon Durumu
-                                    </label>
-                                    <select name="active" class="form-control form-control-lg border-2" required>
-                                        <option value="1" selected>✅ Aktif</option>
-                                        <option value="0">❌ Pasif</option>
+                                    <label class="form-label">Kupon Durumu</label>
+                                    <select name="active" class="form-control" required>
+                                        <option value="1" selected>Aktif</option>
+                                        <option value="0">Pasif</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Ürün Seçimi -->
+                    
+                    <!-- Products -->
                     <div class="form-section">
-                        <h6 class="text-info font-weight-bold mb-3">
-                            <i class="dw dw-box mr-2"></i>Geçerli Ürünler
+                        <h6 class="form-section-title">
+                            <i class="bi bi-box-seam"></i>
+                            Geçerli Ürünler
                         </h6>
                         <div class="form-group">
-                            <label class="font-weight-semibold text-dark">
-                                <i class="dw dw-list mr-1 text-primary"></i>Ürün Seçimi
-                                <small class="text-muted ml-2">(Ctrl tuşu ile çoklu seçim yapabilirsiniz)</small>
+                            <label class="form-label">
+                                Ürün Seçimi
+                                <small class="text-muted">(Ctrl ile çoklu seçim)</small>
                             </label>
-                            <select name="product_ids[]" class="form-control border-2" multiple style="min-height: 150px;">
-                                @foreach($products as $p)
-                                    <option value="{{ $p->id }}" class="p-2">{{ $p->name }}</option>
+                            <select name="product_ids[]" class="form-control product-select" multiple>
+                                @foreach($products ?? [] as $product)
+                                    <option value="{{ $product->id }}">{{ $product->name }}</option>
                                 @endforeach
                             </select>
-                            <small class="text-muted">
-                                <i class="dw dw-info mr-1"></i>
-                                Hiç ürün seçilmezse kupon tüm ürünler için geçerli olur
-                            </small>
+                            <small class="text-muted">Seçim yapılmazsa tüm ürünlerde geçerli olur</small>
                         </div>
                     </div>
-
-                    <!-- Bilgilendirme -->
-                    <div class="alert alert-success border-0 mt-3">
-                        <div class="d-flex align-items-center">
-                            <i class="dw dw-lightbulb text-success mr-2" style="font-size: 18px;"></i>
-                            <div>
-                                <strong>İpucu:</strong> 
+                    
+                    <div class="info-message">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="info-message-content">
+                            <div class="info-message-title">İpucu</div>
+                            <div class="info-message-text">
                                 Kupon oluşturduktan sonra müşterilerinizle paylaşabilir ve kullanım durumunu takip edebilirsiniz.
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light border-0 justify-content-between">
-                    <button type="button" class="btn btn-light btn-lg px-4" data-dismiss="modal">
-                        <i class="dw dw-cancel mr-2"></i>İptal
-                    </button>
-                    <button type="submit" class="btn btn-success btn-lg px-4">
-                        <i class="dw dw-add mr-2"></i>Kupon Oluştur
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Kupon Oluştur
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Edit Coupon Modals -->
+@foreach($coupons as $coupon)
+<div class="modal fade" id="editCouponModal{{ $coupon->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil me-2"></i>
+                    Kupon Düzenle: <span class="badge bg-light text-dark">{{ $coupon->code }}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+            </div>
+            <form action="{{ route('admin.coupons.update', $coupon->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <!-- Basic Info -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-info-circle"></i>
+                            Temel Bilgiler
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Kupon Kodu</label>
+                                    <input type="text" name="code" class="form-control" required 
+                                           value="{{ $coupon->code }}" style="text-transform: uppercase;">
+                                    <small class="text-muted">Büyük/küçük harf duyarlı değildir</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">İndirim Türü</label>
+                                    <select name="type" class="form-control" required onchange="updateValueField(this, {{ $coupon->id }})">
+                                        <option value="fixed" {{ $coupon->type == 'fixed' ? 'selected' : '' }}>Sabit Tutar (₺)</option>
+                                        <option value="percent" {{ $coupon->type == 'percent' ? 'selected' : '' }}>Yüzde İndirim (%)</option>
+                                        <option value="free_shipping" {{ $coupon->type == 'free_shipping' ? 'selected' : '' }}>Ücretsiz Kargo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Discount Value -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-tag"></i>
+                            İndirim Değeri ve Koşullar
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">İndirim Değeri</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" min="0" name="value" 
+                                               class="form-control" required value="{{ $coupon->value }}" 
+                                               id="valueInput{{ $coupon->id }}">
+                                        <span class="input-group-text" id="valueSymbol{{ $coupon->id }}">
+                                            {{ $coupon->type == 'percent' ? '%' : '₺' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Min. Sipariş Tutarı</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" min="0" name="min_order_amount" 
+                                               class="form-control" value="{{ $coupon->min_order_amount }}">
+                                        <span class="input-group-text">₺</span>
+                                    </div>
+                                    <small class="text-muted">Boş bırakılırsa sınır yok</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Kullanım Limiti</label>
+                                    <input type="number" min="1" name="usage_limit" 
+                                           class="form-control" value="{{ $coupon->usage_limit }}">
+                                    <small class="text-muted">Boş bırakılırsa sınırsız</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Validity -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-calendar"></i>
+                            Geçerlilik Süresi
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Son Kullanım Tarihi</label>
+                                    <input type="date" name="expires_at" class="form-control"
+                                           value="{{ $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '' }}">
+                                    <small class="text-muted">Boş bırakılırsa süresiz</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Kupon Durumu</label>
+                                    <select name="active" class="form-control" required>
+                                        <option value="1" {{ $coupon->active ? 'selected' : '' }}>Aktif</option>
+                                        <option value="0" {{ !$coupon->active ? 'selected' : '' }}>Pasif</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Products -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-box-seam"></i>
+                            Geçerli Ürünler
+                        </h6>
+                        <div class="form-group">
+                            <label class="form-label">
+                                Ürün Seçimi
+                                <small class="text-muted">(Ctrl ile çoklu seçim)</small>
+                            </label>
+                            <select name="product_ids[]" class="form-control product-select" multiple>
+                                @php
+                                    $selectedProducts = $coupon->products->pluck('id')->toArray();
+                                @endphp
+                                @foreach($products ?? [] as $product)
+                                    <option value="{{ $product->id }}" 
+                                            {{ in_array($product->id, $selectedProducts) ? 'selected' : '' }}>
+                                        {{ $product->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Seçim yapılmazsa tüm ürünlerde geçerli olur</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Usage Info -->
+                    <div class="info-message">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="info-message-content">
+                            <div class="info-message-title">Kullanım Bilgisi</div>
+                            <div class="info-message-text">
+                                Bu kupon şu ana kadar <strong>{{ $coupon->used_count }}</strong> kez kullanıldı
+                                @if($coupon->usage_limit)
+                                    (Limit: {{ $coupon->usage_limit }})
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+<!-- Copy Notification -->
+<div class="copy-notification" id="copyNotification">
+    <i class="bi bi-check-circle"></i>
+    <span>Kupon kodu kopyalandı!</span>
+</div>
 @endsection
 
-<style>
-/* Modal Geliştirmeleri */
-.modal-xl {
-    max-width: 1000px;
-}
-
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-}
-
-.bg-gradient-success {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-}
-
-.form-section {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    border-left: 4px solid #007bff;
-}
-
-.form-control-lg {
-    height: calc(2.5rem + 2px);
-    padding: 0.75rem 1rem;
-    font-size: 1.1rem;
-}
-
-.border-2 {
-    border-width: 2px !important;
-    transition: all 0.3s ease;
-}
-
-.border-2:focus {
-    border-color: #007bff !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-}
-
-.input-group-text {
-    font-weight: 600;
-    border-width: 2px;
-    border-left: 0;
-}
-
-.font-weight-semibold {
-    font-weight: 600;
-}
-
-.alert {
-    border-radius: 10px;
-}
-
-/* Select Multiple Styling */
-select[multiple] option {
-    padding: 8px 12px;
-    margin: 2px 0;
-    border-radius: 4px;
-}
-
-select[multiple] option:checked {
-    background: #007bff !important;
-    color: white !important;
-}
-
-/* Badge ve Button Geliştirmeleri */
-.badge-light {
-    background-color: rgba(255,255,255,0.9) !important;
-    border: 1px solid rgba(0,0,0,0.1);
-}
-
-.btn-lg {
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.btn-lg:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-/* Icon Colors */
-.text-orange {
-    color: #fd7e14 !important;
-}
-
-/* Form Section Headers */
-.form-section h6 {
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 8px;
-    margin-bottom: 20px;
-}
-
-/* Modal Shadow */
-.modal-content {
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .modal-xl {
-        max-width: 95%;
-        margin: 10px auto;
-    }
-    
-    .form-section {
-        padding: 15px;
-    }
-    
-    .btn-lg {
-        padding: 10px 20px;
-        font-size: 14px;
-    }
-}
-</style>
-
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Kupon türü değiştiğinde currency symbol'ü güncelle
-    function updateCurrencySymbol(selectElement) {
-        const modal = selectElement.closest('.modal');
-        const currencySpan = modal.querySelector('.coupon-currency');
-        const valueInput = modal.querySelector('input[name="value"]');
+// Search functionality
+let searchTimer;
+document.getElementById('couponSearch').addEventListener('input', function(e) {
+    clearTimeout(searchTimer);
+    const query = e.target.value.toLowerCase();
+    
+    searchTimer = setTimeout(() => {
+        const rows = document.querySelectorAll('tbody tr[data-coupon]');
         
-        if (currencySpan && valueInput) {
-            switch(selectElement.value) {
-                case 'percent':
-                    currencySpan.textContent = '%';
-                    valueInput.setAttribute('max', '100');
-                    valueInput.setAttribute('placeholder', '0-100');
-                    break;
-                case 'fixed':
-                    currencySpan.textContent = '₺';
-                    valueInput.removeAttribute('max');
-                    valueInput.setAttribute('placeholder', '0.00');
-                    break;
-                case 'free_shipping':
-                    currencySpan.textContent = '🚚';
-                    valueInput.value = '0';
-                    valueInput.setAttribute('readonly', true);
-                    valueInput.setAttribute('placeholder', 'Otomatik');
-                    break;
-                default:
-                    currencySpan.textContent = '₺';
-                    valueInput.removeAttribute('readonly');
-                    valueInput.setAttribute('placeholder', '0.00');
-            }
-        }
-    }
-
-    // Tüm type select'leri için event listener ekle
-    document.querySelectorAll('select[name="type"]').forEach(function(select) {
-        // Sayfa yüklendiğinde mevcut değerlere göre güncelle
-        updateCurrencySymbol(select);
-        
-        // Değişiklik olduğunda güncelle
-        select.addEventListener('change', function() {
-            updateCurrencySymbol(this);
-        });
-    });
-
-    // Form validation feedback
-    document.querySelectorAll('.border-2').forEach(function(input) {
-        input.addEventListener('invalid', function() {
-            this.style.borderColor = '#dc3545';
-        });
-        
-        input.addEventListener('input', function() {
-            if (this.checkValidity()) {
-                this.style.borderColor = '#28a745';
+        rows.forEach(row => {
+            const couponCode = row.dataset.coupon;
+            if (couponCode.includes(query)) {
+                row.style.display = '';
             } else {
-                this.style.borderColor = '#dc3545';
+                row.style.display = 'none';
             }
         });
+    }, 300);
+});
+
+// Update value field based on type
+function updateValueField(selectElement, couponId = '') {
+    const suffix = couponId ? couponId : '';
+    const valueInput = document.getElementById('valueInput' + suffix);
+    const valueSymbol = document.getElementById('valueSymbol' + suffix);
+    
+    switch(selectElement.value) {
+        case 'percent':
+            valueSymbol.textContent = '%';
+            valueInput.setAttribute('max', '100');
+            valueInput.setAttribute('placeholder', '0-100');
+            valueInput.removeAttribute('readonly');
+            break;
+        case 'fixed':
+            valueSymbol.textContent = '₺';
+            valueInput.removeAttribute('max');
+            valueInput.setAttribute('placeholder', '0.00');
+            valueInput.removeAttribute('readonly');
+            break;
+        case 'free_shipping':
+            valueSymbol.textContent = '🚚';
+            valueInput.value = '0';
+            valueInput.setAttribute('readonly', 'readonly');
+            break;
+    }
+}
+
+// Copy coupon code
+function copyCouponCode(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        const notification = document.getElementById('copyNotification');
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 2000);
+    });
+}
+
+// Initialize value fields on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // For edit modals
+    document.querySelectorAll('select[name="type"]').forEach(select => {
+        if (select.closest('.modal')) {
+            const couponId = select.closest('.modal').id.replace('editCouponModal', '');
+            updateValueField(select, couponId);
+        }
     });
 });
 </script>
+@endpush

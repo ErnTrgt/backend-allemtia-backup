@@ -150,9 +150,6 @@
             <div class="chart-card glass-card">
                 <div class="card-header">
                     <h4 class="card-title">Kategori Dağılımı</h4>
-                    <button class="btn-icon">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
                 </div>
                 <div class="card-body">
                     <div id="categoryChart"></div>
@@ -243,9 +240,6 @@
             <div class="table-card glass-card">
                 <div class="card-header">
                     <h4 class="card-title">En Çok Satan Satıcılar</h4>
-                    <button class="btn-icon">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
                 </div>
                 <div class="card-body">
                     <div class="seller-list">

@@ -20,24 +20,6 @@
             @if($actions)
                 {{ $actions }}
             @endif
-            
-            <div class="dropdown">
-                <button class="btn-icon" data-bs-toggle="dropdown">
-                    <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#" onclick="exportToExcel()">
-                        <i class="bi bi-download me-2"></i>Excel İndir
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" onclick="printTable()">
-                        <i class="bi bi-printer me-2"></i>Yazdır
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">
-                        <i class="bi bi-gear me-2"></i>Ayarlar
-                    </a></li>
-                </ul>
-            </div>
         </div>
     </div>
 </div>
