@@ -9,12 +9,6 @@
         </div>
         
         <div class="header-right">
-            <!-- Search -->
-            <div class="header-search">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="Ara..." class="search-input">
-            </div>
-            
             <!-- Actions -->
             <div class="header-actions">
                 <!-- Notifications -->

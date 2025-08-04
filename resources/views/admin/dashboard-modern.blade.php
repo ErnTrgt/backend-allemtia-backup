@@ -35,6 +35,34 @@
         </div>
     </div>
     
+    <!-- Maintenance Mode Widget -->
+    <div class="maintenance-widget glass-card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="maintenance-content d-flex justify-content-between align-items-center p-3">
+            <div class="maintenance-info text-white">
+                <h4 class="mb-1 d-flex align-items-center">
+                    <i class="bi bi-tools me-2"></i> Bakım Modu
+                </h4>
+                <p class="mb-0">
+                    <span class="badge {{ $maintenanceMode ? 'bg-danger' : 'bg-success' }} me-2">
+                        {{ $maintenanceMode ? 'Aktif' : 'Kapalı' }}
+                    </span>
+                    @if($maintenanceMode && $maintenanceMode->estimated_end_time)
+                        <small>Tahmini bitiş: {{ $maintenanceMode->estimated_end_time->format('d.m.Y H:i') }}</small>
+                    @endif
+                </p>
+            </div>
+            <div class="maintenance-actions">
+                <button class="btn btn-light btn-sm me-2" onclick="toggleMaintenanceMode()" id="maintenanceToggleBtn">
+                    <i class="bi {{ $maintenanceMode ? 'bi-toggle-on' : 'bi-toggle-off' }}"></i>
+                    {{ $maintenanceMode ? 'Kapat' : 'Aç' }}
+                </button>
+                <a href="{{ route('admin.maintenance.index') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-gear"></i> Yönet
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
         <!-- Total Users -->
@@ -714,6 +742,45 @@
     }
 }
 </style>
+
+<script>
+// Bakım modunu aç/kapa
+function toggleMaintenanceMode() {
+    const btn = document.getElementById('maintenanceToggleBtn');
+    const isActive = btn.innerHTML.includes('Kapat');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>İşleniyor...';
+    
+    fetch('{{ route("admin.maintenance.toggle") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            is_active: !isActive
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Sayfayı yenile
+            window.location.reload();
+        } else {
+            alert(data.message || 'Bir hata oluştu');
+            btn.disabled = false;
+            btn.innerHTML = isActive ? '<i class="bi bi-toggle-on"></i> Kapat' : '<i class="bi bi-toggle-off"></i> Aç';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu');
+        btn.disabled = false;
+        btn.innerHTML = isActive ? '<i class="bi bi-toggle-on"></i> Kapat' : '<i class="bi bi-toggle-off"></i> Aç';
+    });
+}
+</script>
 @endsection
 
 @push('scripts')

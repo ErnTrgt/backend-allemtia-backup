@@ -114,6 +114,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.maintenance.index') }}" class="nav-link {{ request()->routeIs('admin.maintenance.*') ? 'active' : '' }}">
+                        <i class="bi bi-tools nav-icon"></i>
+                        <span class="nav-text">Bakım Modu</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.profile') }}" class="nav-link {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
                         <i class="bi bi-person nav-icon"></i>
                         <span class="nav-text">Profil</span>

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Seller\SellerController;
 
 // ===========================
@@ -131,6 +132,12 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::delete('/admin/coupons/{coupon}', [AdminController::class, 'destroy'])->name('admin.coupons.destroy');
     Route::put('/admin/coupons/{coupon}/toggle', [AdminController::class, 'toggle'])
         ->name('admin.coupons.toggle');
+
+    // Bakım Modu Yönetimi
+    Route::get('/admin/maintenance', [MaintenanceController::class, 'index'])->name('admin.maintenance.index');
+    Route::post('/admin/maintenance/toggle', [MaintenanceController::class, 'toggle'])->name('admin.maintenance.toggle');
+    Route::put('/admin/maintenance/update', [MaintenanceController::class, 'update'])->name('admin.maintenance.update');
+    Route::get('/admin/maintenance/status', [MaintenanceController::class, 'status'])->name('admin.maintenance.status');
 });
 
 // ===========================

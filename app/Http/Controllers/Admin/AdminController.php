@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use App\Models\AboutSection;
+use App\Models\MaintenanceSetting;
 use Storage;
 use PDF; // PDF kütüphanesi için
 
@@ -65,6 +66,13 @@ class AdminController extends Controller
         // Calculate total revenue
         $totalRevenue = Order::where('status', '!=', 'cancelled')->sum('total');
 
+        // Bakım modu durumunu kontrol et
+        try {
+            $maintenanceMode = MaintenanceSetting::getActive();
+        } catch (\Exception $e) {
+            $maintenanceMode = null;
+        }
+
         // Görünüme değişkeni aktar - Use modern dashboard
         return view('admin.dashboard-modern', compact(
             'userCount',
@@ -84,7 +92,8 @@ class AdminController extends Controller
             'recentOrders',
             'topSellers',
             'todayRevenue',
-            'totalRevenue'
+            'totalRevenue',
+            'maintenanceMode'
         ));
     }
 
