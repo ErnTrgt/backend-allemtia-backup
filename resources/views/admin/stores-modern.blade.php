@@ -194,7 +194,7 @@
                         <td>{{ $store->created_at->format('d.m.Y') }}</td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{{ route('admin.stores.show', $store->id) }}" 
+                                <a href="{{ route('admin.store.show', $store->id) }}" 
                                    class="btn-action" 
                                    title="Görüntüle">
                                     <i class="bi bi-eye"></i>
@@ -225,7 +225,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Yeni Mağaza Ekle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
             </div>
             <form action="{{ route('admin.stores.store') }}" method="POST">
                 @csrf
@@ -814,8 +814,8 @@ document.querySelectorAll('.status-toggle').forEach(toggle => {
         const storeId = this.dataset.id;
         const status = this.checked ? 'approved' : 'rejected';
         
-        fetch(`/admin/stores/${storeId}/toggle-status`, {
-            method: 'GET',
+        fetch(`/store/${storeId}/toggle`, {
+            method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             }
@@ -836,7 +836,7 @@ function editStore(id) {
 // Delete Store
 function deleteStore(id) {
     if (confirm('Bu mağazayı silmek istediğinizden emin misiniz?')) {
-        fetch(`/admin/stores/${id}`, {
+        fetch(`/store/${id}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

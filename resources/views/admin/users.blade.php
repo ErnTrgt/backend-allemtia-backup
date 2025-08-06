@@ -188,7 +188,7 @@
                     <i class="bi bi-person-plus me-2"></i>
                     Yeni Kullanıcı Ekle
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
             </div>
             <form action="{{ route('admin.users.store') }}" method="POST">
                 @csrf
@@ -264,7 +264,7 @@
                     <i class="bi bi-pencil me-2"></i>
                     Kullanıcı Düzenle
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
             </div>
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                 @csrf

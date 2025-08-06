@@ -209,7 +209,7 @@
                     <i class="bi bi-pencil me-2"></i>
                     Ürün Düzenle: {{ $product->name }}
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
             </div>
             <form action="{{ route('admin.product.update', $product->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf

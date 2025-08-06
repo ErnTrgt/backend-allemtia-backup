@@ -76,6 +76,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/seller/{id}/products', [AdminController::class, 'sellerProducts'])->name('admin.seller.products');
     Route::post('/admin/users/approve/{id}', [AdminController::class, 'approveUser'])->name('admin.users.approve');
     Route::get('/admin/stores', [AdminController::class, 'storeList'])->name('admin.stores');
+    Route::post('/admin/stores', [AdminController::class, 'store'])->name('admin.stores.store');
     Route::get('/admin/reports', [AdminController::class, 'reports'])->name('admin.reports');
     Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetPassword'])->name('admin.resetPassword');
 

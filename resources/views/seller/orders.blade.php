@@ -827,7 +827,7 @@
                 <div class="toast align-items-center text-white bg-${type}" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
                     <div class="d-flex">
                         <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast">x</button>
                     </div>
                 </div>
             `;

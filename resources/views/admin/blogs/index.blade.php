@@ -83,7 +83,7 @@
 <!-- Blogs Grid -->
 <div class="blogs-grid" id="blogsGrid">
     @forelse($blogs as $blog)
-        <div class="blog-card" data-status="{{ $blog->status ? 'active' : 'inactive' }}" 
+        <div class="blog-card" data-blog-id="{{ $blog->id }}" data-status="{{ $blog->status ? 'active' : 'inactive' }}" 
              data-title="{{ strtolower($blog->title) }}" data-author="{{ strtolower($blog->author) }}">
             <!-- Blog Image -->
             <div class="blog-image">
@@ -162,7 +162,7 @@
                     <i class="bi bi-plus-circle me-2"></i>
                     Yeni Blog Ekle
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
             </div>
             <form action="{{ route('admin.blogs.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -246,7 +246,7 @@
                     <i class="bi bi-pencil me-2"></i>
                     Blog Düzenle
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
             </div>
             <form id="editBlogForm" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -532,25 +532,76 @@ function toggleBlogStatus(blogId, newStatus) {
 // Delete Blog
 function deleteBlog(blogId) {
     if (confirm('Bu blogu silmek istediğinizden emin misiniz?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/blogs/${blogId}`;
-        
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'DELETE';
-        
-        form.appendChild(csrfToken);
-        form.appendChild(methodInput);
-        document.body.appendChild(form);
-        form.submit();
+        fetch(`/admin/blogs/${blogId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
+                    AdminPanel.showToast('Blog başarıyla silindi!', 'success');
+                } else {
+                    alert('Blog başarıyla silindi!');
+                }
+                
+                // Remove the blog card from the page
+                const blogCard = document.querySelector(`.blog-card[data-blog-id="${blogId}"]`);
+                if (blogCard) {
+                    blogCard.style.transition = 'all 0.3s ease';
+                    blogCard.style.opacity = '0';
+                    blogCard.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        blogCard.remove();
+                        
+                        // Check if there are no more blogs
+                        const remainingBlogs = document.querySelectorAll('.blog-card').length;
+                        if (remainingBlogs === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                } else {
+                    // If we can't find the card, reload the page
+                    setTimeout(() => location.reload(), 1000);
+                }
+                
+                // Update stats
+                updateBlogStats();
+            } else {
+                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
+                    AdminPanel.showToast('Bir hata oluştu!', 'error');
+                } else {
+                    alert('Bir hata oluştu!');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
+                AdminPanel.showToast('Bir hata oluştu!', 'error');
+            } else {
+                alert('Bir hata oluştu!');
+            }
+        });
     }
+}
+
+// Update blog stats after deletion
+function updateBlogStats() {
+    const totalBlogs = document.querySelectorAll('.blog-card').length;
+    const activeBlogs = document.querySelectorAll('.blog-card[data-status="active"]').length;
+    const inactiveBlogs = document.querySelectorAll('.blog-card[data-status="inactive"]').length;
+    
+    // Update stat cards
+    const statCards = document.querySelectorAll('.stat-card .stat-value');
+    if (statCards[0]) statCards[0].textContent = totalBlogs;
+    if (statCards[1]) statCards[1].textContent = activeBlogs;
+    if (statCards[2]) statCards[2].textContent = inactiveBlogs;
 }
 
 // Show success/error messages

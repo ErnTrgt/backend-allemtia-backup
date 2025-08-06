@@ -125,12 +125,6 @@
                         <span class="nav-text">Profil</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-gear nav-icon"></i>
-                        <span class="nav-text">Ayarlar</span>
-                    </a>
-                </li>
             </ul>
         </div>
     </nav>

@@ -51,9 +51,6 @@
         <a href="{{ route('admin.profile') }}" class="dropdown-item">
             <i class="bi bi-person"></i> Profil
         </a>
-        <a href="#" class="dropdown-item">
-            <i class="bi bi-gear"></i> Ayarlar
-        </a>
         <div class="dropdown-divider"></div>
         <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
             @csrf
