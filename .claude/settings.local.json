@@ -6,7 +6,8 @@
       "Bash(rm:*)",
       "Bash(sed:*)",
       "Bash(php artisan make:migration:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

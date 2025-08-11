@@ -54,10 +54,10 @@
     
     <div class="page-actions-right">
         <!-- Add New Store -->
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStoreModal">
+        <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStoreModal">
             <i class="bi bi-plus-circle"></i>
             Yeni Mağaza
-        </button>
+        </button> -->
     </div>
 </div>
 
@@ -141,15 +141,15 @@
                     <button class="action-btn" data-bs-toggle="modal" data-bs-target="#viewStoreModal{{ $store->id }}" title="Görüntüle">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editStoreModal{{ $store->id }}" title="Düzenle">
+                    <!-- <button class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editStoreModal{{ $store->id }}" title="Düzenle">
                         <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="action-btn toggle" onclick="toggleStoreStatus({{ $store->id }})" title="{{ $store->status === 'approved' ? 'Pasifleştir' : 'Aktifleştir' }}">
+                    </button> -->
+                    <!-- <button class="action-btn toggle" onclick="toggleStoreStatus({{ $store->id }})" title="{{ $store->status === 'approved' ? 'Pasifleştir' : 'Aktifleştir' }}">
                         <i class="bi bi-{{ $store->status === 'approved' ? 'pause' : 'play' }}"></i>
                     </button>
                     <button class="action-btn delete" onclick="deleteStore({{ $store->id }})" title="Sil">
                         <i class="bi bi-trash"></i>
-                    </button>
+                    </button> -->
                 </div>
             </div>
         </div>

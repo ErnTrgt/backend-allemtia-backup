@@ -127,7 +127,7 @@
                 </thead>
                 <tbody>
                     @foreach($orders as $order)
-                    <tr data-status="{{ $order->status }}" data-tracking="{{ $order->tracking_number ?? '' }}">
+                    <tr data-order-id="{{ $order->id }}" data-order-number="{{ $order->order_number }}" data-status="{{ $order->status }}" data-tracking="{{ $order->tracking_number ?? '' }}">
                         <td>
                             <div class="order-number">
                                 <strong>#{{ $order->order_number }}</strong>
@@ -146,7 +146,11 @@
                             <div class="products-preview">
                                 @foreach($order->items->take(3) as $item)
                                 <div class="product-item">
-                                    @if($item->product && $item->product->images->first())
+                                    @if($item->product && $item->product->image)
+                                    <img src="{{ asset('storage/' . $item->product->image) }}" 
+                                         alt="{{ $item->product_name }}"
+                                         class="product-thumb">
+                                    @elseif($item->product && $item->product->images && $item->product->images->first())
                                     <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}" 
                                          alt="{{ $item->product_name }}"
                                          class="product-thumb">
@@ -912,121 +916,64 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         $('#ordersTable').DataTable().draw();
     });
 });
+</script>
 
-// Update Order Status
+<script>
+// Update Order Status - Global function
 function updateOrderStatus(orderId, currentStatus, trackingNumber) {
-    const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
-    const form = document.getElementById('updateStatusForm');
-    
-    // Set order ID - DO NOT change form action
-    document.getElementById('modalOrderId').value = orderId;
-    
-    // Set current status
-    const statusSelect = document.getElementById('orderStatus');
-    if (currentStatus) {
-        statusSelect.value = currentStatus;
-    }
-    
-    // Set tracking number if exists
-    const trackingInput = document.getElementById('trackingNumberInput');
-    if (trackingInput && trackingNumber) {
-        trackingInput.value = trackingNumber;
-    }
-    
-    // Show/hide fields based on current status
-    const trackingDiv = document.getElementById('trackingNumberDiv');
-    const cancelDiv = document.getElementById('cancelReasonDiv');
-    
-    if (currentStatus === 'shipped' && trackingDiv) {
-        trackingDiv.style.display = 'block';
-    }
-    
-    if (currentStatus === 'cancelled' && cancelDiv) {
-        cancelDiv.style.display = 'block';
-    }
-    
-    // Remove existing event listeners
-    const newStatusSelect = statusSelect.cloneNode(true);
-    statusSelect.parentNode.replaceChild(newStatusSelect, statusSelect);
-    
-    // Show/hide fields based on status change
-    newStatusSelect.addEventListener('change', function() {
-        if (this.value === 'shipped') {
-            trackingDiv.style.display = 'block';
-        } else {
-            trackingDiv.style.display = 'none';
+    try {
+        const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+        const form = document.getElementById('updateStatusForm');
+        
+        // Set order ID
+        const orderIdInput = document.getElementById('modalOrderId');
+        if (orderIdInput) {
+            orderIdInput.value = orderId;
         }
         
-        if (this.value === 'cancelled') {
-            cancelDiv.style.display = 'block';
-        } else {
-            cancelDiv.style.display = 'none';
+        // Set current status
+        const statusSelect = document.getElementById('orderStatus');
+        if (statusSelect && currentStatus) {
+            statusSelect.value = currentStatus;
         }
-    });
-    
-    modal.show();
-}
-
-// Form submit with AJAX
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('updateStatusForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Güncelleniyor...';
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
-                    modal.hide();
-                    
-                    // Show toast or alert
-                    if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                        AdminPanel.showToast('Sipariş durumu başarıyla güncellendi', 'success');
+        
+        // Set tracking number if exists
+        const trackingInput = document.getElementById('trackingNumberInput');
+        if (trackingInput && trackingNumber) {
+            trackingInput.value = trackingNumber;
+        }
+        
+        // Get cancel reason div
+        const cancelDiv = document.getElementById('cancelReasonDiv');
+        
+        // Show/hide cancel reason based on current status
+        if (cancelDiv) {
+            if (currentStatus === 'cancelled') {
+                cancelDiv.style.display = 'block';
+            } else {
+                cancelDiv.style.display = 'none';
+            }
+        }
+        
+        // Add event listener for status change
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+                if (cancelDiv) {
+                    if (this.value === 'cancelled') {
+                        cancelDiv.style.display = 'block';
                     } else {
-                        alert('Sipariş durumu başarıyla güncellendi');
+                        cancelDiv.style.display = 'none';
                     }
-                    
-                    // Reload page after 1.5 seconds
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(data.message || 'Bir hata oluştu');
                 }
-            })
-            .catch(error => {
-                // Show error message
-                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                    AdminPanel.showToast(error.message || 'Bir hata oluştu', 'error');
-                } else {
-                    alert(error.message || 'Bir hata oluştu');
-                }
-                
-                // Re-enable button
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
             });
-        });
+        }
+        
+        modal.show();
+    } catch (error) {
+        console.error('Error opening modal:', error);
+        alert('Modal açılırken bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.');
     }
-});
+}
 
 // Cancel Order
 function cancelOrder(orderId) {
@@ -1062,5 +1009,225 @@ function exportOrders() {
 function printTable() {
     window.print();
 }
+
+// Update table row dynamically
+function updateTableRow(order) {
+    // Find the row by order number
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    
+    rows.forEach(row => {
+        // Check if this row contains the order we're looking for
+        const orderNumberCell = row.querySelector('td:first-child strong');
+        if (orderNumberCell && orderNumberCell.textContent === '#' + order.order_number) {
+            // Update status badge
+            const statusCell = row.querySelector('td:nth-child(5) .status-badge');
+            if (statusCell) {
+                // Remove old status classes
+                statusCell.className = 'status-badge ' + order.status;
+                
+                // Update status text and icon
+                let statusHTML = '';
+                switch(order.status) {
+                    case 'pending':
+                        statusHTML = '<i class="bi bi-clock me-1"></i>Bekliyor';
+                        break;
+                    case 'processing':
+                        statusHTML = '<i class="bi bi-arrow-repeat me-1"></i>İşleniyor';
+                        break;
+                    case 'shipped':
+                        statusHTML = '<i class="bi bi-truck me-1"></i>Kargoda';
+                        break;
+                    case 'delivered':
+                        statusHTML = '<i class="bi bi-check-circle me-1"></i>Teslim Edildi';
+                        break;
+                    case 'cancelled':
+                        statusHTML = '<i class="bi bi-x-circle me-1"></i>İptal';
+                        break;
+                    case 'waiting_payment':
+                        statusHTML = '<i class="bi bi-credit-card me-1"></i>Ödeme Bekleniyor';
+                        break;
+                    case 'paid':
+                        statusHTML = '<i class="bi bi-check2-circle me-1"></i>Ödendi';
+                        break;
+                    default:
+                        statusHTML = order.status;
+                }
+                statusCell.innerHTML = statusHTML;
+            }
+            
+            // Update tracking number in row data attribute
+            if (order.tracking_number) {
+                row.setAttribute('data-tracking', order.tracking_number);
+            }
+            
+            // Update the onclick attribute for the edit button
+            const editBtn = row.querySelector('button[onclick^="updateOrderStatus"]');
+            if (editBtn) {
+                editBtn.setAttribute('onclick', `updateOrderStatus(${order.id}, '${order.status}', '${order.tracking_number || ''}')`);
+            }
+            
+            // Add animation effect
+            row.style.backgroundColor = '#d4f4dd';
+            setTimeout(() => {
+                row.style.transition = 'background-color 1s ease';
+                row.style.backgroundColor = '';
+            }, 100);
+        }
+    });
+    
+    // Update timeline view if it exists
+    updateTimelineView(order);
+}
+
+// Update timeline view
+function updateTimelineView(order) {
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    timelineItems.forEach(item => {
+        const header = item.querySelector('.timeline-header h5');
+        if (header && header.textContent.includes('#' + order.order_number)) {
+            // Update timeline marker
+            const marker = item.querySelector('.timeline-marker');
+            if (marker) {
+                marker.className = 'timeline-marker ' + order.status;
+                
+                // Update icon
+                let iconHTML = '';
+                switch(order.status) {
+                    case 'pending':
+                        iconHTML = '<i class="bi bi-clock-fill"></i>';
+                        break;
+                    case 'processing':
+                        iconHTML = '<i class="bi bi-arrow-repeat"></i>';
+                        break;
+                    case 'shipped':
+                        iconHTML = '<i class="bi bi-truck"></i>';
+                        break;
+                    case 'delivered':
+                        iconHTML = '<i class="bi bi-check-circle-fill"></i>';
+                        break;
+                    case 'cancelled':
+                        iconHTML = '<i class="bi bi-x-circle-fill"></i>';
+                        break;
+                }
+                if (iconHTML) {
+                    marker.innerHTML = iconHTML;
+                }
+            }
+            
+            // Update tracking info if exists
+            if (order.tracking_number && order.status === 'shipped') {
+                let trackingInfo = item.querySelector('.tracking-info');
+                if (!trackingInfo) {
+                    const body = item.querySelector('.timeline-body');
+                    if (body) {
+                        trackingInfo = document.createElement('div');
+                        trackingInfo.className = 'tracking-info mt-2';
+                        body.appendChild(trackingInfo);
+                    }
+                }
+                if (trackingInfo) {
+                    trackingInfo.innerHTML = '<i class="bi bi-geo-alt me-1"></i>Takip No: ' + order.tracking_number;
+                }
+            }
+        }
+    });
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'position-fixed top-0 end-0 p-3' ;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong class="me-auto">Başarılı</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+    
+    // Allow manual close
+    const closeBtn = toast.querySelector('.btn-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => toast.remove());
+    }
+}
+
+// Form submit with AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('updateStatusForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Güncelleniyor...';
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Update the table row dynamically with complete order data
+                    updateTableRow(data.order);
+                    
+                    // Show success message
+                    showSuccessMessage('Sipariş durumu başarıyla güncellendi!');
+                    
+                    // Reset form
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                } else {
+                    // Show error message
+                    alert(data.message || 'Bir hata oluştu!');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Sipariş güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+        });
+    }
+});
 </script>
 @endpush

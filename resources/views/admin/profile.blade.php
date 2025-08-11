@@ -38,7 +38,11 @@
     <div class="profile-header-card">
         <div class="avatar-section">
             <div class="avatar-wrapper">
-                <img src="{{ asset('admin/src/images/user-avatar.png') }}" alt="Admin Avatar" class="avatar-img">
+                @if($admin->avatar)
+                    <img src="{{ asset('storage/' . $admin->avatar) }}" alt="Admin Avatar" class="avatar-img">
+                @else
+                    <img src="{{ asset('admin/src/images/user-avatar.png') }}" alt="Admin Avatar" class="avatar-img">
+                @endif
                 <button class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()">
                     <i class="bi bi-camera"></i>
                 </button>
@@ -150,8 +154,11 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.profile.update') }}" method="POST">
+                    <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        
+                        <!-- Avatar Upload (Hidden) -->
+                        <input type="file" name="avatar" id="avatarFormInput" style="display: none;" accept="image/*">
                         
                         <!-- Basic Info Section -->
                         <div class="form-section">
@@ -383,8 +390,16 @@ document.getElementById('avatarInput').addEventListener('change', function(e) {
         const reader = new FileReader();
         reader.onload = function(e) {
             document.querySelector('.avatar-img').src = e.target.result;
-            // Here you would typically upload the image via AJAX
-            AdminPanel.showToast('Avatar güncellendi!', 'success');
+            // Copy file to form input
+            const formInput = document.getElementById('avatarFormInput');
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            formInput.files = dataTransfer.files;
+            
+            // Show info message
+            if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
+                AdminPanel.showToast('Avatar seçildi. Formu kaydedin!', 'info');
+            }
         };
         reader.readAsDataURL(file);
     }

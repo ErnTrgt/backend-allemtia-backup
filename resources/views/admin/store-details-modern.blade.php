@@ -28,8 +28,8 @@
     <x-admin.glass-card class="mb-4">
         <div class="store-info-header">
             <div class="store-avatar-large">
-                @if($store->avatar ?? false)
-                <img src="{{ asset('storage/' . $store->avatar) }}" alt="{{ $store->name }}">
+                @if($store->user && $store->user->avatar)
+                <img src="{{ asset('storage/' . $store->user->avatar) }}" alt="{{ $store->name }}">
                 @else
                 <div class="avatar-placeholder">
                     <i class="bi bi-shop"></i>
@@ -197,9 +197,19 @@
                     @forelse($store->products->sortByDesc('sales_count')->take(5) as $product)
                     <div class="product-item">
                         <div class="product-info">
-                            <img src="{{ $product->images->first()->image_path ?? '/images/default-product.svg' }}" 
+                            @if($product->image)
+                            <img src="{{ asset('storage/' . $product->image) }}" 
                                  alt="{{ $product->name }}"
                                  class="product-thumb">
+                            @elseif($product->images && $product->images->first())
+                            <img src="{{ asset('storage/' . $product->images->first()->image_path) }}" 
+                                 alt="{{ $product->name }}"
+                                 class="product-thumb">
+                            @else
+                            <img src="/images/default-product.svg" 
+                                 alt="{{ $product->name }}"
+                                 class="product-thumb">
+                            @endif
                             <div>
                                 <h6>{{ $product->name }}</h6>
                                 <span>{{ $product->sales_count ?? 0 }} satış</span>
