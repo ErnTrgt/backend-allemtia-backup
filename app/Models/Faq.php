@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Faq extends Model
 {
-    protected $fillable = ['title', 'content', 'status'];
+    protected $fillable = ['title', 'content', 'category', 'status'];
     public $timestamps = false;
 
 }

@@ -24,7 +24,11 @@
                 
                 <!-- User Menu -->
                 <div class="user-menu" data-dropdown-toggle="userDropdown">
-                    <img src="{{ asset('admin/src/images/user-avatar.png') }}" alt="User" class="user-avatar">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="User" class="user-avatar">
+                    @else
+                        <img src="{{ asset('admin/src/images/user-avatar.png') }}" alt="User" class="user-avatar">
+                    @endif
                     <span class="user-name">{{ Auth::user()->name ?? 'Admin' }}</span>
                     <i class="bi bi-chevron-down"></i>
                 </div>

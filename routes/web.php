@@ -38,6 +38,12 @@ Route::post('admin/logout', [AdminAuthController::class, 'logout'])->name('admin
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/users', [AdminController::class, 'userList'])->name('admin.users');
+    
+    // AJAX User Routes
+    Route::post('/admin/users/ajax-store', [AdminController::class, 'ajaxStoreUser'])->name('admin.users.ajax-store');
+    Route::get('/admin/users/{id}/edit-ajax', [AdminController::class, 'ajaxEditUser'])->name('admin.users.edit-ajax');
+    Route::post('/admin/users/{id}/ajax-update', [AdminController::class, 'ajaxUpdateUser'])->name('admin.users.ajax-update');
+    Route::delete('/admin/users/{id}/ajax-delete', [AdminController::class, 'ajaxDeleteUser'])->name('admin.users.ajax-delete');
     Route::put('/admin/users/{id}/change-status/{status}', [AdminController::class, 'changeUserStatus'])->name('admin.users.changeStatus');
     Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
@@ -45,9 +51,11 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // Blog yönetimi - name() kullanmadan
     Route::get('/admin/blogs', [AdminController::class, 'blogindex'])->name('admin.blogs.index');
+    Route::get('/admin/blogs/stats', [AdminController::class, 'getBlogStats'])->name('admin.blogs.stats');
     Route::get('/admin/blogs/create', [AdminController::class, 'blogcreate'])->name('admin.blogs.create');
     Route::post('/admin/blogs', [AdminController::class, 'blogstore'])->name('admin.blogs.store');
     Route::get('/admin/blogs/{blog}/edit', [AdminController::class, 'blogedit'])->name('admin.blogs.edit');
+    Route::get('/admin/blogs/{id}/edit-ajax', [AdminController::class, 'ajaxEditBlog'])->name('admin.blogs.edit-ajax');
     Route::put('/admin/blogs/{blog}', [AdminController::class, 'blogupdate'])->name('admin.blogs.update');
     Route::delete('/admin/blogs/{blog}', [AdminController::class, 'blogdestroy'])->name('admin.blogs.destroy');
     Route::post('/admin/blogs/change-status', [AdminController::class, 'changeStatus'])->name('admin.blogs.change-status');
@@ -58,6 +66,13 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/admin/orders/{order}/items/{item}/cancel', [AdminController::class, 'cancelOrderItem'])->name('admin.orders.cancel_item');
     Route::get('/admin/products', [AdminController::class, 'productList'])->name('admin.products');
     Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
+    
+    // AJAX Product Routes
+    Route::post('/admin/products/ajax-store', [AdminController::class, 'ajaxStoreProduct'])->name('admin.products.ajax-store');
+    Route::get('/admin/products/{id}/edit-ajax', [AdminController::class, 'ajaxEditProduct'])->name('admin.products.edit-ajax');
+    Route::post('/admin/products/{id}/ajax-update', [AdminController::class, 'ajaxUpdateProduct'])->name('admin.products.ajax-update');
+    Route::delete('/admin/products/{id}/ajax-delete', [AdminController::class, 'ajaxDeleteProduct'])->name('admin.products.ajax-delete');
+    
     Route::get('/admin/product/{id}', [AdminController::class, 'details'])->name('admin.product.details');
     Route::put('/admin/product/{id}', [AdminController::class, 'update'])->name('admin.product.update');
     Route::put('/admin/product/{id}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.product.toggleStatus');
@@ -86,6 +101,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/subcategory-requests', [AdminController::class, 'subcategoryRequests'])->name('admin.subcategory.requests');
     Route::put('/admin/subcategory-requests/{id}', [AdminController::class, 'updateSubcategoryRequestStatus'])->name('admin.updateSubcategoryRequestStatus');
     Route::get('/admin/categories', [AdminController::class, 'categories'])->name('admin.categories');
+    Route::get('/admin/categories/stats', [AdminController::class, 'getCategoryStats'])->name('admin.categories.stats');
     Route::post('/admin/categories', [AdminController::class, 'storeCategory'])->name('admin.categories.store');
     Route::post('/admin/subcategories', [AdminController::class, 'storeSubcategory'])->name('admin.subcategories.store');
     Route::put('/admin/categories/{id}', [AdminController::class, 'updateCategory'])->name('admin.updateCategory');
@@ -93,7 +109,9 @@ Route::middleware(['auth:admin'])->group(function () {
 
     //ABOUT
     Route::get('/admin/about', [AdminController::class, 'aboutList'])->name('admin.about.index');
+    Route::get('/admin/about/stats', [AdminController::class, 'getAboutStats'])->name('admin.about.stats');
     Route::get('/admin/about/{id}/edit', [AdminController::class, 'editAboutSection'])->name('admin.about.edit');
+    Route::get('/admin/about/{id}/edit-ajax', [AdminController::class, 'ajaxEditAboutSection'])->name('admin.about.edit-ajax');
     Route::post('/admin/about/{id}', [AdminController::class, 'updateAboutSection'])->name('admin.about.update');
     Route::post('/about/store', [AdminController::class, 'storeAboutSection'])->name('admin.about.store');
     Route::put('/admin/about/{id}/toggle-status', [AdminController::class, 'toggleAboutStatus'])->name('admin.about.toggleStatus');
@@ -101,14 +119,18 @@ Route::middleware(['auth:admin'])->group(function () {
 
     //FAQ 
     Route::get('/admin/faqs', [AdminController::class, 'faqList'])->name('admin.faq.index');
+    Route::get('/admin/faqs/stats', [AdminController::class, 'getFaqStats'])->name('admin.faq.stats');
     Route::post('/admin/faqs/store', [AdminController::class, 'storeFaq'])->name('admin.faq.store');
+    Route::get('/admin/faqs/{id}/edit-ajax', [AdminController::class, 'ajaxEditFaq'])->name('admin.faq.edit-ajax');
     Route::put('/admin/faqs/{id}', [AdminController::class, 'updateFaq'])->name('admin.faq.update');
     Route::delete('/admin/faqs/{id}', [AdminController::class, 'deleteFaq'])->name('admin.faq.delete');
     Route::put('/admin/faqs/{id}/toggle', [AdminController::class, 'toggleFaqStatus'])->name('admin.faq.toggle');
 
     // Slider
     Route::get('/admin/sliders', [AdminController::class, 'sliderList'])->name('admin.slider.index');
+    Route::get('/admin/sliders/stats', [AdminController::class, 'getSliderStats'])->name('admin.slider.stats');
     Route::post('/admin/sliders/store', [AdminController::class, 'storeSlider'])->name('admin.slider.store');
+    Route::get('/admin/sliders/{id}/edit-ajax', [AdminController::class, 'ajaxEditSlider'])->name('admin.slider.edit-ajax');
     Route::put('/admin/sliders/{id}', [AdminController::class, 'updateSlider'])->name('admin.slider.update');
     Route::delete('/admin/sliders/{id}', [AdminController::class, 'deleteSlider'])->name('admin.slider.delete');
     Route::put('/admin/sliders/{id}/toggle', [AdminController::class, 'toggleSliderStatus'])->name('admin.slider.toggle');
@@ -126,9 +148,11 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // Coupon Yönetim Sayfası
     Route::get('/admin/coupons', [AdminController::class, 'index'])->name('admin.coupons.index');
+    Route::get('/admin/coupons/stats', [AdminController::class, 'getCouponStats'])->name('admin.coupons.stats');
     Route::get('/admin/coupons/create', [AdminController::class, 'create'])->name('admin.coupons.create');
     Route::post('/admin/coupons', [AdminController::class, 'store'])->name('admin.coupons.store');
     Route::get('/admin/coupons/{coupon}/edit', [AdminController::class, 'edit'])->name('admin.coupons.edit');
+    Route::get('/admin/coupons/{id}/edit-ajax', [AdminController::class, 'ajaxEditCoupon'])->name('admin.coupons.edit-ajax');
     Route::put('/admin/coupons/{coupon}', [AdminController::class, 'couponupdate'])->name('admin.coupons.update');
     Route::delete('/admin/coupons/{coupon}', [AdminController::class, 'destroy'])->name('admin.coupons.destroy');
     Route::put('/admin/coupons/{coupon}/toggle', [AdminController::class, 'toggle'])

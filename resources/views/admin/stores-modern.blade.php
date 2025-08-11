@@ -148,8 +148,8 @@
                         <td>
                             <div class="store-cell">
                                 <div class="store-avatar {{ $store->status ?? 'approved' }}">
-                                    @if($store->avatar ?? false)
-                                        <img src="{{ asset('storage/' . $store->avatar) }}" alt="{{ $store->name }}">
+                                    @if($store->user && $store->user->avatar)
+                                        <img src="{{ asset('storage/' . $store->user->avatar) }}" alt="{{ $store->name }}">
                                     @else
                                         {{ strtoupper(substr($store->name ?? 'M', 0, 1)) }}
                                     @endif

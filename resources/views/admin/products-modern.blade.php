@@ -4,15 +4,71 @@
 @section('header-title', 'Ürünler')
 
 @section('content')
+<script>
+// Temporary placeholder functions - will be overridden when ProductManager loads
+window.viewProduct = function(productId) {
+    console.log('View product clicked for ID:', productId);
+    
+    // Bootstrap modal'ı doğrudan aç
+    const modalElement = document.getElementById('viewProductModal' + productId);
+    
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        console.log('View modal opened for product:', productId);
+    } else {
+        console.error('View modal not found for product ID:', productId);
+        alert('Ürün detay modalı bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+    }
+};
+
+window.editProduct = function(productId) {
+    console.log('Edit product clicked for ID:', productId);
+    
+    // Bootstrap modal'ı doğrudan aç
+    const modalElement = document.getElementById('editProductModal' + productId);
+    
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        console.log('Modal opened for product:', productId);
+    } else {
+        console.error('Modal not found for product ID:', productId);
+        alert('Ürün düzenleme modalı bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+    }
+};
+
+window.deleteProduct = function(productId) {
+    console.log('Waiting for ProductManager to load...');
+    setTimeout(() => {
+        if (window.productManager) {
+            window.productManager.deleteProduct(productId);
+        } else {
+            alert('Yükleniyor, lütfen tekrar deneyin...');
+        }
+    }, 500);
+};
+</script>
+
 <div class="products-container">
-    <!-- Page Header Component -->
-    <x-admin.page-header 
-        title="Ürünler"
-        :breadcrumbs="[
-            ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
-            ['label' => 'Ürünler']
-        ]">
-    </x-admin.page-header>
+    <!-- Page Header with Add Button -->
+    <div class="page-header-wrapper mb-4">
+        <div class="page-header-left">
+            <h1 class="page-title">Ürünler</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Ürünler</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="page-header-right">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <i class="bi bi-plus-circle me-2"></i>
+                Yeni Ürün Ekle
+            </button>
+        </div>
+    </div>
     
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
@@ -102,9 +158,9 @@
             <div class="row g-4">
                 @foreach($products as $product)
                 <div class="col-md-6 col-lg-4 col-xl-3 product-item" data-status="{{ $product->status }}">
-                    <div class="product-card">
+                    <div class="product-card" data-product-id="{{ $product->id }}">
                         <div class="product-image">
-                            <img src="{{ $product->image ?? '/images/default-product.jpg' }}" alt="{{ $product->name }}">
+                            <img src="{{ $product->image ? asset('storage/' . $product->image) : '/images/default-product.svg' }}" alt="{{ $product->name }}">
                             <div class="product-badges">
                                 @if($product->is_featured)
                                 <span class="badge-featured">Öne Çıkan</span>
@@ -114,10 +170,10 @@
                                 @endif
                             </div>
                             <div class="product-overlay">
-                                <button class="btn-overlay" data-bs-toggle="modal" data-bs-target="#viewProductModal{{ $product->id }}" title="Görüntüle">
+                                <button class="btn-overlay" onclick="viewProduct({{ $product->id }})" title="Görüntüle">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn-overlay" data-bs-toggle="modal" data-bs-target="#editProductModal{{ $product->id }}" title="Düzenle">
+                                <button class="btn-overlay" onclick="editProduct({{ $product->id }})" title="Düzenle">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn-overlay" onclick="deleteProduct({{ $product->id }})" title="Sil">
@@ -147,11 +203,9 @@
                                 </div>
                             </div>
                             <div class="product-status">
-                                <span class="status-badge {{ $product->status }}">
-                                    @if($product->status == 'active')
+                                <span class="status-badge {{ $product->status == 1 || $product->status == 'active' ? 'active' : 'inactive' }}">
+                                    @if($product->status == 1 || $product->status == 'active')
                                         <i class="bi bi-check-circle me-1"></i>Aktif
-                                    @elseif($product->status == 'pending')
-                                        <i class="bi bi-clock me-1"></i>Onay Bekliyor
                                     @else
                                         <i class="bi bi-x-circle me-1"></i>Pasif
                                     @endif
@@ -183,13 +237,13 @@
                 </thead>
                 <tbody>
                     @foreach($products as $product)
-                    <tr data-status="{{ $product->status }}">
+                    <tr data-product-id="{{ $product->id }}" data-status="{{ $product->status }}">
                         <td>
                             <input type="checkbox" class="form-check-input product-select" value="{{ $product->id }}">
                         </td>
                         <td>
                             <div class="product-cell">
-                                <img src="{{ $product->image ?? '/images/default-product.jpg' }}" 
+                                <img src="{{ $product->image ? asset('storage/' . $product->image) : '/images/default-product.svg' }}" 
                                      alt="{{ $product->name }}" 
                                      class="product-thumb">
                                 <div class="product-details">
@@ -216,11 +270,9 @@
                         </td>
                         <td>{{ $product->store->name ?? '-' }}</td>
                         <td>
-                            <span class="status-badge {{ $product->status }}">
-                                @if($product->status == 'active')
+                            <span class="status-badge {{ $product->status == 1 || $product->status == 'active' ? 'active' : 'inactive' }}">
+                                @if($product->status == 1 || $product->status == 'active')
                                     <i class="bi bi-check-circle me-1"></i>Aktif
-                                @elseif($product->status == 'pending')
-                                    <i class="bi bi-clock me-1"></i>Beklemede
                                 @else
                                     <i class="bi bi-x-circle me-1"></i>Pasif
                                 @endif
@@ -228,10 +280,10 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#viewProductModal{{ $product->id }}" title="Görüntüle">
+                                <button class="btn-action" onclick="viewProduct({{ $product->id }})" title="Görüntüle">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#editProductModal{{ $product->id }}" title="Düzenle">
+                                <button class="btn-action" onclick="editProduct({{ $product->id }})" title="Düzenle">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn-action text-danger" onclick="deleteProduct({{ $product->id }})" title="Sil">
@@ -270,7 +322,7 @@
                         @if($product->image || ($product->images && count($product->images) > 0))
                             @if($product->image)
                                 <div class="main-image">
-                                    <img src="{{ $product->image }}" alt="{{ $product->name }}" class="img-fluid">
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-fluid">
                                 </div>
                             @endif
                             
@@ -278,7 +330,7 @@
                                 <div class="image-gallery">
                                     @foreach($product->images as $image)
                                         <div class="gallery-item">
-                                            <img src="{{ $image->url ?? $image }}" alt="{{ $product->name }}" class="img-fluid">
+                                            <img src="{{ asset('storage/' . ($image->image_path ?? $image)) }}" alt="{{ $product->name }}" class="img-fluid">
                                         </div>
                                     @endforeach
                                 </div>
@@ -382,11 +434,9 @@
                             <div class="form-group">
                                 <label class="form-label">Durum</label>
                                 <div class="form-control-static">
-                                    <span class="status-badge {{ $product->status }}">
-                                        @if($product->status == 'active')
+                                    <span class="status-badge {{ $product->status == 1 || $product->status == 'active' ? 'active' : 'inactive' }}">
+                                        @if($product->status == 1 || $product->status == 'active')
                                             <i class="bi bi-check-circle me-1"></i>Aktif
-                                        @elseif($product->status == 'pending')
-                                            <i class="bi bi-clock me-1"></i>Onay Bekliyor
                                         @else
                                             <i class="bi bi-x-circle me-1"></i>Pasif
                                         @endif
@@ -416,6 +466,10 @@
                 @endif
             </div>
             <div class="modal-footer">
+                <a href="{{ route('admin.product.details', $product->id) }}" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary-red) 0%, var(--secondary-red) 100%); border: none;">
+                    <i class="bi bi-box-arrow-up-right me-2"></i>
+                    Ürün Detayına Git
+                </a>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
             </div>
         </div>
@@ -435,7 +489,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
-            <form action="{{ route('admin.product.update', $product->id) }}" method="POST" enctype="multipart/form-data">
+            <form id="editProductForm{{ $product->id }}" action="{{ route('admin.product.update', $product->id) }}" method="POST" enctype="multipart/form-data" onsubmit="handleProductUpdate(event, {{ $product->id }})">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="deleted_images" id="deletedImages{{ $product->id }}" value="">
@@ -515,7 +569,7 @@
                                     <div class="current-images-container">
                                         @if($product->image)
                                             <div class="current-image-item" data-image-type="main">
-                                                <img src="{{ $product->image }}" alt="Ana görsel">
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="Ana görsel">
                                                 <div class="image-overlay">
                                                     <span class="image-badge">Ana Görsel</span>
                                                     <button type="button" class="btn-remove-image" onclick="removeImage(this, '{{ $product->id }}', 'main')">
@@ -528,7 +582,7 @@
                                         @if($product->images && count($product->images) > 0)
                                             @foreach($product->images as $index => $image)
                                                 <div class="current-image-item" data-image-id="{{ $image->id ?? $index }}">
-                                                    <img src="{{ $image->url ?? $image }}" alt="Ek görsel">
+                                                    <img src="{{ asset('storage/' . ($image->image_path ?? $image)) }}" alt="Ek görsel">
                                                     <div class="image-overlay">
                                                         <button type="button" class="btn-remove-image" onclick="removeImage(this, '{{ $product->id }}', '{{ $image->id ?? $index }}')">
                                                             <i class="bi bi-trash"></i>
@@ -566,7 +620,7 @@
                                     <label class="form-label">Durum</label>
                                     <select class="form-control" name="status" required>
                                         <option value="1" {{ $product->status == 1 || $product->status == 'active' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="0" {{ $product->status == 0 || $product->status == 'pending' || $product->status == 'inactive' ? 'selected' : '' }}>Pasif</option>
+                                        <option value="0" {{ $product->status == 0 || $product->status == 'inactive' ? 'selected' : '' }}>Pasif</option>
                                     </select>
                                 </div>
                             </div>
@@ -595,6 +649,126 @@
     </div>
 </div>
 @endforeach
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Yeni Ürün Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+            </div>
+            <form id="addProductForm" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <!-- Temel Bilgiler -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-box-seam"></i>
+                            Temel Bilgiler
+                        </h6>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Ürün Adı <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="category_id" required>
+                                        <option value="">Kategori Seçin</option>
+                                        @foreach($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Mağaza <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="store_id" required>
+                                        <option value="">Mağaza Seçin</option>
+                                        @foreach($stores as $store)
+                                        <option value="{{ $store->id }}">{{ $store->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fiyat ve Stok Bilgileri -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-currency-dollar"></i>
+                            Fiyat ve Stok Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Fiyat <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="price" step="0.01" required>
+                                        <span class="input-group-text">₺</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Stok Adedi <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="stock" required min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detay Bilgileri -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-card-text"></i>
+                            Detay Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Ürün Açıklaması</label>
+                                    <textarea class="form-control" name="description" rows="3"></textarea>
+                                    <small class="text-muted">İsteğe bağlı</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ana Görsel</label>
+                                    <input type="file" class="form-control" name="image" accept="image/*">
+                                    <small class="text-muted">Ana ürün görseli (isteğe bağlı)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ek Görseller</label>
+                                    <input type="file" class="form-control" name="images[]" accept="image/*" multiple>
+                                    <small class="text-muted">Birden fazla görsel seçebilirsiniz</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Ürün Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <style>
 /* Products Page Styles */
@@ -1512,6 +1686,29 @@ select.form-control {
     left: 100%;
 }
 
+/* Product Detail Button */
+.modal-footer .btn-primary {
+    padding: 10px 20px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(169, 0, 0, 0.2);
+}
+
+.modal-footer .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(169, 0, 0, 0.3);
+}
+
+.modal-footer .btn-primary i {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.modal-footer .btn-primary:hover i {
+    transform: translate(2px, -2px);
+}
+
 /* Modal Animation */
 .modal.fade .modal-dialog {
     transform: scale(0.8) translateY(-100px);
@@ -1559,6 +1756,7 @@ select.form-control {
     }
 }
 </style>
+
 @endsection
 
 @push('scripts')
@@ -1791,5 +1989,232 @@ function removeImage(button, productId, imageType) {
     // Note: In a real implementation, you would also make an AJAX request to delete the image immediately
     // This would provide better UX and ensure the image is deleted even if the form is not submitted
 }
+
+// Handle product update with AJAX
+function handleProductUpdate(event, productId) {
+    event.preventDefault();
+    
+    const form = document.getElementById(`editProductForm${productId}`);
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    
+    // Disable button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Güncelleniyor...';
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById(`editProductModal${productId}`));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Update product in view (both grid and list)
+            updateProductInView(productId, formData);
+            
+            // Show success toast
+            showSuccessToast('Ürün başarıyla güncellendi!');
+            
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        } else {
+            alert(data.message || 'Bir hata oluştu!');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ürün güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    });
+}
+
+// Update product in view without page reload
+function updateProductInView(productId, formData) {
+    // Get form values
+    const name = formData.get('name');
+    const price = formData.get('price');
+    const stock = formData.get('stock');
+    const status = formData.get('status');
+    const categoryId = formData.get('category_id');
+    
+    console.log('Updating product:', productId, {name, price, stock, status});
+    
+    // Update in grid view
+    const gridCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+    if (gridCard) {
+        updateGridCard(gridCard, name, price, stock, status);
+    } else {
+        console.log('Grid card not found for product:', productId);
+    }
+    
+    // Update in list view  
+    const listRow = document.querySelector(`tr[data-product-id="${productId}"]`);
+    if (listRow) {
+        updateListRow(listRow, name, price, stock, status);
+    } else {
+        console.log('List row not found for product:', productId);
+    }
+}
+
+// Update grid card
+function updateGridCard(card, name, price, stock, status) {
+    // Update name
+    const nameEl = card.querySelector('.product-name');
+    if (nameEl) nameEl.textContent = name;
+    
+    // Update price
+    const priceEl = card.querySelector('.price-current');
+    if (priceEl) priceEl.textContent = '₺' + parseFloat(price).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    // Update stock - Grid view'da stok bilgisi meta-item içinde
+    const stockMetaItems = card.querySelectorAll('.meta-item');
+    stockMetaItems.forEach(item => {
+        if (item.innerHTML.includes('bi-box-seam')) {
+            item.innerHTML = `<i class="bi bi-box-seam"></i> Stok: ${stock}`;
+        }
+    });
+    
+    // Update status badge - Grid view'da status badge meta-item içinde
+    stockMetaItems.forEach(item => {
+        const badge = item.querySelector('.badge');
+        if (badge) {
+            const isActive = status == '1' || status == 'active';
+            badge.className = isActive ? 'badge bg-success' : 'badge bg-secondary';
+            badge.textContent = isActive ? 'Aktif' : 'Pasif';
+        }
+    });
+    
+    // Update parent container status
+    const parentItem = card.closest('.product-item');
+    if (parentItem) {
+        parentItem.setAttribute('data-status', status == '1' || status == 'active' ? 'active' : 'inactive');
+    }
+    
+    // Add update animation
+    card.style.animation = 'pulse 0.5s ease';
+    setTimeout(() => {
+        card.style.animation = '';
+    }, 500);
+}
+
+// Update list row
+function updateListRow(row, name, price, stock, status) {
+    // Update name
+    const nameEl = row.querySelector('.product-details h6');
+    if (nameEl) nameEl.textContent = name;
+    
+    // Update price (4th column)
+    const priceCell = row.querySelector('td:nth-child(4)');
+    if (priceCell) {
+        const formattedPrice = parseFloat(price).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        priceCell.innerHTML = `<span class="price-current">₺${formattedPrice}</span>`;
+    }
+    
+    // Update stock (5th column)
+    const stockEl = row.querySelector('td:nth-child(5) .stock-badge');
+    if (stockEl) {
+        stockEl.textContent = stock;
+        // Update stock badge color
+        if (stock == 0) {
+            stockEl.className = 'stock-badge out-of-stock';
+        } else if (stock < 10) {
+            stockEl.className = 'stock-badge low-stock';
+        } else {
+            stockEl.className = 'stock-badge in-stock';
+        }
+    }
+    
+    // Update status (7th column)
+    const statusCell = row.querySelector('td:nth-child(7) .status-badge');
+    if (statusCell) {
+        const isActive = status == '1' || status == 'active';
+        statusCell.className = isActive ? 'status-badge active' : 'status-badge inactive';
+        statusCell.innerHTML = isActive 
+            ? '<i class="bi bi-check-circle me-1"></i>Aktif' 
+            : '<i class="bi bi-x-circle me-1"></i>Pasif';
+    }
+    
+    // Update row data-status attribute
+    row.setAttribute('data-status', status == '1' || status == 'active' ? 'active' : 'inactive');
+    
+    // Add update animation
+    row.style.background = 'rgba(16, 185, 129, 0.1)';
+    setTimeout(() => {
+        row.style.background = '';
+    }, 1000);
+}
+
+// Show success toast notification
+function showSuccessToast(message) {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Show and auto-hide toast
+    const toastEl = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastEl, {
+        autohide: true,
+        delay: 3000
+    });
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+}
+
+// Add pulse animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+`;
+document.head.appendChild(style);
 </script>
 @endpush

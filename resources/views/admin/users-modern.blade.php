@@ -123,7 +123,7 @@
                 </thead>
                 <tbody>
                     @foreach($users as $user)
-                    <tr data-role="{{ $user->role }}">
+                    <tr data-user-id="{{ $user->id }}" data-role="{{ $user->role }}">
                         <td>
                             <input type="checkbox" class="form-check-input user-select" value="{{ $user->id }}">
                         </td>
@@ -131,7 +131,7 @@
                             <div class="user-cell">
                                 <div class="user-avatar {{ $user->role }}">
                                     @if($user->avatar)
-                                        <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}">
+                                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}">
                                     @else
                                         {{ strtoupper(substr($user->name, 0, 1)) }}
                                     @endif
@@ -171,10 +171,10 @@
                                 <button class="btn-action" data-bs-toggle="modal" data-bs-target="#viewUserModal{{ $user->id }}" title="Görüntüle">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}" title="Düzenle">
+                                <button class="btn-action edit-user-btn" data-user-id="{{ $user->id }}" title="Düzenle">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn-action text-danger" onclick="deleteUser({{ $user->id }})" title="Sil">
+                                <button class="btn-action text-danger delete-user-btn" data-user-id="{{ $user->id }}" title="Sil">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -198,7 +198,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
-            <form action="{{ route('admin.users.store') }}" method="POST">
+            <form action="{{ route('admin.users.store') }}" method="POST" id="addUserForm">
                 @csrf
                 <div class="modal-body">
                     <!-- Kişisel Bilgiler -->
@@ -293,6 +293,101 @@
                     <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
                         <i class="bi bi-check-lg me-1"></i>
                         Kullanıcı Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Kullanıcıyı Düzenle: <span id="editUserName" class="badge bg-light text-dark"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+            </div>
+            <form id="editUserForm">
+                @csrf
+                <input type="hidden" id="editUserId" name="user_id">
+                <div class="modal-body">
+                    <!-- Kişisel Bilgiler -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-person-circle"></i>
+                            Kişisel Bilgiler
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ad Soyad</label>
+                                    <input type="text" class="form-control" id="editName" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">E-posta</label>
+                                    <input type="email" class="form-control" id="editEmail" name="email" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- İletişim ve Rol -->
+                    <div class="form-section">
+                        <h6 class="form-section-title">
+                            <i class="bi bi-telephone"></i>
+                            İletişim ve Rol Bilgileri
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Telefon</label>
+                                    <input type="text" class="form-control" id="editPhone" name="phone" placeholder="0555 123 45 67">
+                                    <small class="text-muted">İsteğe bağlı</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Kullanıcı Rolü</label>
+                                    <select class="form-control" id="editRole" name="role" required>
+                                        <option value="buyer">Alıcı</option>
+                                        <option value="seller">Satıcı</option>
+                                        <option value="admin">Yönetici</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Durum</label>
+                                    <select class="form-control" id="editStatus" name="status" required>
+                                        <option value="approved">Aktif</option>
+                                        <option value="pending">Beklemede</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-message">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="info-message-content">
+                            <div class="info-message-title">Güncelleme Bilgisi</div>
+                            <div class="info-message-text">
+                                Kullanıcı bilgileri güncellendikten sonra kullanıcıya bilgilendirme e-postası gönderilecektir.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary" style="background: var(--primary-red); border-color: var(--primary-red);">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Değişiklikleri Kaydet
                     </button>
                 </div>
             </form>
@@ -1245,31 +1340,579 @@ select.form-control {
 
 @push('scripts')
 <script>
-// DataTable Initialization
+// CSRF Token
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+// User Management Class
+class UserManager {
+    constructor() {
+        this.initEventListeners();
+        this.currentEditUserId = null;
+    }
+
+    initEventListeners() {
+        // Add User Form Submit
+        document.getElementById('addUserForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.createUser(e.target);
+        });
+        
+        // Edit User Form Submit
+        document.getElementById('editUserForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateUser(e.target);
+        });
+
+        // Edit buttons
+        document.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.loadUserForEdit(btn.dataset.userId));
+        });
+
+        // Delete buttons
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.deleteUser(btn.dataset.userId));
+        });
+
+        // Search functionality
+        document.getElementById('userSearch')?.addEventListener('input', (e) => {
+            this.filterUsers(e.target.value);
+        });
+
+        // Role filter
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                this.filterByRole(pill.dataset.role);
+            });
+        });
+    }
+
+    // Create User
+    async createUser(form) {
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        try {
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Ekleniyor...';
+
+            const response = await fetch('/admin/users/ajax-store', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                
+                // Reset form
+                form.reset();
+                
+                // Show success message
+                this.showAlert('success', data.message || 'Kullanıcı başarıyla eklendi!');
+                
+                // Add new user to table
+                this.addUserToTable(data.user);
+            } else {
+                // Show validation errors
+                if (data.errors) {
+                    this.handleErrors(data.errors);
+                    
+                    // Özel hata mesajları
+                    let errorMessage = 'Lütfen aşağıdaki hataları düzeltin:';
+                    if (data.errors.email) {
+                        errorMessage = 'Bu e-posta adresi zaten kullanılıyor!';
+                    } else if (data.errors.password) {
+                        errorMessage = 'Şifre en az 8 karakter olmalı ve onay şifresi ile eşleşmelidir!';
+                    } else if (data.errors.name) {
+                        errorMessage = 'Ad soyad alanı zorunludur!';
+                    }
+                    this.showAlert('danger', errorMessage);
+                } else {
+                    this.showAlert('danger', data.message || 'Kullanıcı eklenirken bir hata oluştu!');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.message.includes('NetworkError')) {
+                this.showAlert('danger', 'Bağlantı hatası! Lütfen internet bağlantınızı kontrol edin.');
+            } else if (error.message.includes('500')) {
+                this.showAlert('danger', 'Sunucu hatası! Lütfen daha sonra tekrar deneyin.');
+            } else {
+                this.showAlert('danger', 'Beklenmeyen bir hata oluştu! Lütfen sayfayı yenileyip tekrar deneyin.');
+            }
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Kullanıcı Ekle';
+        }
+    }
+
+    // Load User for Edit
+    async loadUserForEdit(userId) {
+        try {
+            const response = await fetch(`/admin/users/${userId}/edit-ajax`, {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.currentEditUserId = userId;
+                this.populateEditForm(data.user);
+                
+                // Show edit modal
+                const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                editModal.show();
+            } else {
+                this.showAlert('danger', data.message || 'Kullanıcı bilgileri yüklenemedi!');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showAlert('danger', 'Beklenmeyen bir hata oluştu!');
+        }
+    }
+
+    // Update User
+    async updateUser(form) {
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Güncelleniyor...';
+
+            const response = await fetch(`/admin/users/${this.currentEditUserId}/ajax-update`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+                
+                // Show success message
+                this.showAlert('success', data.message || 'Kullanıcı başarıyla güncellendi!');
+                
+                // Update table row
+                this.updateUserInTable(data.user);
+            } else {
+                // Show validation errors
+                if (data.errors) {
+                    this.handleErrors(data.errors);
+                    
+                    // Özel hata mesajları
+                    let errorMessage = 'Lütfen aşağıdaki hataları düzeltin:';
+                    if (data.errors.email) {
+                        errorMessage = 'Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor!';
+                    } else if (data.errors.name) {
+                        errorMessage = 'Ad soyad alanı boş bırakılamaz!';
+                    } else if (data.errors.role) {
+                        errorMessage = 'Geçersiz kullanıcı rolü seçildi!';
+                    }
+                    this.showAlert('danger', errorMessage);
+                } else {
+                    this.showAlert('danger', data.message || 'Kullanıcı güncellenirken bir hata oluştu!');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.message.includes('NetworkError')) {
+                this.showAlert('danger', 'Bağlantı hatası! Lütfen internet bağlantınızı kontrol edin.');
+            } else if (error.message.includes('500')) {
+                this.showAlert('danger', 'Sunucu hatası! Lütfen daha sonra tekrar deneyin.');
+            } else {
+                this.showAlert('danger', 'Beklenmeyen bir hata oluştu! Lütfen sayfayı yenileyip tekrar deneyin.');
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Güncelle';
+        }
+    }
+
+    // Update User Status
+    async updateUserStatus(userId, status) {
+        try {
+            const response = await fetch(`/admin/users/${userId}/change-status/${status}`, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.showAlert('success', 'Kullanıcı durumu güncellendi!');
+            } else {
+                // Revert checkbox if failed
+                const toggle = document.querySelector(`input.status-toggle[data-id="${userId}"]`);
+                if (toggle) {
+                    toggle.checked = !toggle.checked;
+                }
+                this.showAlert('danger', data.message || 'Durum güncellenemedi!');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // Revert checkbox on error
+            const toggle = document.querySelector(`input.status-toggle[data-id="${userId}"]`);
+            if (toggle) {
+                toggle.checked = !toggle.checked;
+            }
+            this.showAlert('danger', 'Beklenmeyen bir hata oluştu!');
+        }
+    }
+
+    // Delete User
+    async deleteUser(userId) {
+        if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/users/${userId}/ajax-delete`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Remove from table with animation
+                const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (row) {
+                    row.style.transition = 'opacity 0.3s, transform 0.3s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-20px)';
+                    setTimeout(() => row.remove(), 300);
+                }
+                
+                this.showAlert('success', data.message || 'Kullanıcı başarıyla silindi!');
+                
+                // Update stats
+                this.updateStats();
+            } else {
+                this.showAlert('danger', data.message || 'Kullanıcı silinemedi!');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showAlert('danger', 'Beklenmeyen bir hata oluştu!');
+        }
+    }
+
+    // Add User to Table
+    addUserToTable(user) {
+        const tbody = document.querySelector('.users-table tbody');
+        if (!tbody) {
+            console.error('Table body not found');
+            return;
+        }
+        
+        const newRow = this.createUserRow(user);
+        
+        // Add with animation
+        newRow.style.opacity = '0';
+        tbody.insertBefore(newRow, tbody.firstChild);
+        
+        setTimeout(() => {
+            newRow.style.transition = 'opacity 0.3s';
+            newRow.style.opacity = '1';
+        }, 10);
+
+        // Update stats
+        this.updateStats();
+        
+        // Re-init event listeners for new buttons
+        this.initRowEventListeners(newRow);
+    }
+
+    // Update User in Table
+    updateUserInTable(user) {
+        const row = document.querySelector(`tr[data-user-id="${user.id}"]`);
+        if (!row) {
+            console.error('Row not found for user:', user.id);
+            return;
+        }
+        
+        // Yeni satırı oluştur
+        const newRow = this.createUserRow(user);
+        
+        // Animasyonlu değişim
+        row.style.transition = 'opacity 0.2s';
+        row.style.opacity = '0.5';
+        
+        setTimeout(() => {
+            row.replaceWith(newRow);
+            newRow.style.opacity = '0';
+            
+            setTimeout(() => {
+                newRow.style.transition = 'opacity 0.3s';
+                newRow.style.opacity = '1';
+            }, 10);
+            
+            // Event listener'ları yeniden bağla
+            this.initRowEventListeners(newRow);
+        }, 200);
+    }
+
+    // Create User Row HTML
+    createUserRow(user) {
+        const tr = document.createElement('tr');
+        tr.dataset.userId = user.id;
+        tr.dataset.role = user.role;
+        
+        const avatarHtml = user.avatar 
+            ? `<img src="${window.location.origin}/storage/${user.avatar}" alt="${user.name}">`
+            : user.name.charAt(0).toUpperCase();
+        
+        const statusBadge = user.status === 'approved' 
+            ? '<span class="status-badge active"><i class="bi bi-check-circle me-1"></i>Aktif</span>'
+            : '<span class="status-badge pending"><i class="bi bi-clock me-1"></i>Beklemede</span>';
+        
+        const roleBadge = {
+            'admin': '<span class="role-badge admin"><i class="bi bi-shield-check me-1"></i>Admin</span>',
+            'seller': '<span class="role-badge seller"><i class="bi bi-shop me-1"></i>Satıcı</span>',
+            'buyer': '<span class="role-badge buyer"><i class="bi bi-person me-1"></i>Alıcı</span>'
+        }[user.role] || '';
+
+        tr.innerHTML = `
+            <td>
+                <input type="checkbox" class="form-check-input user-select" value="${user.id}">
+            </td>
+            <td>
+                <div class="user-cell">
+                    <div class="user-avatar ${user.role}">
+                        ${avatarHtml}
+                    </div>
+                    <div class="user-info">
+                        <h6>${user.name}</h6>
+                        <span class="text-muted">ID: #${user.id}</span>
+                    </div>
+                </div>
+            </td>
+            <td>${user.email}</td>
+            <td>${user.phone || '-'}</td>
+            <td>${roleBadge}</td>
+            <td>
+                <label class="switch">
+                    <input type="checkbox" 
+                           class="status-toggle" 
+                           data-id="${user.id}"
+                           ${user.status === 'approved' ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+            </td>
+            <td>${user.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR') : new Date().toLocaleDateString('tr-TR')}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-action view-user-btn" data-user-id="${user.id}" title="Görüntüle">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-action edit-user-btn" data-user-id="${user.id}" title="Düzenle">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn-action text-danger delete-user-btn" data-user-id="${user.id}" title="Sil">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        return tr;
+    }
+
+    // Initialize event listeners for a specific row
+    initRowEventListeners(row) {
+        row.querySelector('.edit-user-btn')?.addEventListener('click', (e) => {
+            this.loadUserForEdit(e.currentTarget.dataset.userId);
+        });
+        
+        row.querySelector('.delete-user-btn')?.addEventListener('click', (e) => {
+            this.deleteUser(e.currentTarget.dataset.userId);
+        });
+        
+        // Status toggle event
+        const statusToggle = row.querySelector('.status-toggle');
+        if (statusToggle) {
+            statusToggle.addEventListener('change', (e) => {
+                const userId = e.target.dataset.id;
+                const status = e.target.checked ? 'approved' : 'pending';
+                this.updateUserStatus(userId, status);
+            });
+        }
+    }
+
+    // Filter Users by Search
+    filterUsers(searchTerm) {
+        const rows = document.querySelectorAll('.users-table tbody tr');
+        const term = searchTerm.toLowerCase();
+        
+        rows.forEach(row => {
+            const name = row.querySelector('.user-info h6')?.textContent.toLowerCase() || '';
+            const email = row.cells[2]?.textContent.toLowerCase() || '';
+            
+            if (name.includes(term) || email.includes(term)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Filter by Role
+    filterByRole(role) {
+        const rows = document.querySelectorAll('.users-table tbody tr');
+        
+        rows.forEach(row => {
+            if (role === 'all' || row.dataset.role === role) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Update Stats
+    updateStats() {
+        // Update user counts
+        const totalUsers = document.querySelectorAll('.users-table tbody tr').length;
+        const adminCount = document.querySelectorAll('.users-table tbody tr[data-role="admin"]').length;
+        const sellerCount = document.querySelectorAll('.users-table tbody tr[data-role="seller"]').length;
+        const buyerCount = document.querySelectorAll('.users-table tbody tr[data-role="buyer"]').length;
+        
+        // Update stat cards
+        document.querySelector('.user-stat-card.total .stat-content h3').textContent = totalUsers;
+        document.querySelector('.user-stat-card.admin .stat-content h3').textContent = adminCount;
+        document.querySelector('.user-stat-card.seller .stat-content h3').textContent = sellerCount;
+        document.querySelector('.user-stat-card.buyer .stat-content h3').textContent = buyerCount;
+    }
+
+    // Show Alert
+    showAlert(type, message) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.users-container');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            container.querySelector('.alert')?.remove();
+        }, 5000);
+    }
+
+    // Handle Validation Errors
+    handleErrors(errors) {
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+        document.querySelectorAll('.invalid-feedback').forEach(el => {
+            el.remove();
+        });
+        
+        // Show new errors
+        Object.keys(errors).forEach(field => {
+            // Aktif modal'daki input'u bul
+            const activeModal = document.querySelector('.modal.show');
+            let input = null;
+            
+            if (activeModal) {
+                input = activeModal.querySelector(`[name="${field}"]`);
+            } else {
+                input = document.querySelector(`[name="${field}"]`);
+            }
+            
+            if (input) {
+                input.classList.add('is-invalid');
+                const feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                
+                // Türkçe hata mesajları
+                let errorMessage = errors[field][0];
+                
+                // İngilizce mesajları Türkçeye çevir
+                if (errorMessage.includes('required')) {
+                    errorMessage = 'Bu alan zorunludur.';
+                } else if (errorMessage.includes('email') && errorMessage.includes('valid')) {
+                    errorMessage = 'Geçerli bir e-posta adresi giriniz.';
+                } else if (errorMessage.includes('already been taken')) {
+                    errorMessage = 'Bu değer zaten kullanılıyor.';
+                } else if (errorMessage.includes('at least')) {
+                    errorMessage = errorMessage.replace('at least', 'en az');
+                } else if (errorMessage.includes('confirmation')) {
+                    errorMessage = 'Şifreler eşleşmiyor.';
+                }
+                
+                feedback.textContent = errorMessage;
+                input.parentElement.appendChild(feedback);
+            }
+        });
+    }
+
+    // Populate Edit Form
+    populateEditForm(user) {
+        const form = document.getElementById('editUserForm');
+        if (!form) return;
+        
+        // Update modal title
+        document.getElementById('editUserName').textContent = user.name;
+        
+        // Populate form fields using IDs
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editName').value = user.name || '';
+        document.getElementById('editEmail').value = user.email || '';
+        document.getElementById('editPhone').value = user.phone || '';
+        document.getElementById('editRole').value = user.role || 'buyer';
+        document.getElementById('editStatus').value = user.status || 'approved';
+    }
+}
+
+// Initialize User Manager
+document.addEventListener('DOMContentLoaded', () => {
+    window.userManager = new UserManager();
+});
+</script>
+@endpush
+
+@push('scripts')
+<script>
+// DataTable yerine kendi arama sistemimizi kullanalım
+// DataTable kaldırıldı - Dinamik güncellemeler için
+
+// Search functionality - UserManager içinde zaten var
 $(document).ready(function() {
-    $('#usersTable').DataTable({
-        responsive: true,
-        pageLength: 10,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Ara...",
-            lengthMenu: "_MENU_ kayıt göster",
-            paginate: {
-                first: "İlk",
-                last: "Son",
-                next: "Sonraki",
-                previous: "Önceki"
-            },
-            info: "_TOTAL_ kayıttan _START_ - _END_ gösteriliyor",
-            infoEmpty: "Kayıt bulunamadı",
-            zeroRecords: "Eşleşen kayıt bulunamadı"
-        },
-        dom: 'rtip'
-    });
-    
-    // Custom search
+    // Custom search - UserManager.filterUsers kullanılıyor
     $('#userSearch').on('keyup', function() {
-        $('#usersTable').DataTable().search(this.value).draw();
+        if (window.userManager) {
+            window.userManager.filterUsers(this.value);
+        }
     });
 });
 

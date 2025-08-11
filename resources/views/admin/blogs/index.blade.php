@@ -5,6 +5,56 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('admin/css/blogs.css') }}">
+<style>
+/* Loading Toast */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
+
+/* Toast Container */
+.toast-container {
+    z-index: 9999;
+}
+
+/* Blog Card Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+.blog-card-new {
+    animation: slideIn 0.5s ease;
+}
+
+.blog-card-removing {
+    animation: fadeOut 0.3s ease;
+}
+
+/* Updated Blog Highlight */
+.blog-card-updated {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+    transition: box-shadow 1s ease;
+}
+</style>
 @endpush
 
 @section('content')
@@ -34,7 +84,7 @@
     </div>
     
     <!-- Add New Blog -->
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBlogModal" 
+    <button class="btn btn-primary" onclick="showAddBlogModal()" 
             style="background: var(--primary-red); border-color: var(--primary-red);">
         <i class="bi bi-plus-circle"></i>
         Yeni Blog Ekle
@@ -48,7 +98,7 @@
         <div class="stat-icon">
             <i class="bi bi-newspaper"></i>
         </div>
-        <div class="stat-value">{{ $blogs->count() }}</div>
+        <div class="stat-value" id="totalBlogs">{{ $blogs->count() }}</div>
         <div class="stat-label">Toplam Blog</div>
     </div>
     
@@ -57,7 +107,7 @@
         <div class="stat-icon">
             <i class="bi bi-check-square"></i>
         </div>
-        <div class="stat-value">{{ $blogs->where('status', true)->count() }}</div>
+        <div class="stat-value" id="activeBlogs">{{ $blogs->where('status', true)->count() }}</div>
         <div class="stat-label">Yayında</div>
     </div>
     
@@ -66,7 +116,7 @@
         <div class="stat-icon">
             <i class="bi bi-file-earmark-text"></i>
         </div>
-        <div class="stat-value">{{ $blogs->where('status', false)->count() }}</div>
+        <div class="stat-value" id="inactiveBlogs">{{ $blogs->where('status', false)->count() }}</div>
         <div class="stat-label">Taslak</div>
     </div>
     
@@ -75,7 +125,7 @@
         <div class="stat-icon">
             <i class="bi bi-eye"></i>
         </div>
-        <div class="stat-value">{{ number_format($blogs->sum('views', 0)) }}</div>
+        <div class="stat-value" id="totalViews">{{ number_format($blogs->sum('views', 0)) }}</div>
         <div class="stat-label">Toplam Görüntülenme</div>
     </div>
 </div>
@@ -145,7 +195,7 @@
             </div>
         </div>
     @empty
-        <div class="empty-state">
+        <div class="empty-state" id="emptyState">
             <i class="bi bi-newspaper empty-icon"></i>
             <h3 class="empty-title">Henüz Blog Yok</h3>
             <p class="empty-text">İlk blogunuzu oluşturmak için yukarıdaki butonu kullanın.</p>
@@ -162,9 +212,9 @@
                     <i class="bi bi-plus-circle me-2"></i>
                     Yeni Blog Ekle
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
-            <form action="{{ route('admin.blogs.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="addBlogForm" method="POST" enctype="multipart/form-data" onsubmit="handleBlogAdd(event)">
                 @csrf
                 <div class="modal-body">
                     <!-- Blog Image -->
@@ -212,7 +262,7 @@
                     <!-- Content -->
                     <div class="form-group">
                         <label class="form-label">Blog İçeriği</label>
-                        <textarea name="content" class="form-control" rows="6" 
+                        <textarea name="content" class="form-control" rows="6" required
                                   placeholder="Blog içeriğini girin..."></textarea>
                     </div>
                     
@@ -237,7 +287,7 @@
     </div>
 </div>
 
-<!-- Single Edit Blog Modal -->
+<!-- Edit Blog Modal (Dynamic) -->
 <div class="modal fade" id="editBlogModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -246,11 +296,12 @@
                     <i class="bi bi-pencil me-2"></i>
                     Blog Düzenle
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal">x</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
             </div>
-            <form id="editBlogForm" method="POST" enctype="multipart/form-data">
+            <form id="editBlogForm" method="POST" enctype="multipart/form-data" onsubmit="handleBlogEdit(event)">
                 @csrf
                 @method('PUT')
+                <input type="hidden" id="editBlogId" name="blog_id">
                 <div class="modal-body">
                     <!-- Blog Image -->
                     <div class="form-group">
@@ -296,7 +347,7 @@
                     <!-- Content -->
                     <div class="form-group">
                         <label class="form-label">Blog İçeriği</label>
-                        <textarea name="content" id="editContent" class="form-control" rows="6" 
+                        <textarea name="content" id="editContent" class="form-control" rows="6" required
                                   placeholder="Blog içeriğini girin..."></textarea>
                     </div>
                     
@@ -321,296 +372,10 @@
     </div>
 </div>
 
-<!-- Hidden Blog Data for JavaScript -->
-<script>
-const blogsData = {!! json_encode($blogs->map(function($blog) {
-    return [
-        'id' => $blog->id,
-        'title' => $blog->title,
-        'author' => $blog->author,
-        'date' => $blog->date->format('Y-m-d'),
-        'content' => $blog->content,
-        'status' => $blog->status,
-        'blog_img' => $blog->blog_img ? asset('storage/' . $blog->blog_img) : null
-    ];
-})) !!};
-</script>
+<!-- Meta tag for CSRF -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @push('scripts')
-<script>
-// Search functionality
-let searchTimer;
-document.getElementById('blogSearch').addEventListener('input', function(e) {
-    clearTimeout(searchTimer);
-    const query = e.target.value.toLowerCase();
-    
-    searchTimer = setTimeout(() => {
-        const cards = document.querySelectorAll('.blog-card');
-        
-        cards.forEach(card => {
-            const title = card.dataset.title;
-            const author = card.dataset.author;
-            
-            if (title.includes(query) || author.includes(query)) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }, 300);
-});
-
-// Status filter
-document.querySelectorAll('.filter-pill').forEach(pill => {
-    pill.addEventListener('click', function() {
-        // Update active state
-        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-        this.classList.add('active');
-        
-        const status = this.dataset.status;
-        const cards = document.querySelectorAll('.blog-card');
-        
-        cards.forEach(card => {
-            if (status === 'all') {
-                card.style.display = '';
-            } else if (status === 'active' && card.dataset.status === 'active') {
-                card.style.display = '';
-            } else if (status === 'inactive' && card.dataset.status === 'inactive') {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-});
-
-// Image upload for new blog
-const imageUploadArea = document.getElementById('imageUploadArea');
-const blogImageInput = document.getElementById('blogImage');
-const previewImage = document.getElementById('previewImage');
-
-imageUploadArea.addEventListener('click', () => {
-    blogImageInput.click();
-});
-
-imageUploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    imageUploadArea.classList.add('dragover');
-});
-
-imageUploadArea.addEventListener('dragleave', () => {
-    imageUploadArea.classList.remove('dragover');
-});
-
-imageUploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    imageUploadArea.classList.remove('dragover');
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        handleImageFile(files[0]);
-    }
-});
-
-blogImageInput.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-        handleImageFile(this.files[0]);
-    }
-});
-
-function handleImageFile(file) {
-    if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2MB\'dan küçük olmalıdır.');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        previewImage.src = e.target.result;
-        imageUploadArea.classList.add('has-image');
-        imageUploadArea.querySelector('.image-preview').style.display = 'flex';
-    };
-    reader.readAsDataURL(file);
-}
-
-function removeImage() {
-    blogImageInput.value = '';
-    previewImage.src = '';
-    imageUploadArea.classList.remove('has-image');
-    imageUploadArea.querySelector('.image-preview').style.display = 'none';
-}
-
-// Edit Blog Modal Functions
-const editImageUploadArea = document.getElementById('editImageUploadArea');
-const editBlogImageInput = document.getElementById('editBlogImage');
-const editPreviewImage = document.getElementById('editPreviewImage');
-
-editImageUploadArea.addEventListener('click', () => {
-    editBlogImageInput.click();
-});
-
-editBlogImageInput.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            editPreviewImage.src = e.target.result;
-            editImageUploadArea.classList.add('has-image');
-            editImageUploadArea.querySelector('.image-preview').style.display = 'flex';
-        };
-        reader.readAsDataURL(this.files[0]);
-    }
-});
-
-function removeEditImage() {
-    editBlogImageInput.value = '';
-    editPreviewImage.src = '';
-    editImageUploadArea.classList.remove('has-image');
-    editImageUploadArea.querySelector('.image-preview').style.display = 'none';
-}
-
-// Edit Blog Function
-function editBlog(blogId) {
-    const blog = blogsData.find(b => b.id === blogId);
-    if (blog) {
-        // Update form action
-        document.getElementById('editBlogForm').action = `/admin/blogs/${blogId}`;
-        
-        // Fill form fields
-        document.getElementById('editTitle').value = blog.title;
-        document.getElementById('editAuthor').value = blog.author;
-        document.getElementById('editDate').value = blog.date;
-        document.getElementById('editContent').value = blog.content;
-        document.getElementById('editStatus').value = blog.status ? '1' : '0';
-        
-        // Handle image
-        if (blog.blog_img) {
-            editPreviewImage.src = blog.blog_img;
-            editImageUploadArea.classList.add('has-image');
-            editImageUploadArea.querySelector('.image-preview').style.display = 'flex';
-        } else {
-            editImageUploadArea.classList.remove('has-image');
-            editImageUploadArea.querySelector('.image-preview').style.display = 'none';
-        }
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('editBlogModal'));
-        modal.show();
-    }
-}
-
-// Toggle Blog Status
-function toggleBlogStatus(blogId, newStatus) {
-    if (confirm(newStatus ? 'Bu blogu yayınlamak istediğinizden emin misiniz?' : 'Bu blogu taslağa almak istediğinizden emin misiniz?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route('admin.blogs.change-status') }}';
-        
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        const idInput = document.createElement('input');
-        idInput.type = 'hidden';
-        idInput.name = 'id';
-        idInput.value = blogId;
-        
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = newStatus;
-        
-        form.appendChild(csrfToken);
-        form.appendChild(idInput);
-        form.appendChild(statusInput);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-// Delete Blog
-function deleteBlog(blogId) {
-    if (confirm('Bu blogu silmek istediğinizden emin misiniz?')) {
-        fetch(`/admin/blogs/${blogId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                    AdminPanel.showToast('Blog başarıyla silindi!', 'success');
-                } else {
-                    alert('Blog başarıyla silindi!');
-                }
-                
-                // Remove the blog card from the page
-                const blogCard = document.querySelector(`.blog-card[data-blog-id="${blogId}"]`);
-                if (blogCard) {
-                    blogCard.style.transition = 'all 0.3s ease';
-                    blogCard.style.opacity = '0';
-                    blogCard.style.transform = 'scale(0.9)';
-                    setTimeout(() => {
-                        blogCard.remove();
-                        
-                        // Check if there are no more blogs
-                        const remainingBlogs = document.querySelectorAll('.blog-card').length;
-                        if (remainingBlogs === 0) {
-                            location.reload();
-                        }
-                    }, 300);
-                } else {
-                    // If we can't find the card, reload the page
-                    setTimeout(() => location.reload(), 1000);
-                }
-                
-                // Update stats
-                updateBlogStats();
-            } else {
-                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                    AdminPanel.showToast('Bir hata oluştu!', 'error');
-                } else {
-                    alert('Bir hata oluştu!');
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                AdminPanel.showToast('Bir hata oluştu!', 'error');
-            } else {
-                alert('Bir hata oluştu!');
-            }
-        });
-    }
-}
-
-// Update blog stats after deletion
-function updateBlogStats() {
-    const totalBlogs = document.querySelectorAll('.blog-card').length;
-    const activeBlogs = document.querySelectorAll('.blog-card[data-status="active"]').length;
-    const inactiveBlogs = document.querySelectorAll('.blog-card[data-status="inactive"]').length;
-    
-    // Update stat cards
-    const statCards = document.querySelectorAll('.stat-card .stat-value');
-    if (statCards[0]) statCards[0].textContent = totalBlogs;
-    if (statCards[1]) statCards[1].textContent = activeBlogs;
-    if (statCards[2]) statCards[2].textContent = inactiveBlogs;
-}
-
-// Show success/error messages
-@if(session('success'))
-    AdminPanel.showToast('{{ session('success') }}', 'success');
-@endif
-
-@if(session('error'))
-    AdminPanel.showToast('{{ session('error') }}', 'error');
-@endif
-</script>
+<script src="{{ asset('admin/js/blogs-dynamic.js') }}"></script>
 @endpush

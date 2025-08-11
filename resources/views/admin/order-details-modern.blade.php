@@ -146,7 +146,11 @@
                             <tr class="{{ $item->is_cancelled ? 'cancelled-item' : '' }}">
                                 <td>
                                     <div class="product-info">
-                                        @if($item->product && $item->product->images->first())
+                                        @if($item->product && $item->product->image)
+                                        <img src="{{ asset('storage/' . $item->product->image) }}" 
+                                             alt="{{ $item->product_name }}"
+                                             class="product-image">
+                                        @elseif($item->product && $item->product->images && $item->product->images->first())
                                         <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}" 
                                              alt="{{ $item->product_name }}"
                                              class="product-image">
@@ -234,10 +238,10 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" style="background: rgba(0, 0, 0, 0.05); border-radius: 8px; opacity: 0.7; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; color: #4b5563;">×</button>
             </div>
-            <form action="{{ route('admin.orders.update') }}" method="POST">
+            <form id="updateStatusForm" action="{{ route('admin.orders.update') }}" method="POST">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="order_id" value="{{ $order->id }}">
+                <input type="hidden" name="order_id" id="modalOrderId" value="{{ $order->id }}">
                 <div class="modal-body" style="padding: 24px;">
                     <!-- Sipariş Durumu -->
                     <div class="form-section" style="background: rgba(240, 248, 255, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(0, 0, 0, 0.05);">
@@ -587,27 +591,36 @@
 <script>
 // Update Order Status Modal
 function updateOrderStatus(orderId) {
-    const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
-    
-    // Show/hide fields based on status
-    document.getElementById('orderStatus').addEventListener('change', function() {
-        const trackingDiv = document.getElementById('trackingNumberDiv');
+    try {
+        const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+        
+        // Get status select and cancel div
+        const statusSelect = document.getElementById('orderStatus');
         const cancelDiv = document.getElementById('cancelReasonDiv');
         
-        if (this.value === 'shipped') {
-            trackingDiv.style.display = 'block';
-        } else {
-            trackingDiv.style.display = 'none';
+        // Show/hide cancel reason based on current status
+        if (cancelDiv && statusSelect) {
+            if (statusSelect.value === 'cancelled') {
+                cancelDiv.style.display = 'block';
+            } else {
+                cancelDiv.style.display = 'none';
+            }
+            
+            // Add event listener for status change
+            statusSelect.addEventListener('change', function() {
+                if (this.value === 'cancelled') {
+                    cancelDiv.style.display = 'block';
+                } else {
+                    cancelDiv.style.display = 'none';
+                }
+            });
         }
         
-        if (this.value === 'cancelled') {
-            cancelDiv.style.display = 'block';
-        } else {
-            cancelDiv.style.display = 'none';
-        }
-    });
-    
-    modal.show();
+        modal.show();
+    } catch (error) {
+        console.error('Error opening modal:', error);
+        alert('Modal açılırken bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.');
+    }
 }
 
 // Form submit with AJAX
@@ -630,45 +643,152 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Show success message
+                    // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('updateStatusModal'));
-                    modal.hide();
-                    
-                    // Show toast or alert
-                    if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                        AdminPanel.showToast('Sipariş durumu başarıyla güncellendi', 'success');
-                    } else {
-                        alert('Sipariş durumu başarıyla güncellendi');
+                    if (modal) {
+                        modal.hide();
                     }
                     
-                    // Reload page after 1.5 seconds
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
+                    // Update status timeline dynamically
+                    updateStatusTimeline(data.order);
+                    
+                    // Show success toast
+                    showSuccessToast('Sipariş durumu başarıyla güncellendi!');
+                    
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
                 } else {
-                    throw new Error(data.message || 'Bir hata oluştu');
+                    // Show error message
+                    alert(data.message || 'Bir hata oluştu!');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
                 }
             })
             .catch(error => {
-                // Show error message
-                if (typeof AdminPanel !== 'undefined' && AdminPanel.showToast) {
-                    AdminPanel.showToast(error.message || 'Bir hata oluştu', 'error');
-                } else {
-                    alert(error.message || 'Bir hata oluştu');
-                }
-                
-                // Re-enable button
+                console.error('Error:', error);
+                alert('Sipariş güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             });
         });
     }
 });
+
+// Update status timeline dynamically
+function updateStatusTimeline(order) {
+    const timeline = document.querySelector('.status-timeline');
+    if (!timeline) return;
+    
+    // Reset all steps
+    const steps = timeline.querySelectorAll('.timeline-step');
+    const lines = timeline.querySelectorAll('.timeline-line');
+    
+    steps.forEach(step => step.classList.remove('completed'));
+    lines.forEach(line => line.classList.remove('completed'));
+    
+    // Update based on status
+    const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+    const currentIndex = statusOrder.indexOf(order.status);
+    
+    if (currentIndex >= 0) {
+        for (let i = 0; i <= currentIndex; i++) {
+            if (steps[i]) steps[i].classList.add('completed');
+            if (i > 0 && lines[i-1]) lines[i-1].classList.add('completed');
+        }
+    }
+    
+    // Update dates if available
+    if (order.status === 'processing' && steps[1]) {
+        const dateDiv = steps[1].querySelector('.step-date');
+        if (dateDiv) {
+            dateDiv.textContent = new Date(order.updated_at).toLocaleString('tr-TR');
+        }
+    }
+    
+    if (order.status === 'shipped' && steps[2]) {
+        const infoDiv = steps[2].querySelector('.step-info');
+        if (infoDiv && order.tracking_number) {
+            infoDiv.textContent = order.tracking_number;
+        }
+    }
+    
+    if (order.status === 'delivered' && steps[3]) {
+        const dateDiv = steps[3].querySelector('.step-date');
+        if (dateDiv) {
+            dateDiv.textContent = new Date(order.updated_at).toLocaleString('tr-TR');
+        }
+    }
+    
+    // Handle cancelled status
+    const cancelAlert = document.querySelector('.status-timeline + .alert-danger');
+    if (order.status === 'cancelled') {
+        if (!cancelAlert) {
+            const alertHtml = `
+                <div class="alert alert-danger mt-3">
+                    <i class="bi bi-x-circle me-2"></i>
+                    <strong>Sipariş İptal Edildi</strong>
+                    ${order.cancellation_reason ? `<p class="mb-0 mt-1">İptal Nedeni: ${order.cancellation_reason}</p>` : ''}
+                </div>
+            `;
+            timeline.insertAdjacentHTML('afterend', alertHtml);
+        }
+    } else if (cancelAlert) {
+        cancelAlert.remove();
+    }
+}
+
+// Show success toast notification
+function showSuccessToast(message) {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Show and auto-hide toast
+    const toastEl = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastEl, {
+        autohide: true,
+        delay: 3000
+    });
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+}
 </script>
 @endpush
